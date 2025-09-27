@@ -49,7 +49,11 @@ class MainViewModel @Inject constructor(
                 hasSafAccessPermission = hasSafAccessPermission,
                 selectionMode = SelectionMode.SINGLE_SELECT,
                 currentFileType = FileType.IMAGES,
-                mediaFiles = getFiles(preferredTitle)
+                mediaFiles = if (!shouldShowOnBoardingUi && appInstalled && hasSafAccessPermission) {
+                    getFiles(preferredTitle)
+                } else {
+                    emptyList()
+                }
             )
         }
     }
@@ -92,19 +96,20 @@ class MainViewModel @Inject constructor(
                     val hasSafPermission by lazy { statusesManager.hasPermission(event.title.uri) }
                     if (appInstalled && hasSafPermission) {
                         setPreferredTitle(event.title)
+                        val files = getFiles(event.title)
                         _uiState.update {
                             it?.copy(
                                 title = event.title,
                                 hasSafAccessPermission = true,
                                 appInstalled = true,
-                                mediaFiles = getFiles(event.title)
+                                mediaFiles = files
                             )
                         }
                     } else if (!appInstalled) {
                         _uiState.update {
                             it?.copy(
                                 title = event.title,
-                                hasSafAccessPermission = false,
+                                hasSafAccessPermission = null,
                                 mediaFiles = emptyList(),
                                 appInstalled = false
                             )
@@ -115,7 +120,7 @@ class MainViewModel @Inject constructor(
                                 title = event.title,
                                 hasSafAccessPermission = false,
                                 mediaFiles = emptyList(),
-                                appInstalled = false
+                                appInstalled = null
                             )
                         }
                     }
@@ -139,11 +144,11 @@ class MainViewModel @Inject constructor(
                 }
             }
 
-            is Event.FetchStatusesMedia -> {
-                viewModelScope.launch {
-                    _uiState.update {
-                        it?.copy(mediaFiles = getFiles(event.title))
-                    }
+            is Event.ChangeAppInstalledStatus -> {
+                _uiState.update {
+                    it?.copy(
+                        appInstalled = event.status
+                    )
                 }
             }
         }
@@ -154,13 +159,9 @@ class MainViewModel @Inject constructor(
     }
 
     private fun getFiles(title: Title): List<File> {
-        if (_uiState.value?.hasSafAccessPermission == true) {
-            val files = statusesManager.getFiles(title.uri)
-            val filteredFiles: List<File> = files.filter { true }
-            return filteredFiles
-        } else {
-            return emptyList()
-        }
+        val files = statusesManager.getFiles(title.uri)
+        val filteredFiles: List<File> = files.filter { true }
+        return filteredFiles
     }
 
 }

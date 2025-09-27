@@ -12,7 +12,7 @@ data class UiState(
     val currentFileType: FileType? = null,
     val shouldShowOnBoardingUi: Boolean? = null,
     val hasSafAccessPermission: Boolean? = null,
-    val mediaFiles: List<File>? = null,
+    val mediaFiles: List<File> = emptyList<File>(),
 )
 
 enum class FileType {

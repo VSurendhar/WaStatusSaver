@@ -30,7 +30,7 @@ import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.ui.theme.WaStatusSaverTheme
 
 @Composable
-fun SAFAccessPermissionDialog(onGrantAccess: () -> Unit) {
+fun SAFAccessPermissionDialog(onGrantAccess: () -> Unit, onNotNowPressed: () -> Unit) {
     var openDialog by remember { mutableStateOf(true) }
     if (openDialog) {
         Dialog(
@@ -65,7 +65,10 @@ fun SAFAccessPermissionDialog(onGrantAccess: () -> Unit) {
                         .padding(top = 10.dp), onClick = { onGrantAccess() }) {
                     Text(text = "Grant access", textAlign = TextAlign.Center, color = Color.White)
                 }
-                TextButton(modifier = Modifier, onClick = { openDialog = false }) {
+                TextButton(modifier = Modifier, onClick = {
+                    onNotNowPressed()
+                    openDialog = false
+                }) {
                     Text(
                         modifier = Modifier,
                         text = "Not now",
@@ -90,6 +93,6 @@ fun SAFAccessPermissionDialog(onGrantAccess: () -> Unit) {
 @Preview()
 fun PreviewSAFAccessPermissionDialog() {
     WaStatusSaverTheme {
-        SAFAccessPermissionDialog {}
+        SAFAccessPermissionDialog(onGrantAccess = {}, onNotNowPressed = {})
     }
 }

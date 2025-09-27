@@ -58,7 +58,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,6 +77,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.voidDeveloper.wastatussaver.R
+import com.voidDeveloper.wastatussaver.data.utils.Constants.TAG
 import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrEmptyString
 import com.voidDeveloper.wastatussaver.data.utils.openAppInPlayStore
 import com.voidDeveloper.wastatussaver.ui.main.Title.Whatsapp
@@ -137,7 +137,6 @@ fun MainScreen(uiState: StateFlow<UiState?>, onEvent: (Event) -> Unit) {
                 }) { innerPadding ->
                 if (state != null) {
                     MainBody(
-                        title = state!!.title!!,
                         modifier = Modifier.padding(innerPadding),
                         pagerState = pagerState,
                         onEvent = onEvent,
@@ -394,19 +393,10 @@ fun MainBody(
     pagerState: PagerState,
     onEvent: (Event) -> Unit,
     uiState: UiState,
-    title: Title,
     launchSafPermission: (Intent) -> Unit,
 ) {
-    val imageFiles = (1..20).map {
-        File(
-            uri = "".toUri(), fileType = FileType.IMAGES
-        )
-    }
-    val videoFiles = (1..20).map {
-        File(
-            uri = "".toUri(), fileType = FileType.VIDEOS
-        )
-    }
+    val imageFiles = uiState.mediaFiles
+    val videoFiles = uiState.mediaFiles
     HorizontalPager(
         state = pagerState, modifier = modifier.fillMaxSize()
     ) { page ->
@@ -454,6 +444,8 @@ fun FilePreviewPage(
                 openAppInPlayStore(
                     context = context, packageName = uiState.title.packageName
                 )
+            }, onNotNowPressed = {
+                onEvent(Event.ChangeAppInstalledStatus(null))
             })
     } else if (uiState.hasSafAccessPermission == false) {
         SAFAccessPermissionDialog(onGrantAccess = {
@@ -463,6 +455,8 @@ fun FilePreviewPage(
                 )
             }
             launchSafPermission(intent)
+        }, onNotNowPressed = {
+            onEvent(Event.ChangeSAFAccessPermission(null))
         })
     } else {
         Surface(
@@ -472,6 +466,9 @@ fun FilePreviewPage(
                 .padding(12.dp),
         ) {
             LazyVerticalGrid(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White),
                 columns = GridCells.Fixed(3),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)

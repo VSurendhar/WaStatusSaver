@@ -32,12 +32,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.voidDeveloper.wastatussaver.R
-import com.voidDeveloper.wastatussaver.data.utils.openAppInPlayStore
 import com.voidDeveloper.wastatussaver.ui.main.Title
 import com.voidDeveloper.wastatussaver.ui.theme.WaStatusSaverTheme
 
 @Composable
-fun AppNotInstalledDialog(title: Title, onDownloadApp: () -> Unit) {
+fun AppNotInstalledDialog(title: Title, onDownloadApp: () -> Unit, onNotNowPressed: () -> Unit) {
     val context = LocalContext.current
     var openDialog by remember { mutableStateOf(true) }
     if (openDialog) {
@@ -78,9 +77,7 @@ fun AppNotInstalledDialog(title: Title, onDownloadApp: () -> Unit) {
                         .fillMaxWidth()
                         .padding(top = 10.dp),
                     onClick = {
-                        openAppInPlayStore(
-                            context = context, packageName = title.packageName
-                        )
+                        onDownloadApp()
                     }) {
                     Text(
                         text = stringResource(R.string.download, stringResource(title.resId)),
@@ -88,7 +85,10 @@ fun AppNotInstalledDialog(title: Title, onDownloadApp: () -> Unit) {
                         color = Color.White
                     )
                 }
-                TextButton(modifier = Modifier, onClick = { openDialog = false }) {
+                TextButton(modifier = Modifier, onClick = {
+                    onNotNowPressed()
+                    openDialog = false
+                }) {
                     Text(
                         modifier = Modifier,
                         text = stringResource(R.string.not_now),
@@ -141,6 +141,6 @@ fun createColoredString(
 @Preview()
 fun PreviewAppNotInstalledDialog() {
     WaStatusSaverTheme {
-        AppNotInstalledDialog(title = Title.Whatsapp) {}
+        AppNotInstalledDialog(title = Title.Whatsapp, {}, {})
     }
 }
