@@ -58,6 +58,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -134,36 +135,14 @@ fun MainScreen(uiState: StateFlow<UiState?>, onEvent: (Event) -> Unit) {
                         fileTypeData = fileTypeData,
                     )
                 }) { innerPadding ->
-                if (state?.shouldShowOnBoardingUi == true) {
-                    OnBoardingDialog(onDialogDismissed = {
-                        onEvent(
-                            Event.ChangeShowOnBoardingUiStatus(
-                                false
-                            )
-                        )
-                    })
-                } else if (state?.appInstalled == false && state?.title != null) {
-                    AppNotInstalledDialog(
-                        title = state!!.title!!, onDownloadApp = {
-                            openAppInPlayStore(
-                                context = context, packageName = state?.title?.packageName
-                            )
-                        })
-                } else if (state?.hasSafAccessPermission == false) {
-                    SAFAccessPermissionDialog(onGrantAccess = {
-                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
-                            putExtra(
-                                DocumentsContract.EXTRA_INITIAL_URI, state?.title?.uri
-                            )
-                        }
-                        launcher.launch(intent)
-                    })
-                } else if (state != null) {
+                if (state != null) {
                     MainBody(
                         title = state!!.title!!,
                         modifier = Modifier.padding(innerPadding),
                         pagerState = pagerState,
-                        onEvent = onEvent
+                        onEvent = onEvent,
+                        launchSafPermission = { launcher.launch(it) },
+                        uiState = state!!
                     )
                 }
             }
@@ -414,7 +393,9 @@ fun MainBody(
     modifier: Modifier = Modifier,
     pagerState: PagerState,
     onEvent: (Event) -> Unit,
+    uiState: UiState,
     title: Title,
+    launchSafPermission: (Intent) -> Unit,
 ) {
     val imageFiles = (1..20).map {
         File(
@@ -431,33 +412,73 @@ fun MainBody(
     ) { page ->
         when (page) {
             0 -> {
-                onEvent(Event.FetchStatusesMedia(title))
-                FilePreviewPage(imageFiles)
+                FilePreviewPage(
+                    imageFiles,
+                    uiState,
+                    onEvent = onEvent,
+                    launchSafPermission = launchSafPermission
+                )
             }
 
             1 -> {
-                onEvent(Event.FetchStatusesMedia(title))
-                FilePreviewPage(videoFiles)
+                FilePreviewPage(
+                    videoFiles,
+                    uiState,
+                    onEvent = onEvent,
+                    launchSafPermission = launchSafPermission
+                )
             }
         }
     }
 }
 
 @Composable
-fun FilePreviewPage(files: List<File>) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(12.dp),
-    ) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+fun FilePreviewPage(
+    files: List<File>,
+    uiState: UiState,
+    onEvent: (Event) -> Unit,
+    launchSafPermission: (Intent) -> Unit,
+) {
+    val context = LocalContext.current
+    if (uiState.shouldShowOnBoardingUi == true) {
+        OnBoardingDialog(onDialogDismissed = {
+            onEvent(
+                Event.ChangeShowOnBoardingUiStatus(
+                    false
+                )
+            )
+        })
+    } else if (uiState.appInstalled == false && uiState.title != null) {
+        AppNotInstalledDialog(
+            title = uiState.title, onDownloadApp = {
+                openAppInPlayStore(
+                    context = context, packageName = uiState.title.packageName
+                )
+            })
+    } else if (uiState.hasSafAccessPermission == false) {
+        SAFAccessPermissionDialog(onGrantAccess = {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+                putExtra(
+                    DocumentsContract.EXTRA_INITIAL_URI, uiState.title?.uri
+                )
+            }
+            launchSafPermission(intent)
+        })
+    } else {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(12.dp),
         ) {
-            items(items = files, key = { it.id }) {
-                PreviewItem()
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(items = files, key = { it.id }) {
+                    PreviewItem()
+                }
             }
         }
     }
@@ -546,7 +567,7 @@ fun ImagePagePreview() {
         )
     }
     WaStatusSaverTheme {
-        FilePreviewPage(imageFiles)
+        FilePreviewPage(imageFiles, uiState = UiState(), onEvent = { }, launchSafPermission = {})
     }
 }
 
