@@ -5,6 +5,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.util.Log
+import com.voidDeveloper.wastatussaver.data.utils.Constants.NO_MEDIA
 import com.voidDeveloper.wastatussaver.data.utils.Constants.TAG
 import com.voidDeveloper.wastatussaver.ui.main.File
 import com.voidDeveloper.wastatussaver.ui.main.FileType
@@ -42,14 +43,16 @@ class StatusesManager @Inject constructor(
                 val documentId = c.getString(docIdIndex)
                 val fileUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
                 Log.i(TAG, "getFiles: $name $mimeType $documentId $fileUri")
-                resList.add(
-                    File(
-                        id = documentId,
-                        isDownloaded = getDownloadedStatus(),
-                        uri = fileUri,
-                        fileType = FileType.IMAGES
+                if (name != NO_MEDIA) {
+                    resList.add(
+                        File(
+                            id = documentId,
+                            isDownloaded = getDownloadedStatus(),
+                            uri = fileUri,
+                            fileType = FileType.IMAGES
+                        )
                     )
-                )
+                }
             }
 
         }

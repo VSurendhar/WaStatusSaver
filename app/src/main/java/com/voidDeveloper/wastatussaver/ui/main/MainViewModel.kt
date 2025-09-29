@@ -139,7 +139,13 @@ class MainViewModel @Inject constructor(
             }
 
             is Event.ChangeSAFAccessPermission -> {
-                _uiState.update { it?.copy(hasSafAccessPermission = event.hasSafAccessPermission) }
+                _uiState.update {
+                    if (event.hasSafAccessPermission == true) {
+                        val files = getFiles(uiState.value?.title!!)
+                        it?.copy(mediaFiles = files)
+                    }
+                    it?.copy(hasSafAccessPermission = event.hasSafAccessPermission)
+                }
             }
 
             is Event.ChangeShowOnBoardingUiStatus -> {

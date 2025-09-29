@@ -1,7 +1,6 @@
 package com.voidDeveloper.wastatussaver.ui.main
 
 import android.content.Intent
-import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,6 +39,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
@@ -60,7 +60,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -82,8 +81,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.voidDeveloper.wastatussaver.R
-import com.voidDeveloper.wastatussaver.data.utils.Constants.TAG
 import com.voidDeveloper.wastatussaver.data.utils.LifecycleAwarePause
+import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrDefault
 import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrEmptyString
 import com.voidDeveloper.wastatussaver.data.utils.launchSafPicker
 import com.voidDeveloper.wastatussaver.data.utils.openAppInPlayStore
@@ -203,7 +202,8 @@ fun MainTopBar(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 18.dp, vertical = 8.dp),
+                    .padding(vertical = 8.dp)
+                    .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = { openNavigationDrawer() }) {
@@ -250,6 +250,16 @@ fun MainTopBar(
                             })
                     }
                 }
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = "Refresh",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .padding(top = 5.dp)
+                        .padding(horizontal = 4.dp)
+                        .align(Alignment.Top),
+                )
             }
             TabsRow(pagerState, scope = scope, fileTypeData = fileTypeData)
         }
@@ -471,8 +481,7 @@ fun FilePreviewPage(
     } else if (uiState.hasSafAccessPermission == false) {
         SAFAccessPermissionDialog(onGrantAccess = {
             launchSafPicker(
-                newUri = uiState.title?.uri,
-                launchPermission = launchSafPermission
+                newUri = uiState.title?.uri, launchPermission = launchSafPermission
             )
         }, onNotNowPressed = {
             onEvent(Event.ChangeSAFAccessPermission(null))
@@ -487,7 +496,7 @@ fun FilePreviewPage(
             if (uiState.appInstalled == null) {
                 MissingSetupInfo(
                     modifier = Modifier.padding(horizontal = 12.dp),
-                    id = R.drawable.ic_app_download,
+                    imageId = R.drawable.ic_app_download,
                     title = stringResource(
                         R.string.not_installed,
                         stringResource(uiState.title?.resId.valueOrEmptyString())
@@ -506,7 +515,7 @@ fun FilePreviewPage(
             } else if (uiState.hasSafAccessPermission == null) {
                 MissingSetupInfo(
                     modifier = Modifier.padding(horizontal = 12.dp),
-                    id = R.drawable.ic_no_permission,
+                    imageId = R.drawable.ic_no_permission,
                     title = stringResource(R.string.storage_access_required),
                     description = stringResource(
                         R.string.second_accesss_msg,
@@ -515,27 +524,38 @@ fun FilePreviewPage(
                     buttonTxt = stringResource(R.string.grand_access),
                     onBtnClick = {
                         launchSafPicker(
-                            newUri = uiState.title?.uri,
-                            launchPermission = launchSafPermission
+                            newUri = uiState.title?.uri, launchPermission = launchSafPermission
                         )
                     })
             } else {
-                LazyVerticalGrid(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.White),
-                    columns = GridCells.Fixed(3),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(items = files, key = { it.id }) {
-                        PreviewItem()
+                if (files.isEmpty()) {
+                    MissingSetupInfo(
+                        imageId = R.drawable.ic_empty_folder,
+                        title = stringResource(R.string.no_status_files_available),
+                        description = stringResource(
+                            R.string.no_status_des,
+                            stringResource(uiState.title?.resId.valueOrEmptyString())
+                        )
+                    )
+                } else {
+                    LazyVerticalGrid(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White),
+                        columns = GridCells.Fixed(3),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(items = files, key = { it.id }) {
+                            PreviewItem()
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun PreviewItem() {
@@ -588,11 +608,11 @@ fun PreviewItem() {
 @Composable
 fun MissingSetupInfo(
     modifier: Modifier = Modifier,
-    @DrawableRes id: Int,
+    @DrawableRes imageId: Int,
     title: String,
     description: String,
-    buttonTxt: String,
-    onBtnClick: () -> Unit,
+    buttonTxt: String? = null,
+    onBtnClick: (() -> Unit)? = null,
 ) {
     Card(
         modifier = modifier
@@ -610,7 +630,7 @@ fun MissingSetupInfo(
             modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                painter = painterResource(id),
+                painter = painterResource(imageId),
                 contentDescription = "",
                 modifier = Modifier.size(100.dp)
             )
@@ -627,14 +647,18 @@ fun MissingSetupInfo(
                 color = Color.Black,
                 style = MaterialTheme.typography.bodyLarge
             )
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 10.dp),
-                onClick = { onBtnClick() }) {
-                androidx.compose.material.Text(
-                    text = buttonTxt, textAlign = TextAlign.Center, color = Color.White
-                )
+            if (buttonTxt != null && onBtnClick != null) {
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp),
+                    onClick = { onBtnClick?.invoke() }) {
+                    androidx.compose.material.Text(
+                        text = buttonTxt.valueOrDefault(),
+                        textAlign = TextAlign.Center,
+                        color = Color.White
+                    )
+                }
             }
         }
     }
@@ -694,10 +718,11 @@ fun FileItemPreview() {
 fun MissingSetupInfoPreview() {
     WaStatusSaverTheme {
         MissingSetupInfo(
-            id = R.drawable.ic_app_download,
+            imageId = R.drawable.ic_empty_folder,
             title = "Storage Access Required",
             description = "We need access to the WhatsApp .Statuses folder to save status media. Only files in the folder you choose are accessed, and nothing leaves your phone.",
             buttonTxt = "Grand Access",
             onBtnClick = {})
     }
 }
+

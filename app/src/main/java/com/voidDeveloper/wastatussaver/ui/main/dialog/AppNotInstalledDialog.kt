@@ -19,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -37,7 +36,6 @@ import com.voidDeveloper.wastatussaver.ui.theme.WaStatusSaverTheme
 
 @Composable
 fun AppNotInstalledDialog(title: Title, onDownloadApp: () -> Unit, onNotNowPressed: () -> Unit) {
-    val context = LocalContext.current
     var openDialog by remember { mutableStateOf(true) }
     if (openDialog) {
         Dialog(
@@ -78,6 +76,7 @@ fun AppNotInstalledDialog(title: Title, onDownloadApp: () -> Unit, onNotNowPress
                         .padding(top = 10.dp),
                     onClick = {
                         onDownloadApp()
+                        openDialog = false
                     }) {
                     Text(
                         text = stringResource(R.string.download, stringResource(title.resId)),
