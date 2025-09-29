@@ -7,4 +7,5 @@ sealed interface Event {
     data class ChangeShowOnBoardingUiStatus(val status: Boolean) : Event
     data class ChangeSAFAccessPermission(val hasSafAccessPermission: Boolean?) : Event
     data class ChangeAppInstalledStatus(val status: Boolean?) : Event
+    object RefreshUiState : Event
 }

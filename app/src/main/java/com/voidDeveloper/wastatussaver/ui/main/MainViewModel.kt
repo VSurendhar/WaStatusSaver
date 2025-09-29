@@ -1,17 +1,12 @@
 package com.voidDeveloper.wastatussaver.ui.main
 
 import android.net.Uri
-import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.KEY_PREFERRED_TITLE
 import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.KEY_SHOULD_SHOW_ONBOARDING_UI
 import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStorePreferenceManager
-import com.voidDeveloper.wastatussaver.data.utils.Constants.TAG
-import com.voidDeveloper.wastatussaver.data.utils.Constants.WHATSAPP
-import com.voidDeveloper.wastatussaver.data.utils.Constants.WHATSAPP_BUSINESS
 import com.voidDeveloper.wastatussaver.ui.main.componenets.AppInstallChecker
 import com.voidDeveloper.wastatussaver.ui.main.componenets.StatusesManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -74,14 +69,26 @@ class MainViewModel @Inject constructor(
     }
 
     suspend fun getPreferredTitle(): Title {
-        val preferredId = dataStorePreferenceManager.getPreference(
-            KEY_PREFERRED_TITLE, defaultValue = WHATSAPP
-        ).first()
 
-        return when (preferredId) {
-            WHATSAPP_BUSINESS -> Title.WhatsappBusiness
-            else -> Title.Whatsapp
+        val preferredId = try {
+            dataStorePreferenceManager.getPreference(
+                KEY_PREFERRED_TITLE, defaultValue = Title.Whatsapp.packageName
+            ).first()
+        } catch (e: Exception) {
+            Title.Whatsapp.packageName
         }
+
+        val title = when (preferredId) {
+            Title.WhatsappBusiness.packageName -> {
+                Title.WhatsappBusiness
+            }
+
+            else -> {
+                Title.Whatsapp
+            }
+        }
+
+        return title
     }
 
     fun onEvent(event: Event) {
@@ -94,8 +101,8 @@ class MainViewModel @Inject constructor(
                 viewModelScope.launch {
                     val appInstalled by lazy { appInstallChecker.isInstalled(event.title.packageName) }
                     val hasSafPermission by lazy { statusesManager.hasPermission(event.title.uri) }
+                    setPreferredTitle(event.title)
                     if (appInstalled && hasSafPermission) {
-                        setPreferredTitle(event.title)
                         val files = getFiles(event.title)
                         _uiState.update {
                             it?.copy(
@@ -120,7 +127,7 @@ class MainViewModel @Inject constructor(
                                 title = event.title,
                                 hasSafAccessPermission = false,
                                 mediaFiles = emptyList(),
-                                appInstalled = null
+                                appInstalled = true
                             )
                         }
                     }
@@ -147,15 +154,48 @@ class MainViewModel @Inject constructor(
             is Event.ChangeAppInstalledStatus -> {
                 _uiState.update {
                     it?.copy(
-                        appInstalled = event.status
+                        appInstalled = event.status, hasSafAccessPermission = null
                     )
+                }
+            }
+
+            is Event.RefreshUiState -> {
+                refreshUiState()
+            }
+
+        }
+    }
+
+    private fun refreshUiState() {
+        viewModelScope.launch {
+            if (_uiState.value != null) {
+                val preferredTitle = getPreferredTitle()
+                val shouldShowOnBoardingUi = shouldShowOnBoardingUi()
+                val appInstalled = getAppInstalledStatus(preferredTitle)
+                val hasSafAccessPermission = hasSafAccessPermission(appInstalled, preferredTitle)
+
+                _uiState.update { current ->
+                    var uiState = current
+
+                    if (shouldShowOnBoardingUi) {
+                        uiState = uiState?.copy(shouldShowOnBoardingUi = true)
+                    }
+                    if (hasSafAccessPermission) {
+                        uiState = uiState?.copy(hasSafAccessPermission = true)
+                    }
+                    if (appInstalled) {
+                        uiState = uiState?.copy(
+                            appInstalled = true, hasSafAccessPermission = hasSafAccessPermission
+                        )
+                    }
+                    uiState
                 }
             }
         }
     }
 
     private suspend fun setPreferredTitle(title: Title) {
-        dataStorePreferenceManager.putPreference(KEY_PREFERRED_TITLE, Gson().toJson(title))
+        dataStorePreferenceManager.putPreference(KEY_PREFERRED_TITLE, title.packageName)
     }
 
     private fun getFiles(title: Title): List<File> {

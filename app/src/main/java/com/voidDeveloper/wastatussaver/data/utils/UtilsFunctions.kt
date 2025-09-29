@@ -3,6 +3,9 @@ package com.voidDeveloper.wastatussaver.data.utils
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.provider.DocumentsContract
+import android.util.Log
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -10,10 +13,15 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.voidDeveloper.wastatussaver.data.utils.Constants.TAG
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -115,4 +123,50 @@ fun Floating(
     ) {
         content()
     }
+}
+
+@Composable
+fun LifecycleAwarePause(
+    onPause: (() -> Unit)? = null,
+    onDestroy: (() -> Unit)? = null,
+    onResume: (() -> Unit)? = null,
+) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> {
+                    onPause?.invoke()
+                }
+
+                Lifecycle.Event.ON_DESTROY -> {
+                    onDestroy?.invoke()
+                }
+
+                Lifecycle.Event.ON_RESUME -> {
+                    onResume?.invoke()
+                }
+
+                else -> {
+                }
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+}
+
+fun launchSafPicker(newUri: Uri?, launchPermission: (Intent) -> Unit) {
+    val newTreeUri = DocumentsContract.buildDocumentUriUsingTree(
+        newUri, DocumentsContract.getTreeDocumentId(newUri)
+    )
+    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+        putExtra(DocumentsContract.EXTRA_INITIAL_URI, newTreeUri)
+    }
+    launchPermission(intent)
 }

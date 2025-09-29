@@ -5,6 +5,7 @@ import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -39,6 +40,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -58,6 +60,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,12 +76,16 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.utils.Constants.TAG
+import com.voidDeveloper.wastatussaver.data.utils.LifecycleAwarePause
 import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrEmptyString
+import com.voidDeveloper.wastatussaver.data.utils.launchSafPicker
 import com.voidDeveloper.wastatussaver.data.utils.openAppInPlayStore
 import com.voidDeveloper.wastatussaver.ui.main.Title.Whatsapp
 import com.voidDeveloper.wastatussaver.ui.main.Title.WhatsappBusiness
@@ -98,9 +105,13 @@ fun MainScreen(uiState: StateFlow<UiState?>, onEvent: (Event) -> Unit) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val titleItems = listOf(Whatsapp, WhatsappBusiness)
-    val pagerState = rememberPagerState(pageCount = { 2 })
-    val fileTypeData = listOf(FileType.IMAGES, FileType.VIDEOS)
+    val pagerState = rememberPagerState(pageCount = { 3 })
+    val fileTypeData = listOf(FileType.IMAGES, FileType.VIDEOS, FileType.AUDIO)
     val context = LocalContext.current
+
+    LifecycleAwarePause(onResume = {
+        onEvent(Event.RefreshUiState)
+    })
 
     val state by uiState.collectAsState()
     val launcher: ActivityResultLauncher<Intent> =
@@ -397,6 +408,7 @@ fun MainBody(
 ) {
     val imageFiles = uiState.mediaFiles
     val videoFiles = uiState.mediaFiles
+    val audioFiles = uiState.mediaFiles
     HorizontalPager(
         state = pagerState, modifier = modifier.fillMaxSize()
     ) { page ->
@@ -418,6 +430,16 @@ fun MainBody(
                     launchSafPermission = launchSafPermission
                 )
             }
+
+            2 -> {
+                FilePreviewPage(
+                    audioFiles,
+                    uiState,
+                    onEvent = onEvent,
+                    launchSafPermission = launchSafPermission
+                )
+            }
+
         }
     }
 }
@@ -439,42 +461,76 @@ fun FilePreviewPage(
             )
         })
     } else if (uiState.appInstalled == false && uiState.title != null) {
-        AppNotInstalledDialog(
-            title = uiState.title, onDownloadApp = {
-                openAppInPlayStore(
-                    context = context, packageName = uiState.title.packageName
-                )
-            }, onNotNowPressed = {
-                onEvent(Event.ChangeAppInstalledStatus(null))
-            })
+        AppNotInstalledDialog(title = uiState.title, onDownloadApp = {
+            openAppInPlayStore(
+                context = context, packageName = uiState.title.packageName
+            )
+        }, onNotNowPressed = {
+            onEvent(Event.ChangeAppInstalledStatus(null))
+        })
     } else if (uiState.hasSafAccessPermission == false) {
         SAFAccessPermissionDialog(onGrantAccess = {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
-                putExtra(
-                    DocumentsContract.EXTRA_INITIAL_URI, uiState.title?.uri
-                )
-            }
-            launchSafPermission(intent)
+            launchSafPicker(
+                newUri = uiState.title?.uri,
+                launchPermission = launchSafPermission
+            )
         }, onNotNowPressed = {
             onEvent(Event.ChangeSAFAccessPermission(null))
         })
     } else {
         Surface(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
+                .fillMaxSize()
                 .padding(12.dp),
+            color = Color.White,
         ) {
-            LazyVerticalGrid(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.White),
-                columns = GridCells.Fixed(3),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(items = files, key = { it.id }) {
-                    PreviewItem()
+            if (uiState.appInstalled == null) {
+                MissingSetupInfo(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    id = R.drawable.ic_app_download,
+                    title = stringResource(
+                        R.string.not_installed,
+                        stringResource(uiState.title?.resId.valueOrEmptyString())
+                    ),
+                    description = stringResource(
+                        R.string.install_app_request,
+                        stringResource(uiState.title?.resId.valueOrEmptyString())
+                    ),
+                    buttonTxt = stringResource(
+                        R.string.download_app_playstore_btn,
+                        stringResource(id = uiState.title?.resId.valueOrEmptyString())
+                    ),
+                    onBtnClick = {
+                        openAppInPlayStore(context, uiState.title?.packageName)
+                    })
+            } else if (uiState.hasSafAccessPermission == null) {
+                MissingSetupInfo(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    id = R.drawable.ic_no_permission,
+                    title = stringResource(R.string.storage_access_required),
+                    description = stringResource(
+                        R.string.second_accesss_msg,
+                        stringResource(uiState.title?.resId.valueOrEmptyString())
+                    ),
+                    buttonTxt = stringResource(R.string.grand_access),
+                    onBtnClick = {
+                        launchSafPicker(
+                            newUri = uiState.title?.uri,
+                            launchPermission = launchSafPermission
+                        )
+                    })
+            } else {
+                LazyVerticalGrid(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White),
+                    columns = GridCells.Fixed(3),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(items = files, key = { it.id }) {
+                        PreviewItem()
+                    }
                 }
             }
         }
@@ -530,6 +586,62 @@ fun PreviewItem() {
 }
 
 @Composable
+fun MissingSetupInfo(
+    modifier: Modifier = Modifier,
+    @DrawableRes id: Int,
+    title: String,
+    description: String,
+    buttonTxt: String,
+    onBtnClick: () -> Unit,
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardColors(
+            containerColor = Color.White,
+            disabledContainerColor = Color.Gray,
+            disabledContentColor = Color.LightGray,
+            contentColor = Color.Unspecified
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id),
+                contentDescription = "",
+                modifier = Modifier.size(100.dp)
+            )
+            Text(
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 12.dp),
+                text = title, style = MaterialTheme.typography.headlineSmall,
+            )
+            Text(
+                modifier = Modifier.padding(top = 8.dp),
+                text = description,
+                lineHeight = 21.sp,
+                textAlign = TextAlign.Center,
+                color = Color.Black,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
+                onClick = { onBtnClick() }) {
+                androidx.compose.material.Text(
+                    text = buttonTxt, textAlign = TextAlign.Center, color = Color.White
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
 @Preview(showBackground = true)
 fun TopBarPreview() {
     WaStatusSaverTheme {
@@ -538,9 +650,9 @@ fun TopBarPreview() {
             selectedTitle = Whatsapp,
             items = emptyList(),
             {},
-            pagerState = rememberPagerState(pageCount = { 2 }),
+            pagerState = rememberPagerState(pageCount = { 3 }),
             rememberCoroutineScope(),
-            fileTypeData = listOf(FileType.IMAGES, FileType.VIDEOS),
+            fileTypeData = listOf(FileType.IMAGES, FileType.VIDEOS, FileType.AUDIO),
         )
     }
 }
@@ -558,7 +670,7 @@ fun NavigationDrawerPreview() {
 @Composable
 @Preview(showBackground = true)
 fun ImagePagePreview() {
-    val imageFiles = (1..20).map {
+    val imageFiles = (1..5).map {
         File(
             uri = "".toUri(), fileType = FileType.IMAGES
         )
@@ -573,5 +685,19 @@ fun ImagePagePreview() {
 fun FileItemPreview() {
     WaStatusSaverTheme {
         PreviewItem()
+    }
+}
+
+
+@Composable
+@Preview(showBackground = true)
+fun MissingSetupInfoPreview() {
+    WaStatusSaverTheme {
+        MissingSetupInfo(
+            id = R.drawable.ic_app_download,
+            title = "Storage Access Required",
+            description = "We need access to the WhatsApp .Statuses folder to save status media. Only files in the folder you choose are accessed, and nothing leaves your phone.",
+            buttonTxt = "Grand Access",
+            onBtnClick = {})
     }
 }
