@@ -1,13 +1,14 @@
 package com.voidDeveloper.wastatussaver.ui.main.dialog
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -65,17 +66,21 @@ fun SAFAccessPermissionDialog(onGrantAccess: () -> Unit, onNotNowPressed: () -> 
                         .padding(top = 10.dp), onClick = { onGrantAccess() }) {
                     Text(text = "Grant access", textAlign = TextAlign.Center, color = Color.White)
                 }
-                TextButton(modifier = Modifier, onClick = {
-                    onNotNowPressed()
-                    openDialog = false
-                }) {
-                    Text(
-                        modifier = Modifier,
-                        text = "Not now",
-                        textAlign = TextAlign.Center,
-                        color = Color.Gray
-                    )
-                }
+                Text(
+                    modifier = Modifier
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {
+                                onNotNowPressed()
+                                openDialog = false
+                            }
+                        )
+                        .padding(12.dp),
+                    text = "Not now",
+                    textAlign = TextAlign.Center,
+                    color = Color.Gray
+                )
                 Text(
                     modifier = Modifier.padding(vertical = 6.dp, horizontal = 12.dp),
                     textAlign = TextAlign.Center,

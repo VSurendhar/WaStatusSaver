@@ -7,8 +7,11 @@ import android.provider.DocumentsContract
 import android.util.Log
 import com.voidDeveloper.wastatussaver.data.utils.Constants.NO_MEDIA
 import com.voidDeveloper.wastatussaver.data.utils.Constants.TAG
-import com.voidDeveloper.wastatussaver.ui.main.File
-import com.voidDeveloper.wastatussaver.ui.main.FileType
+import com.voidDeveloper.wastatussaver.ui.main.AudioFile
+import com.voidDeveloper.wastatussaver.ui.main.ImageFile
+import com.voidDeveloper.wastatussaver.ui.main.MediaFile
+import com.voidDeveloper.wastatussaver.ui.main.UnknownFile
+import com.voidDeveloper.wastatussaver.ui.main.VideoFile
 import javax.inject.Inject
 
 class StatusesManager @Inject constructor(
@@ -23,34 +26,46 @@ class StatusesManager @Inject constructor(
         }
     }
 
-    fun getFiles(uri: Uri?): List<File> {
+    fun getFiles(uri: Uri?): List<MediaFile> {
 
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
             uri, DocumentsContract.getTreeDocumentId(uri)
         )
 
         val cursor: Cursor? = appContext.contentResolver.query(childrenUri, null, null, null, null)
-        val resList = mutableListOf<File>()
+        val resList = mutableListOf<MediaFile>()
         cursor?.use { c ->
 
             val nameIndex = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
-            val mimeType = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
+            val mimeTypeIndex = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
             val docIdIndex = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
 
             while (c.moveToNext()) {
                 val name = c.getString(nameIndex)
-                val mimeType = c.getString(mimeType)
+                val mimeType = c.getString(mimeTypeIndex)
                 val documentId = c.getString(docIdIndex)
                 val fileUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
                 Log.i(TAG, "getFiles: $name $mimeType $documentId $fileUri")
                 if (name != NO_MEDIA) {
+                    val mediaFile: MediaFile = when {
+                        mimeType.startsWith("Image", ignoreCase = true) -> {
+                            ImageFile(uri = fileUri).apply { isDownloaded = getDownloadedStatus() }
+                        }
+
+                        mimeType.startsWith("Video", ignoreCase = true) -> {
+                            VideoFile(uri = fileUri).apply { isDownloaded = getDownloadedStatus() }
+                        }
+
+                        mimeType.startsWith("Audio", ignoreCase = true) -> {
+                            AudioFile(name = name, uri = fileUri).apply {
+                                isDownloaded = getDownloadedStatus()
+                            }
+                        }
+
+                        else -> UnknownFile(uri = fileUri)
+                    }
                     resList.add(
-                        File(
-                            id = documentId,
-                            isDownloaded = getDownloadedStatus(),
-                            uri = fileUri,
-                            fileType = FileType.IMAGES
-                        )
+                        mediaFile
                     )
                 }
             }

@@ -12,11 +12,11 @@ data class UiState(
     val currentFileType: FileType? = null,
     val shouldShowOnBoardingUi: Boolean? = null,
     val hasSafAccessPermission: Boolean? = null,
-    val mediaFiles: List<File> = emptyList<File>(),
+    val mediaFiles: List<MediaFile> = emptyList(),
 )
 
 enum class FileType {
-    IMAGES, VIDEOS, AUDIO
+    IMAGES, VIDEOS, AUDIO, UNSPECIFIED
 }
 
 enum class SelectionMode {

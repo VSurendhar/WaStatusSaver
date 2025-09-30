@@ -70,11 +70,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -82,6 +85,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.utils.LifecycleAwarePause
+import com.voidDeveloper.wastatussaver.data.utils.createColoredString
 import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrDefault
 import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrEmptyString
 import com.voidDeveloper.wastatussaver.data.utils.launchSafPicker
@@ -416,16 +420,17 @@ fun MainBody(
     uiState: UiState,
     launchSafPermission: (Intent) -> Unit,
 ) {
-    val imageFiles = uiState.mediaFiles
-    val videoFiles = uiState.mediaFiles
-    val audioFiles = uiState.mediaFiles
+    val mediaFiles = uiState.mediaFiles
+    val audioMediaFiles = mediaFiles.filter { it is AudioFile }
+    val videoMediaFiles = mediaFiles.filter { it is VideoFile }
+    val imageMediaFiles = mediaFiles.filter { it is ImageFile }
     HorizontalPager(
         state = pagerState, modifier = modifier.fillMaxSize()
     ) { page ->
         when (page) {
             0 -> {
                 FilePreviewPage(
-                    imageFiles,
+                    imageMediaFiles,
                     uiState,
                     onEvent = onEvent,
                     launchSafPermission = launchSafPermission
@@ -434,7 +439,7 @@ fun MainBody(
 
             1 -> {
                 FilePreviewPage(
-                    videoFiles,
+                    videoMediaFiles,
                     uiState,
                     onEvent = onEvent,
                     launchSafPermission = launchSafPermission
@@ -443,7 +448,7 @@ fun MainBody(
 
             2 -> {
                 FilePreviewPage(
-                    audioFiles,
+                    audioMediaFiles,
                     uiState,
                     onEvent = onEvent,
                     launchSafPermission = launchSafPermission
@@ -456,7 +461,7 @@ fun MainBody(
 
 @Composable
 fun FilePreviewPage(
-    files: List<File>,
+    imageFiles: List<MediaFile>,
     uiState: UiState,
     onEvent: (Event) -> Unit,
     launchSafPermission: (Intent) -> Unit,
@@ -497,13 +502,17 @@ fun FilePreviewPage(
                 MissingSetupInfo(
                     modifier = Modifier.padding(horizontal = 12.dp),
                     imageId = R.drawable.ic_app_download,
-                    title = stringResource(
-                        R.string.not_installed,
-                        stringResource(uiState.title?.resId.valueOrEmptyString())
+                    title = createColoredString(
+                        stringResource(
+                            R.string.not_installed,
+                            stringResource(uiState.title?.resId.valueOrEmptyString())
+                        ), MaterialTheme.colorScheme.primary
                     ),
-                    description = stringResource(
-                        R.string.install_app_request,
-                        stringResource(uiState.title?.resId.valueOrEmptyString())
+                    description = createColoredString(
+                        stringResource(
+                            R.string.install_app_request,
+                            stringResource(uiState.title?.resId.valueOrEmptyString())
+                        ), MaterialTheme.colorScheme.primary
                     ),
                     buttonTxt = stringResource(
                         R.string.download_app_playstore_btn,
@@ -516,10 +525,15 @@ fun FilePreviewPage(
                 MissingSetupInfo(
                     modifier = Modifier.padding(horizontal = 12.dp),
                     imageId = R.drawable.ic_no_permission,
-                    title = stringResource(R.string.storage_access_required),
-                    description = stringResource(
-                        R.string.second_accesss_msg,
-                        stringResource(uiState.title?.resId.valueOrEmptyString())
+                    title = createColoredString(
+                        stringResource(R.string.storage_access_required),
+                        MaterialTheme.colorScheme.primary
+                    ),
+                    description = createColoredString(
+                        stringResource(
+                            R.string.second_accesss_msg,
+                            stringResource(uiState.title?.resId.valueOrEmptyString())
+                        ), MaterialTheme.colorScheme.primary
                     ),
                     buttonTxt = stringResource(R.string.grand_access),
                     onBtnClick = {
@@ -528,13 +542,16 @@ fun FilePreviewPage(
                         )
                     })
             } else {
-                if (files.isEmpty()) {
+                if (imageFiles.isEmpty()) {
                     MissingSetupInfo(
-                        imageId = R.drawable.ic_empty_folder,
-                        title = stringResource(R.string.no_status_files_available),
-                        description = stringResource(
-                            R.string.no_status_des,
-                            stringResource(uiState.title?.resId.valueOrEmptyString())
+                        imageId = R.drawable.ic_empty_folder, title = createColoredString(
+                            stringResource(R.string.no_status_files_available),
+                            MaterialTheme.colorScheme.primary
+                        ), description = createColoredString(
+                            stringResource(
+                                R.string.no_status_des,
+                                stringResource(uiState.title?.resId.valueOrEmptyString())
+                            ), MaterialTheme.colorScheme.primary
                         )
                     )
                 } else {
@@ -546,8 +563,8 @@ fun FilePreviewPage(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        items(items = files, key = { it.id }) {
-                            PreviewItem()
+                        items(items = imageFiles, key = { it.id }) { mediaFile ->
+                            PreviewItem(mediaFile)
                         }
                     }
                 }
@@ -558,7 +575,8 @@ fun FilePreviewPage(
 
 
 @Composable
-fun PreviewItem() {
+fun PreviewItem(mediaFile: MediaFile) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .height(160.dp)
@@ -569,11 +587,21 @@ fun PreviewItem() {
         )
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            Image(
-                modifier = Modifier.fillMaxSize(),
-                painter = painterResource(R.drawable.img_sample),
-                contentDescription = "Status Image"
-            )
+            val imageBitmap = mediaFile.getThumbNailBitMap(context = context)?.asImageBitmap()
+            if (imageBitmap != null) {
+                Image(
+                    modifier = Modifier.fillMaxSize(),
+                    bitmap = imageBitmap,
+                    contentDescription = "Status Image",
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Image(
+                    modifier = Modifier.fillMaxSize(),
+                    painter = painterResource(R.drawable.ic_failed_document),
+                    contentDescription = "Status Image"
+                )
+            }
             Card(
                 onClick = {},
                 colors = CardColors(
@@ -609,8 +637,8 @@ fun PreviewItem() {
 fun MissingSetupInfo(
     modifier: Modifier = Modifier,
     @DrawableRes imageId: Int,
-    title: String,
-    description: String,
+    title: AnnotatedString,
+    description: AnnotatedString,
     buttonTxt: String? = null,
     onBtnClick: (() -> Unit)? = null,
 ) {
@@ -652,7 +680,7 @@ fun MissingSetupInfo(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 10.dp),
-                    onClick = { onBtnClick?.invoke() }) {
+                    onClick = { onBtnClick.invoke() }) {
                     androidx.compose.material.Text(
                         text = buttonTxt.valueOrDefault(),
                         textAlign = TextAlign.Center,
@@ -694,13 +722,17 @@ fun NavigationDrawerPreview() {
 @Composable
 @Preview(showBackground = true)
 fun ImagePagePreview() {
-    val imageFiles = (1..5).map {
-        File(
+    val imageImageFiles = (1..5).map {
+        ImageFile(
             uri = "".toUri(), fileType = FileType.IMAGES
         )
     }
     WaStatusSaverTheme {
-        FilePreviewPage(imageFiles, uiState = UiState(), onEvent = { }, launchSafPermission = {})
+        FilePreviewPage(
+            imageImageFiles,
+            uiState = UiState(),
+            onEvent = { },
+            launchSafPermission = {})
     }
 }
 
@@ -708,7 +740,9 @@ fun ImagePagePreview() {
 @Preview(showBackground = true)
 fun FileItemPreview() {
     WaStatusSaverTheme {
-        PreviewItem()
+        PreviewItem(
+            mediaFile = UnknownFile(uri = "".toUri())
+        )
     }
 }
 
@@ -719,8 +753,8 @@ fun MissingSetupInfoPreview() {
     WaStatusSaverTheme {
         MissingSetupInfo(
             imageId = R.drawable.ic_empty_folder,
-            title = "Storage Access Required",
-            description = "We need access to the WhatsApp .Statuses folder to save status media. Only files in the folder you choose are accessed, and nothing leaves your phone.",
+            title = AnnotatedString("Storage Access Required"),
+            description = AnnotatedString("We need access to the WhatsApp .Statuses folder to save status media. Only files in the folder you choose are accessed, and nothing leaves your phone."),
             buttonTxt = "Grand Access",
             onBtnClick = {})
     }

@@ -25,12 +25,12 @@
     <string name="not_now">Not now</string>
     <string name="download">Download %1$s</string>
     <string name="empty_string" />
-    <string name="second_accesss_msg">We need access to the %1$s .Statuses folder to save status media. Only files in the folder you choose are accessed, and nothing leaves your phone.</string>
+    <string name="second_accesss_msg">We need access to the **%1$s** .Statuses folder to save status media. Only files in the folder you choose are accessed, and nothing leaves your phone.</string>
     <string name="storage_access_required">Storage Access Required</string>
     <string name="grand_access">Grand Access</string>
-    <string name="not_installed">%1$s Not Installed</string>
-    <string name="install_app_request">This feature requires %1$s. Please install it to view and save statuses.</string>
+    <string name="not_installed">**%1$s** Not Installed</string>
+    <string name="install_app_request">This feature requires **%1$s**. Please install it to view and save statuses.</string>
     <string name="download_app_playstore_btn">Download %1$s</string>
-    <string name="no_status_des">No status files available. Please view the status completely in %1$s, then return here to save it.</string>
+    <string name="no_status_des">No status files available. Please view the status completely in **%1$s**, then return here to save it.</string>
     <string name="no_status_files_available">No Status Files Available</string>
 </resources>

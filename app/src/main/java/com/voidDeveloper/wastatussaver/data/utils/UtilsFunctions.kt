@@ -3,9 +3,10 @@ package com.voidDeveloper.wastatussaver.data.utils
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.DocumentsContract
-import android.util.Log
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -16,12 +17,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.voidDeveloper.wastatussaver.data.utils.Constants.TAG
+import java.io.ByteArrayOutputStream
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -170,3 +176,49 @@ fun launchSafPicker(newUri: Uri?, launchPermission: (Intent) -> Unit) {
     }
     launchPermission(intent)
 }
+
+fun createColoredString(
+    baseString: String,
+    color: Color,
+): AnnotatedString {
+
+    val annotatedText = buildAnnotatedString {
+        var currentIndex = 0
+        val regex = "\\*\\*(.*?)\\*\\*".toRegex()
+        regex.findAll(baseString).forEach { matchResult ->
+            val start = matchResult.range.first
+            val end = matchResult.range.last + 1
+
+            if (start > currentIndex) {
+                append(baseString.substring(currentIndex, start))
+            }
+
+            var word = matchResult.groups[1]?.value ?: ""
+            withStyle(style = SpanStyle(color = color)) {
+                if (word.isNotEmpty()) word = "$word "
+                append(word)
+            }
+
+            currentIndex = end + 1
+        }
+
+        if (currentIndex < baseString.length) {
+            append(baseString.substring(currentIndex))
+        }
+    }
+
+    return annotatedText
+}
+
+fun Bitmap.compressBitmapQuality(quality: Int = 50): Bitmap? {
+    return try {
+        val stream = ByteArrayOutputStream()
+        this.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+        val byteArray = stream.toByteArray()
+        BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
