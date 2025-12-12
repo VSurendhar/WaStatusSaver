@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.foundation)
+    implementation(libs.androidx.lifecycle.process)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -67,6 +68,7 @@ dependencies {
     // Dagger
     implementation(libs.dagger.hilt)
     implementation(libs.hilt.compose.navigation)
+    implementation(libs.androidx.hilt.work)
     kapt(libs.dagger.kapt)
 
     //  Data Store
@@ -80,5 +82,13 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer.dash)
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.ui.compose)
+
+    // Work Manager
+    implementation(libs.androidx.work.runtime.ktx)
+
+    // Ok Http
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
 
 }

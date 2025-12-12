@@ -28,6 +28,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.TimeUnit
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -221,4 +222,9 @@ fun Bitmap.compressBitmapQuality(quality: Int = 50): Bitmap? {
         null
     }
 }
+
+fun getMillisFromNow(hour: Int): Long {
+    return System.currentTimeMillis() + TimeUnit.HOURS.toMillis(hour.toLong())
+}
+
 

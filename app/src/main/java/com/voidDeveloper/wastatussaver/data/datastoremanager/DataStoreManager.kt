@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +16,9 @@ class DataStoreManager(private val context: Context) : DataStorePreferenceManage
     companion object DataStoreKeys {
         val KEY_SHOULD_SHOW_ONBOARDING_UI = booleanPreferencesKey("key.should.show.onboarding.ui")
         val KEY_PREFERRED_TITLE = stringPreferencesKey("key.preferred.title")
+        val KEY_AUTO_SAVE_INTERVAL = intPreferencesKey("key.auto.save.interval")
+        val LAST_ALARM_SET_MILLIS_KEY = longPreferencesKey("key.last.alarm.set.millis")
+        val USER_PREF_WIDGET_REFRESH_INTERVAL_KEY = intPreferencesKey("user.pref.widget.refresh.interval")
     }
 
     private val preferenceName = "WhatsappAppStatusSaver"
