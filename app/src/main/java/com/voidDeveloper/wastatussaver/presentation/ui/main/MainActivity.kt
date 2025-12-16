@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.rememberNavController
+import com.voidDeveloper.wastatussaver.data.utils.helpers.ScheduleAutoSave
 import com.voidDeveloper.wastatussaver.data.utils.helpers.WebViewManager
 import com.voidDeveloper.wastatussaver.navigation.AppNavHost
 import com.voidDeveloper.wastatussaver.navigation.Screens
@@ -16,6 +17,10 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     @Inject
     lateinit var webViewManager: WebViewManager
+
+    @Inject
+    lateinit var scheduleAutoSave: ScheduleAutoSave
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

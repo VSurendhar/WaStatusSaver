@@ -12,9 +12,15 @@ import androidx.work.WorkManager
 import com.voidDeveloper.wastatussaver.data.utils.Constants.AUTO_SAVE_ACTION
 import com.voidDeveloper.wastatussaver.data.utils.Constants.AUTO_SAVE_WORK_MANAGER_NAME
 import com.voidDeveloper.wastatussaver.data.utils.Constants.REQUEST_CODE_ALARM_ALARM_WIDGET_REFRESH
+import com.voidDeveloper.wastatussaver.data.utils.escapeForMarkdownV2
+import com.voidDeveloper.wastatussaver.data.utils.formatTime
+import com.voidDeveloper.wastatussaver.domain.usecases.TelegramLogUseCase
 import com.voidDeveloper.wastatussaver.presentation.receivers.AutoSaveReceiver
 import com.voidDeveloper.wastatussaver.presentation.workmanager.AutoSaveWorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,6 +28,7 @@ import javax.inject.Singleton
 @Singleton
 class ScheduleAutoSave @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val telegramLogUseCase: TelegramLogUseCase,
 ) {
 
     fun scheduleAutoSaveWorkManager() {
@@ -37,13 +44,24 @@ class ScheduleAutoSave @Inject constructor(
     }
 
     fun scheduleAutoSaveWorkAlarm(triggerAtMillis: Long) {
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+            val message = "Trigger time millis: ${formatTime(triggerAtMillis)}"
+            val escapedMessage = escapeForMarkdownV2(message)
+            telegramLogUseCase.sendLogs(escapedMessage)
+        }
 
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val alarmManager =
+            context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        val intent = Intent(context, AutoSaveReceiver::class.java).apply {
+            action = AUTO_SAVE_ACTION
+        }
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             REQUEST_CODE_ALARM_ALARM_WIDGET_REFRESH,
-            Intent(context, AutoSaveReceiver::class.java).apply { action = AUTO_SAVE_ACTION },
+            intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 

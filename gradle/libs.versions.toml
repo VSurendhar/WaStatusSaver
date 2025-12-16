@@ -3,6 +3,7 @@ accompanistPager = "0.36.0"
 accompanistPagerIndicators = "0.36.0"
 agp = "8.12.3"
 gson = "2.10.1"
+hiltCompiler = "1.0.0"
 hiltWork = "1.3.0"
 kotlin = "2.2.20"
 coreKtx = "1.17.0"
@@ -25,6 +26,7 @@ workRuntimeKtx = "2.11.0"
 accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanistPagerIndicators" }
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltCompiler" }
 androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltWork" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }

@@ -70,6 +70,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -79,6 +80,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
@@ -93,6 +95,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.request.videoFrameMillis
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.utils.LifecycleAwarePause
 import com.voidDeveloper.wastatussaver.data.utils.createColoredString
@@ -111,8 +116,10 @@ import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.NotificationP
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.OnBoardingDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.SAFAccessPermissionDialog
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -132,6 +139,10 @@ fun MainScreen(uiState: StateFlow<UiState?>, onEvent: (Event) -> Unit, navigate:
     })
 
     val state by uiState.collectAsState()
+    LaunchedEffect(state?.mediaFiles) {
+        Log.i("State TAG", "MainScreen: MediaFiles changed ${state?.mediaFiles?.map { it.id }}")
+    }
+
     val launcher: ActivityResultLauncher<Intent> =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val uri = result.data?.data
@@ -550,6 +561,7 @@ fun FilePreviewPage(
     onEvent: (Event) -> Unit,
     launchSafPermission: (Intent) -> Unit,
 ) {
+    uiState.mediaFiles.forEach { println(it.id) }
     val activity = LocalActivity.current
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -746,19 +758,47 @@ fun PreviewItem(
         )
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            val imageBitmap = mediaFile.getThumbNailBitMap(context = context)?.asImageBitmap()
-            if (imageBitmap != null) {
-                Image(
-                    modifier = Modifier.fillMaxSize(),
-                    bitmap = imageBitmap,
-                    contentDescription = "Status Image",
-                    contentScale = ContentScale.Crop
-                )
+            if (mediaFile is VideoFile || mediaFile is AudioFile) {
+                var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+                var isLoading by remember { mutableStateOf(true) }
+
+                LaunchedEffect(mediaFile.id) {
+                    isLoading = true
+                    imageBitmap = withContext(Dispatchers.IO) {
+                        mediaFile.getThumbNailBitMap(context)?.asImageBitmap()
+                    }
+                    isLoading = false
+                }
+
+                if (isLoading) {
+                    Image(
+                        modifier = Modifier.fillMaxSize(),
+                        painter = painterResource(R.drawable.img_loading_placeholder),
+                        contentDescription = "Loading",
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (imageBitmap != null) {
+                    Image(
+                        modifier = Modifier.fillMaxSize(),
+                        bitmap = imageBitmap!!,
+                        contentDescription = "Video Thumbnail",
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Image(
+                        modifier = Modifier.fillMaxSize(),
+                        painter = painterResource(R.drawable.ic_failed_document),
+                        contentDescription = "Failed"
+                    )
+                }
             } else {
-                Image(
+                AsyncImage(
+                    model = mediaFile.uri,
+                    contentDescription = "Status Image",
                     modifier = Modifier.fillMaxSize(),
-                    painter = painterResource(R.drawable.ic_failed_document),
-                    contentDescription = "Status Image"
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(R.drawable.img_loading_placeholder),
+                    error = painterResource(R.drawable.ic_failed_document)
                 )
             }
             Card(

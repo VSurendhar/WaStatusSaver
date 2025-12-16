@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,17 +9,24 @@ plugins {
     kotlin("kapt")
 }
 
+val secrets = Properties()
+val secretsFile = rootProject.file("secrets.properties")
+if (secretsFile.exists()) {
+    secrets.load(FileInputStream(secretsFile))
+}
+
 android {
     namespace = "com.voidDeveloper.wastatussaver"
     compileSdk = 36
-
+    android.buildFeatures.buildConfig = true
     defaultConfig {
         applicationId = "com.voidDeveloper.wastatussaver"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
+        buildConfigField("String", "BOT_TOKEN", "\"${secrets.getProperty("botToken")}\"")
+        buildConfigField("String", "CHAT_ID", "\"${secrets.getProperty("chatId")}\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -70,7 +80,7 @@ dependencies {
     implementation(libs.hilt.compose.navigation)
     implementation(libs.androidx.hilt.work)
     kapt(libs.dagger.kapt)
-
+    kapt (libs.androidx.hilt.compiler)
     //  Data Store
     implementation(libs.androidx.datastore.preferences)
 
@@ -90,5 +100,6 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("io.coil-kt:coil-video:2.5.0")
 }

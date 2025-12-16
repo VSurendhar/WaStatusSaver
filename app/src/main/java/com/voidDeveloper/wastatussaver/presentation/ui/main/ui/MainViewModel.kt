@@ -28,7 +28,10 @@ import com.voidDeveloper.wastatussaver.data.utils.getMillisFromNow
 import com.voidDeveloper.wastatussaver.data.utils.helpers.ScheduleAutoSave
 import com.voidDeveloper.wastatussaver.domain.usecases.StatusesManagerUseCase
 import com.voidDeveloper.wastatussaver.domain.usecases.AppInstallCheckerUseCase
+import com.voidDeveloper.wastatussaver.domain.usecases.TelegramLogUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -42,6 +45,7 @@ class MainViewModel @Inject constructor(
     private val dataStorePreferenceManager: DataStorePreferenceManager,
     private val statusesManagerUseCase: StatusesManagerUseCase,
     private val appInstallChecker: AppInstallCheckerUseCase,
+    private val telegramLogUseCase: TelegramLogUseCase,
     private val scheduleAutoSave: ScheduleAutoSave,
 ) : ViewModel() {
 
@@ -68,8 +72,15 @@ class MainViewModel @Inject constructor(
                     getFiles(preferredTitle)
                 } else {
                     emptyList()
-                }
+                },
+                lastRefreshTimestamp = System.currentTimeMillis()
             )
+        }
+        viewModelScope.launch {
+            while (true) {
+                delay(500)
+                Log.i("Surendhar TAG", "ShowAutoSaveDialog ${_uiState.value?.showAutoSaveDialog}")
+            }
         }
     }
 
@@ -214,6 +225,11 @@ class MainViewModel @Inject constructor(
                     saveAutoSaveInterval(event.interval)
                     scheduleAutoSave.scheduleAutoSaveWorkAlarm(getMillisFromNow(event.interval))
                 }
+                _uiState.update {
+                    it?.copy(
+                        showAutoSaveDialog = false,
+                    )
+                }
             }
 
             is Event.ShowNotificationPermissionDialog -> {
@@ -240,7 +256,7 @@ class MainViewModel @Inject constructor(
                 }
             }
 
-            Event.NotificationSettingsDialogDismiss -> {
+            is Event.NotificationSettingsDialogDismiss -> {
                 _uiState.update {
                     it?.copy(
                         showNotificationPermissionSettingsDialog = false
@@ -248,11 +264,17 @@ class MainViewModel @Inject constructor(
                 }
             }
 
-            Event.AutoSaveDialogDismiss -> {
+            is Event.AutoSaveDialogDismiss -> {
                 _uiState.update {
                     it?.copy(
                         showAutoSaveDialog = false,
                     )
+                }
+            }
+
+            is Event.SendLogsTelegram -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    telegramLogUseCase.sendLogs(event.logs)
                 }
             }
 
@@ -275,32 +297,31 @@ class MainViewModel @Inject constructor(
 
     private fun refreshUiState() {
         viewModelScope.launch {
-            if (_uiState.value != null) {
-                val preferredTitle = getPreferredTitle()
-                val shouldShowOnBoardingUi = shouldShowOnBoardingUi()
-                val appInstalled = getAppInstalledStatus(preferredTitle)
-                val hasSafAccessPermission = hasSafAccessPermission(appInstalled, preferredTitle)
-                _uiState.update { current ->
-                    var uiState = current
-                    if (shouldShowOnBoardingUi) {
-                        uiState = uiState?.copy(shouldShowOnBoardingUi = true)
-                    }
-                    if (hasSafAccessPermission) {
-                        uiState = uiState?.copy(hasSafAccessPermission = true)
-                    }
-                    if (appInstalled) {
-                        uiState = uiState?.copy(
-                            appInstalled = true, hasSafAccessPermission = hasSafAccessPermission
-                        )
-                    }
-                    if (uiState?.hasSafAccessPermission == true && uiState.shouldShowOnBoardingUi == false && uiState.appInstalled == true && uiState.title != null) {
-                        val files = getFiles(uiState.title, true)
-                        uiState = uiState.copy(mediaFiles = files)
-                    }
-                    uiState
-                }
-                uiState
+            val preferredTitle = getPreferredTitle()
+            val shouldShowOnBoardingUi = shouldShowOnBoardingUi()
+            val appInstalled = getAppInstalledStatus(preferredTitle)
+            val hasSafAccessPermission = hasSafAccessPermission(appInstalled, preferredTitle)
+            Log.d(TAG, "Old Files ${_uiState.value?.mediaFiles}")
+            _uiState.update { current ->
+                val updated = current?.copy(
+                    shouldShowOnBoardingUi = shouldShowOnBoardingUi,
+                    hasSafAccessPermission = hasSafAccessPermission,
+                    appInstalled = appInstalled,
+                    lastRefreshTimestamp = System.currentTimeMillis(),
+                    mediaFiles = if (hasSafAccessPermission && !shouldShowOnBoardingUi && appInstalled && current.title != null) {
+                        Log.d(TAG, "Has All Permission and Getting Files")
+                        getFiles(current.title).toList().also {
+                            Log.d(TAG, "Copying Files to the UiState, count: ${it.size}")
+                        }
+                    } else {
+                        current.mediaFiles
+                    })
+
+                Log.d(TAG, "Are they equal? ${current == updated}")
+
+                updated ?: current
             }
+            Log.d(TAG, "New Files ${_uiState.value?.mediaFiles}")
         }
     }
 
@@ -323,8 +344,8 @@ class MainViewModel @Inject constructor(
         dataStorePreferenceManager.putPreference(KEY_PREFERRED_TITLE, title.packageName)
     }
 
-    private fun getFiles(title: Title, shouldRefresh: Boolean = false): List<MediaFile> {
-        val files = statusesManagerUseCase.getFiles(title.uri, shouldRefresh)
+    private fun getFiles(title: Title): List<MediaFile> {
+        val files = statusesManagerUseCase.getFiles(title.uri)
         return files
     }
 

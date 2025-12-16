@@ -18,6 +18,7 @@ data class UiState(
     val showNotificationPermissionDialog: Boolean = false,
     val showNotificationPermissionSettingsDialog: Boolean = false,
     val savedAutoSaveInterval: Int = 1,
+    val lastRefreshTimestamp: Long = 0L
 )
 
 enum class FileType {

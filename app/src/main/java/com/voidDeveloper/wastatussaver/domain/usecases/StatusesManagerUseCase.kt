@@ -49,14 +49,12 @@ class StatusesManagerUseCase @Inject constructor(
         downloadedFiles = mainRepo.getSavedMediaFiles()
     }
 
-    fun getFiles(uri: Uri?, shouldRefresh: Boolean = false): List<MediaFile> {
+    fun getFiles(uri: Uri?): List<MediaFile> {
         Log.i(Constants.TAG, "getFiles: Getting Files")
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
             uri, DocumentsContract.getTreeDocumentId(uri)
         )
-        if (shouldRefresh) {
-            refreshDownloadedFiles()
-        }
+        refreshDownloadedFiles()
         val cursor: Cursor? = appContext.contentResolver.query(childrenUri, null, null, null, null)
         val resList = mutableListOf<MediaFile>()
         cursor?.use { c ->

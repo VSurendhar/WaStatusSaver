@@ -17,4 +17,5 @@ sealed interface Event {
     data object NotificationSettingsDialogDismiss : Event
 
     data class SaveAutoSaveInterval(val interval: Int) : Event
+    data class SendLogsTelegram(val logs: String) : Event
 }

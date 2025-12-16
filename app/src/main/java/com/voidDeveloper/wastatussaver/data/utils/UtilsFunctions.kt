@@ -28,6 +28,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import java.io.ByteArrayOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.math.PI
 import kotlin.math.cos
@@ -224,7 +227,20 @@ fun Bitmap.compressBitmapQuality(quality: Int = 50): Bitmap? {
 }
 
 fun getMillisFromNow(hour: Int): Long {
-    return System.currentTimeMillis() + TimeUnit.HOURS.toMillis(hour.toLong())
+    return System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(hour.toLong())
 }
 
+fun formatTime(millis: Long): String {
+    return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(millis))
+}
 
+fun escapeForMarkdownV2(text: String): String {
+    val charsToEscape = listOf(
+        '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'
+    )
+    var escaped = text
+    charsToEscape.forEach { char ->
+        escaped = escaped.replace(char.toString(), "\\$char")
+    }
+    return escaped
+}

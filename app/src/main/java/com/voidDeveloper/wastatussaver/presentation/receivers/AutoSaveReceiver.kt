@@ -4,13 +4,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager
 import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.LAST_ALARM_SET_MILLIS_KEY
 import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.USER_PREF_WIDGET_REFRESH_INTERVAL_KEY
 import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStorePreferenceManager
 import com.voidDeveloper.wastatussaver.data.utils.Constants.AUTO_SAVE_ACTION
 import com.voidDeveloper.wastatussaver.data.utils.Constants.DEFAULT_WIDGET_REFRESH_INTERVAL
 import com.voidDeveloper.wastatussaver.data.utils.helpers.ScheduleAutoSave
+import com.voidDeveloper.wastatussaver.domain.usecases.TelegramLogUseCase
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +28,9 @@ class AutoSaveReceiver() : BroadcastReceiver() {
 
     @Inject
     lateinit var dataStorePreferenceManager: DataStorePreferenceManager
+
+    @Inject
+    lateinit var telegramLogUseCase: TelegramLogUseCase
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -48,12 +51,11 @@ class AutoSaveReceiver() : BroadcastReceiver() {
                         DEFAULT_WIDGET_REFRESH_INTERVAL
                     ).first()
                     var timeToTrigger =
-                        lastAlarmSetTimeMillis + TimeUnit.HOURS.toMillis(autoSaveInterval.toLong())
+                        lastAlarmSetTimeMillis + TimeUnit.MINUTES.toMillis(autoSaveInterval.toLong())
 
                     if (timeToTrigger <= System.currentTimeMillis()) {
-                        timeToTrigger = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(
-                            autoSaveInterval.toLong()
-                        )
+                        timeToTrigger =
+                            System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(autoSaveInterval.toLong())
                     }
 
                     scheduleAutoSave.scheduleAutoSaveWorkAlarm(timeToTrigger)
