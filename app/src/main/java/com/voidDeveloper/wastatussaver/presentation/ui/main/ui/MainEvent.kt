@@ -1,5 +1,7 @@
 package com.voidDeveloper.wastatussaver.presentation.ui.main.ui
 
+import com.voidDeveloper.wastatussaver.domain.model.MediaFile
+
 sealed interface Event {
     data class ChangeTitle(val title: Title) : Event
     data class ChangeTab(val fileType: FileType) : Event
@@ -16,6 +18,6 @@ sealed interface Event {
     data object AutoSaveDialogDismiss : Event
     data object NotificationSettingsDialogDismiss : Event
 
-    data class SaveAutoSaveInterval(val interval: Int) : Event
+    data class SaveAutoSaveData(val interval: Int, val enable: Boolean) : Event
     data class SendLogsTelegram(val logs: String) : Event
 }

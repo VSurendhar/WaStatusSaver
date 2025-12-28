@@ -4,6 +4,8 @@ import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.core.net.toUri
 import com.voidDeveloper.wastatussaver.R
+import com.voidDeveloper.wastatussaver.data.utils.Constants.DEFAULT_AUTO_SAVE_INTERVAL
+import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 
 data class UiState(
     val title: Title? = null,
@@ -17,7 +19,8 @@ data class UiState(
     val showAutoSaveDialog: Boolean = false,
     val showNotificationPermissionDialog: Boolean = false,
     val showNotificationPermissionSettingsDialog: Boolean = false,
-    val savedAutoSaveInterval: Int = 1,
+    val savedAutoSaveInterval: Int = DEFAULT_AUTO_SAVE_INTERVAL,
+    val autoSaveEnabled: Boolean = false,
     val lastRefreshTimestamp: Long = 0L
 )
 

@@ -11,7 +11,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.voidDeveloper.wastatussaver.data.utils.Constants.AUTO_SAVE_ACTION
 import com.voidDeveloper.wastatussaver.data.utils.Constants.AUTO_SAVE_WORK_MANAGER_NAME
-import com.voidDeveloper.wastatussaver.data.utils.Constants.REQUEST_CODE_ALARM_ALARM_WIDGET_REFRESH
+import com.voidDeveloper.wastatussaver.data.utils.Constants.REQUEST_CODE_ALARM_WIDGET_REFRESH
 import com.voidDeveloper.wastatussaver.data.utils.escapeForMarkdownV2
 import com.voidDeveloper.wastatussaver.data.utils.formatTime
 import com.voidDeveloper.wastatussaver.domain.usecases.TelegramLogUseCase
@@ -34,8 +34,8 @@ class ScheduleAutoSave @Inject constructor(
     fun scheduleAutoSaveWorkManager() {
 
         val workRequest = OneTimeWorkRequestBuilder<AutoSaveWorkManager>().setConstraints(
-                Constraints.Builder().setRequiredNetworkType(NetworkType.NOT_REQUIRED).build()
-            ).build()
+            Constraints.Builder().setRequiredNetworkType(NetworkType.NOT_REQUIRED).build()
+        ).build()
 
         WorkManager.getInstance(context).enqueueUniqueWork(
             AUTO_SAVE_WORK_MANAGER_NAME, ExistingWorkPolicy.KEEP, workRequest
@@ -60,16 +60,35 @@ class ScheduleAutoSave @Inject constructor(
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            REQUEST_CODE_ALARM_ALARM_WIDGET_REFRESH,
+            REQUEST_CODE_ALARM_WIDGET_REFRESH,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        cancelAllAlarm()
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent
+        )
+
+    }
+
+    fun cancelAllAlarm() {
+        val alarmManager =
+            context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        val intent = Intent(context, AutoSaveReceiver::class.java).apply {
+            action = AUTO_SAVE_ACTION
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            REQUEST_CODE_ALARM_WIDGET_REFRESH,
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         alarmManager.cancel(pendingIntent)
-
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent
-        )
 
     }
 

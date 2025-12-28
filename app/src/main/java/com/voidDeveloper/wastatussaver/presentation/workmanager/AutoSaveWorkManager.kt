@@ -12,14 +12,17 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.google.gson.Gson
 import com.voidDeveloper.wastatussaver.R
-import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.KEY_AUTO_SAVE_INTERVAL
 import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.KEY_PREFERRED_TITLE
 import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.LAST_ALARM_SET_MILLIS_KEY
+import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.USER_PREF_AUTO_SAVE
 import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStorePreferenceManager
 import com.voidDeveloper.wastatussaver.data.utils.Constants
+import com.voidDeveloper.wastatussaver.data.utils.Constants.DEFAULT_AUTO_SAVE_INTERVAL
 import com.voidDeveloper.wastatussaver.data.utils.getMillisFromNow
 import com.voidDeveloper.wastatussaver.data.utils.helpers.ScheduleAutoSave
+import com.voidDeveloper.wastatussaver.domain.model.AutoSave
 import com.voidDeveloper.wastatussaver.domain.usecases.StatusesManagerUseCase
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.Title
 import dagger.assisted.Assisted
@@ -72,10 +75,7 @@ class AutoSaveWorkManager @AssistedInject constructor(
                 )
                 Result.success()
             }
-            val refreshInterval = dataStorePreferenceManager.getPreference(
-                KEY_AUTO_SAVE_INTERVAL,
-                defaultValue = 24
-            ).first()
+            val refreshInterval = getAutoSaveRefreshInterval()
             scheduleAutoSave.scheduleAutoSaveWorkAlarm(
                 getMillisFromNow(
                     refreshInterval
@@ -85,6 +85,15 @@ class AutoSaveWorkManager @AssistedInject constructor(
         } catch (e: Exception) {
             Result.failure()
         }
+    }
+
+    private suspend fun getAutoSaveRefreshInterval(): Int {
+        val userPrefAutoSave = dataStorePreferenceManager.getPreference(
+            USER_PREF_AUTO_SAVE, defaultValue = ""
+        ).first()
+        val gson = Gson()
+        val ufAutoSave = gson.fromJson(userPrefAutoSave, AutoSave::class.java)
+        return ufAutoSave?.interval ?: DEFAULT_AUTO_SAVE_INTERVAL
     }
 
     private fun sendNotification(status: Boolean, message: String) {
@@ -97,6 +106,8 @@ class AutoSaveWorkManager @AssistedInject constructor(
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
                 description = "Notifications for app status save updates"
+                setSound(null, null)
+                enableVibration(false)
             }
             val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -108,8 +119,10 @@ class AutoSaveWorkManager @AssistedInject constructor(
                 .setContentTitle(if (status) "Success" else "Error")
                 .setContentText(message)
                 .setSmallIcon(R.drawable.ic_app_logo)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setAutoCancel(true)
+                .setSound(null)
+                .setVibrate(null)
 
         with(NotificationManagerCompat.from(context)) {
             if (ActivityCompat.checkSelfPermission(

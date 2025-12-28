@@ -1,7 +1,8 @@
 package com.voidDeveloper.wastatussaver.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -15,11 +16,12 @@ import java.net.URLDecoder
 
 @Composable
 fun AppNavHost(navController: NavHostController, startDestination: String) {
-
+    val context = LocalContext.current
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Screens.Main.route) {
             val viewModel = hiltViewModel<MainViewModel>()
             MainScreen(
+                infoState = viewModel.toastInfoChannel,
                 uiState = viewModel.uiState,
                 onEvent = viewModel::onEvent,
                 navigate = { route: String ->

@@ -71,7 +71,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -95,9 +94,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import coil.request.videoFrameMillis
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.utils.LifecycleAwarePause
 import com.voidDeveloper.wastatussaver.data.utils.createColoredString
@@ -105,6 +103,11 @@ import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrDefault
 import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrEmptyString
 import com.voidDeveloper.wastatussaver.data.utils.launchSafPicker
 import com.voidDeveloper.wastatussaver.data.utils.openAppInPlayStore
+import com.voidDeveloper.wastatussaver.domain.model.AudioFile
+import com.voidDeveloper.wastatussaver.domain.model.ImageFile
+import com.voidDeveloper.wastatussaver.domain.model.MediaFile
+import com.voidDeveloper.wastatussaver.domain.model.UnknownFile
+import com.voidDeveloper.wastatussaver.domain.model.VideoFile
 import com.voidDeveloper.wastatussaver.navigation.Screens
 import com.voidDeveloper.wastatussaver.presentation.theme.WaStatusSaverTheme
 import com.voidDeveloper.wastatussaver.presentation.theme.gray
@@ -117,6 +120,7 @@ import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.OnBoardingDia
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.SAFAccessPermissionDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -124,7 +128,12 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 @Composable
-fun MainScreen(uiState: StateFlow<UiState?>, onEvent: (Event) -> Unit, navigate: (String) -> Unit) {
+fun MainScreen(
+    uiState: StateFlow<UiState?>,
+    onEvent: (Event) -> Unit,
+    navigate: (String) -> Unit,
+    infoState: Flow<String?>,
+) {
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -133,12 +142,21 @@ fun MainScreen(uiState: StateFlow<UiState?>, onEvent: (Event) -> Unit, navigate:
     val fileTypeData = listOf(FileType.IMAGES, FileType.VIDEOS, FileType.AUDIO)
     val context = LocalContext.current
 
+    LaunchedEffect(Unit) {
+        scope.launch {
+            infoState.collect { info ->
+                if (info != null) {
+                    Toast.makeText(context, info, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     LifecycleAwarePause(onResume = {
         onEvent(Event.RefreshUiState)
     })
 
-    val state by uiState.collectAsState()
+    val state by uiState.collectAsStateWithLifecycle()
     LaunchedEffect(state?.mediaFiles) {
         Log.i("State TAG", "MainScreen: MediaFiles changed ${state?.mediaFiles?.map { it.id }}")
     }
@@ -620,19 +638,31 @@ fun FilePreviewPage(
         })
         return
     } else if (uiState.showAutoSaveDialog) {
-        AutoSaveDialog(selectedInterval = uiState.savedAutoSaveInterval, onApplyPressed = {
-            val hasPermission =
-                activity?.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-            if (!hasPermission) {
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-            onEvent(Event.SaveAutoSaveInterval(it))
-        }, onAutoSaveDialogDismissPressed = {
-            onEvent(Event.AutoSaveDialogDismiss)
-        })
+        AutoSaveDialog(
+            selectedInterval = uiState.savedAutoSaveInterval,
+            autoSaveEnable = uiState.autoSaveEnabled,
+            onApplyPressed = { enabled, interval ->
+                if (enabled) {
+                    val hasPermission =
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            activity?.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                        } else {
+                            true
+                        }
+                    if (!hasPermission) {
+                        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
+                onEvent(Event.SaveAutoSaveData(interval, enabled))
+            },
+            onAutoSaveDialogDismissPressed = {
+                onEvent(Event.AutoSaveDialogDismiss)
+            })
     } else if (uiState.showNotificationPermissionDialog) {
         NotificationPermissionDialog(onOkPressed = {
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }, onDialogDismissed = {
             onEvent(
                 Event.NotificationPermissionDialogDismiss

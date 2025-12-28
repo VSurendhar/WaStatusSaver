@@ -1,6 +1,7 @@
 package com.voidDeveloper.wastatussaver.domain.repo.main
 
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.MediaFile
+import com.voidDeveloper.wastatussaver.domain.model.MediaFile
+
 
 interface MainRepo {
     suspend fun saveMediaFile(mediaFile: MediaFile, onSaveCompleted: () -> Unit)

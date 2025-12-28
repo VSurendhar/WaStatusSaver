@@ -33,4 +33,5 @@
     <string name="download_app_playstore_btn">Download %1$s</string>
     <string name="no_status_des">No status files available. Please view the status completely in **%1$s**, then return here to save it.</string>
     <string name="no_status_files_available">No Status Files Available</string>
+    <string name="title_activity_player">PlayerActivity</string>
 </resources>

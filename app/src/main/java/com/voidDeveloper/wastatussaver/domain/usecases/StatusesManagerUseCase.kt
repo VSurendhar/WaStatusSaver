@@ -5,19 +5,16 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.util.Log
-import androidx.lifecycle.viewModelScope
 import com.voidDeveloper.wastatussaver.data.utils.Constants
 import com.voidDeveloper.wastatussaver.data.utils.Constants.AUDIO_MIME_TYPE_STARTING
 import com.voidDeveloper.wastatussaver.data.utils.Constants.IMAGE_MIME_TYPE_STARTING
 import com.voidDeveloper.wastatussaver.data.utils.Constants.VIDEO_MIME_TYPE_STARTING
+import com.voidDeveloper.wastatussaver.domain.model.AudioFile
+import com.voidDeveloper.wastatussaver.domain.model.ImageFile
+import com.voidDeveloper.wastatussaver.domain.model.MediaFile
+import com.voidDeveloper.wastatussaver.domain.model.UnknownFile
+import com.voidDeveloper.wastatussaver.domain.model.VideoFile
 import com.voidDeveloper.wastatussaver.domain.repo.main.MainRepo
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.AudioFile
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.ImageFile
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.MediaFile
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.UnknownFile
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.VideoFile
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class StatusesManagerUseCase @Inject constructor(

@@ -3,8 +3,11 @@ package com.voidDeveloper.wastatussaver.presentation.ui.main.dialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +20,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,12 +43,15 @@ import com.voidDeveloper.wastatussaver.R
 @Composable
 fun AutoSaveDialog(
     selectedInterval: Int = 1,
-    onApplyPressed: (Int) -> Unit,
+    autoSaveEnable: Boolean = false,
+    onApplyPressed: (Boolean, Int) -> Unit,
     onAutoSaveDialogDismissPressed: () -> Unit,
 ) {
     var openDialog by remember { mutableStateOf(true) }
+    var autoSaveEnabled by remember { mutableStateOf(autoSaveEnable) }
     val intervals = listOf(1, 6, 12, 24)
     var selectedInterval by remember { mutableStateOf(selectedInterval) }
+
     if (openDialog) {
         Dialog(
             onDismissRequest = {
@@ -75,9 +83,11 @@ fun AutoSaveDialog(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Autosave", style = MaterialTheme.typography.headlineSmall.copy(
+                    text = "Autosave",
+                    style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold
-                    ), color = Color.Black
+                    ),
+                    color = Color.Black
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -90,13 +100,46 @@ fun AutoSaveDialog(
                     color = Color.Gray,
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Enable Autosave",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.Black
+                    )
+
+                    Switch(
+                        checked = autoSaveEnabled,
+                        onCheckedChange = { autoSaveEnabled = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary,
+                            checkedBorderColor = MaterialTheme.colorScheme.primary,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.primary,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.onSecondary,
+                            uncheckedBorderColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp),
                     text = "Select Autosave Interval",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.Black
+                    color = if (autoSaveEnabled) Color.Black else Color.Gray
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -106,21 +149,32 @@ fun AutoSaveDialog(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                        .border(
+                            1.dp,
+                            if (autoSaveEnabled) Color.Gray else Color.LightGray,
+                            RoundedCornerShape(8.dp)
+                        )
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable { expanded = true }
-                        .padding(12.dp)) {
-                    Text(text = constructInterval(selectedInterval), color = Color.Black)
+                        .clickable(enabled = autoSaveEnabled) { expanded = true }
+                        .padding(12.dp)
+                ) {
+                    Text(
+                        text = constructInterval(selectedInterval),
+                        color = if (autoSaveEnabled) Color.Black else Color.Gray
+                    )
 
                     DropdownMenu(
-                        expanded = expanded, onDismissRequest = { expanded = false }) {
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
                         intervals.forEach { interval ->
                             DropdownMenuItem(
                                 text = { Text(constructInterval(interval)) },
                                 onClick = {
                                     selectedInterval = interval
                                     expanded = false
-                                })
+                                }
+                            )
                         }
                     }
                 }
@@ -130,8 +184,9 @@ fun AutoSaveDialog(
                 Button(
                     onClick = {
                         openDialog = false
-                        onApplyPressed(selectedInterval.toInt())
-                    }, modifier = Modifier.fillMaxWidth()
+                        onApplyPressed(autoSaveEnabled, selectedInterval)
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Apply")
                 }

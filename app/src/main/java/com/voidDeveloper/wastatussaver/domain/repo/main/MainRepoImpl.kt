@@ -10,12 +10,12 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import com.voidDeveloper.wastatussaver.domain.model.AudioFile
+import com.voidDeveloper.wastatussaver.domain.model.ImageFile
+import com.voidDeveloper.wastatussaver.domain.model.MediaFile
+import com.voidDeveloper.wastatussaver.domain.model.VideoFile
 
 
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.AudioFile
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.ImageFile
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.MediaFile
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.VideoFile
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -192,7 +192,7 @@ class MainRepoImpl @Inject constructor(@ApplicationContext applicationContext: C
 
     suspend fun saveVideoFile(
         mediaFile: VideoFile,
-        onSaveCompleted: () -> Unit
+        onSaveCompleted: () -> Unit,
     ) {
         withContext(Dispatchers.IO) {
 
