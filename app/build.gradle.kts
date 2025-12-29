@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.dagger)
     kotlin("kapt")
+    id("kotlin-parcelize")
 }
 
 val secrets = Properties()
@@ -102,4 +103,8 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("io.coil-kt:coil-video:2.5.0")
+
+    // Media3
+    implementation("androidx.media3:media3-exoplayer:1.0.0-beta02")
+    implementation("androidx.media3:media3-ui:1.0.0-beta02")
 }

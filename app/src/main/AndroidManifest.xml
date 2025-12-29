@@ -31,7 +31,7 @@
         android:theme="@style/Theme.WaStatusSaver" >
         <activity
             android:name=".presentation.ui.player.PlayerActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/title_activity_player"
             android:theme="@style/Theme.WaStatusSaver" />
         <activity
