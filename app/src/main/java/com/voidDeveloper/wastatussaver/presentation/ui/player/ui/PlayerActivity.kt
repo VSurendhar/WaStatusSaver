@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -52,13 +53,12 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import coil.compose.AsyncImage
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.domain.model.toMediaFile
 import com.voidDeveloper.wastatussaver.presentation.receivers.NoisyAudioReceiver
@@ -257,42 +257,54 @@ class PlayerActivity : ComponentActivity() {
                             }
                         }
                         if (mediaInfo.fileType == FileType.AUDIO) {
-                            AudioArtwork(
+                            AudioViewer(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clickable(
                                         indication = null,
                                         interactionSource = remember { MutableInteractionSource() }) {
                                         showControls = !showControls
-                                    }, onPause = {
-                                viewModel.pause()
-                                viewModel.persistPlaybackPosition()
-                            }, lifecycleOwner = lifecycleOwner
+                                    },
+                                onPause = {
+                                    viewModel.pause()
+                                    viewModel.persistPlaybackPosition()
+                                },
+                            )
+                        } else if (mediaInfo.fileType == FileType.IMAGES) {
+                            ImageViewer(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clickable(
+                                        indication = null,
+                                        interactionSource = remember { MutableInteractionSource() }) {
+                                        showControls = !showControls
+                                    },
+                                uri = mediaInfo.uri
                             )
                         } else {
                             AndroidView(
                                 factory = { context ->
-                                PlayerView(context).also {
-                                    it.player = viewModel.player
-                                    it.useController = false
-                                    it.keepScreenOn = true
-                                    it.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-                                }
-                            }, update = {
-                                when (lifecycle) {
-                                    Lifecycle.Event.ON_PAUSE -> {
-                                        it.onPause()
-                                        it.player?.pause()
-                                        viewModel.persistPlaybackPosition()
+                                    PlayerView(context).also {
+                                        it.player = viewModel.player
+                                        it.useController = false
+                                        it.keepScreenOn = true
+                                        it.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
                                     }
+                                }, update = {
+                                    when (lifecycle) {
+                                        Lifecycle.Event.ON_PAUSE -> {
+                                            it.onPause()
+                                            it.player?.pause()
+                                            viewModel.persistPlaybackPosition()
+                                        }
 
-                                    Lifecycle.Event.ON_RESUME -> {
-                                        it.onResume()
+                                        Lifecycle.Event.ON_RESUME -> {
+                                            it.onResume()
+                                        }
+
+                                        else -> Unit
                                     }
-
-                                    else -> Unit
-                                }
-                            }, modifier = Modifier
+                                }, modifier = Modifier
                                     .fillMaxSize()
                                     .clickable(
                                         indication = null,
@@ -301,7 +313,7 @@ class PlayerActivity : ComponentActivity() {
                                     }
                                     .padding(top = 12.dp))
                         }
-                        if (showControls) {
+                        if (showControls && (mediaInfo.fileType != FileType.IMAGES)) {
                             CustomVideoControls(
                                 isPlaying = viewPlaying,
                                 currentPosition = currentPosition,
@@ -397,11 +409,12 @@ class PlayerActivity : ComponentActivity() {
     }
 
     @Composable
-    fun AudioArtwork(
+    fun AudioViewer(
         modifier: Modifier = Modifier,
-        lifecycleOwner: LifecycleOwner,
         onPause: () -> Unit,
     ) {
+        val lifecycleOwner = LocalLifecycleOwner.current
+
         DisposableEffect(lifecycleOwner) {
             val observer = LifecycleEventObserver { _, event ->
                 when (event) {
@@ -427,4 +440,25 @@ class PlayerActivity : ComponentActivity() {
             )
         }
     }
+
+    @Composable
+    fun ImageViewer(
+        modifier: Modifier = Modifier,
+        uri: String,
+    ) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            AsyncImage(
+                model = uri,
+                contentDescription = "Image Preview",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentScale = ContentScale.Fit
+            )
+        }
+    }
+
 }
