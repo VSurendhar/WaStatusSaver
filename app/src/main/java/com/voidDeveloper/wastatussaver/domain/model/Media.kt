@@ -17,6 +17,7 @@ import androidx.media3.common.MediaMetadata
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.utils.compressBitmapQuality
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.FileType
+import kotlinx.android.parcel.Parcelize
 import java.util.UUID
 
 abstract class MediaFile(open val uri: Uri, fileName1: String) {
@@ -37,15 +38,16 @@ data class ImageFile(
     override val fileType: FileType = FileType.IMAGES,
 ) : MediaFile(uri, fileName) {
     override fun getThumbNailBitMap(context: Context): Bitmap? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val source = ImageDecoder.createSource(context.contentResolver, uri)
-            ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+            thumbnailBitmap = ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
                 decoder.setTargetSize(width, height)
             }.compressBitmapQuality()
         } else {
             val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-            bitmap.scale(width, height).compressBitmapQuality()
+            thumbnailBitmap = bitmap.scale(width, height).compressBitmapQuality()
         }
+        return thumbnailBitmap
     }
 }
 

@@ -46,10 +46,10 @@ class StatusesManagerUseCase @Inject constructor(
         downloadedFiles = mainRepo.getSavedMediaFiles()
     }
 
-    fun getFiles(uri: Uri?): List<MediaFile> {
+    fun getFiles(destinationUri: Uri?): List<MediaFile> {
         Log.i(Constants.TAG, "getFiles: Getting Files")
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-            uri, DocumentsContract.getTreeDocumentId(uri)
+            destinationUri, DocumentsContract.getTreeDocumentId(destinationUri)
         )
         refreshDownloadedFiles()
         val cursor: Cursor? = appContext.contentResolver.query(childrenUri, null, null, null, null)
@@ -64,7 +64,8 @@ class StatusesManagerUseCase @Inject constructor(
                 val name = c.getString(nameIndex)
                 val mimeType = c.getString(mimeTypeIndex)
                 val documentId = c.getString(docIdIndex)
-                val fileUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
+                val fileUri =
+                    DocumentsContract.buildDocumentUriUsingTree(destinationUri, documentId)
                 Log.i(Constants.TAG, "getFiles: $name $mimeType $documentId $fileUri")
                 if (name != Constants.NO_MEDIA) {
                     val mediaFile: MediaFile = when {

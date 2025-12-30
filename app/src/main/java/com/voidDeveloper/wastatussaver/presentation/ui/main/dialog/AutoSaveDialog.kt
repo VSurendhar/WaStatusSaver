@@ -124,7 +124,7 @@ fun AutoSaveDialog(
                             checkedTrackColor = MaterialTheme.colorScheme.primary,
                             checkedBorderColor = MaterialTheme.colorScheme.primary,
                             uncheckedThumbColor = MaterialTheme.colorScheme.primary,
-                            uncheckedTrackColor = MaterialTheme.colorScheme.onSecondary,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
                             uncheckedBorderColor = MaterialTheme.colorScheme.primary
                         )
                     )
