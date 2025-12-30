@@ -1,6 +1,5 @@
 package com.voidDeveloper.wastatussaver.presentation.ui.main.ui
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
@@ -19,7 +18,6 @@ import com.voidDeveloper.wastatussaver.domain.usecases.TelegramLogUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -94,6 +92,7 @@ class MainViewModel @Inject constructor(
                 KEY_PREFERRED_TITLE, defaultValue = Title.Whatsapp.packageName
             ).first()
         } catch (e: Exception) {
+            e.printStackTrace()
             Title.Whatsapp.packageName
         }
 
@@ -211,7 +210,6 @@ class MainViewModel @Inject constructor(
             }
 
             is Event.SaveAutoSaveData -> {
-                val TAG = "Auto Save Interval"
                 viewModelScope.launch {
                     try {
                         val interval = getAutoSaveInterval()
@@ -228,7 +226,7 @@ class MainViewModel @Inject constructor(
                             scheduleAutoSave.cancelAllAlarm()
                         }
                     } catch (e: Exception) {
-                        Log.e(TAG, "Failed to update auto-save interval", e)
+                        e.printStackTrace()
                     }
                 }
                 _uiState.update {

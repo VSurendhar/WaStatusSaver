@@ -95,7 +95,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.utils.LifecycleAwarePause
@@ -107,19 +106,20 @@ import com.voidDeveloper.wastatussaver.data.utils.openAppInPlayStore
 import com.voidDeveloper.wastatussaver.domain.model.AudioFile
 import com.voidDeveloper.wastatussaver.domain.model.ImageFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
+import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
 import com.voidDeveloper.wastatussaver.domain.model.UnknownFile
 import com.voidDeveloper.wastatussaver.domain.model.VideoFile
 import com.voidDeveloper.wastatussaver.navigation.Screens
 import com.voidDeveloper.wastatussaver.presentation.theme.WaStatusSaverTheme
 import com.voidDeveloper.wastatussaver.presentation.theme.gray
-import com.voidDeveloper.wastatussaver.presentation.theme.light_gray
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.AppNotInstalledDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.AutoSaveDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.NotificationPermissionDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.NotificationPermissionSettingsDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.OnBoardingDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.SAFAccessPermissionDialog
-import com.voidDeveloper.wastatussaver.presentation.ui.player.PlayerActivity
+import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.DownloadState
+import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.PlayerActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -373,7 +373,7 @@ fun TabsRow(pagerState: PagerState, scope: CoroutineScope, fileTypeData: List<Fi
                 Text(
                     text = tab.name,
                     color = if (pagerState.currentPage == index) MaterialTheme.colorScheme.onPrimary
-                    else MaterialTheme.colorScheme.onSecondary
+                    else MaterialTheme.colorScheme.surfaceVariant
                 )
             })
         }
@@ -645,12 +645,11 @@ fun FilePreviewPage(
             autoSaveEnable = uiState.autoSaveEnabled,
             onApplyPressed = { enabled, interval ->
                 if (enabled) {
-                    val hasPermission =
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            activity?.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-                        } else {
-                            true
-                        }
+                    val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        activity?.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                    } else {
+                        true
+                    }
                     if (!hasPermission) {
                         requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
@@ -765,11 +764,17 @@ fun FilePreviewPage(
                             finishedDownloading = mediaFile.isDownloaded,
                             onPreviewClick = {
                                 val intent = Intent(context, PlayerActivity::class.java)
-//                                intent.extras?.putString("videoUri", "${mediaFile.uri.toString()}")
-                                intent.putExtra("videoUri", "${mediaFile.uri.toString()}")
+                                intent.putExtra(
+                                    "mediaInfo", MediaInfo(
+                                        uri = mediaFile.uri.toString(),
+                                        lastPlayedMillis = 0,
+                                        fileName = mediaFile.fileName.toString(),
+                                        fileType = mediaFile.fileType,
+                                        downloadStatus = if (mediaFile.isDownloaded) DownloadState.DOWNLOADED else DownloadState.NOT_DOWNLOADED
+                                    )
+                                )
                                 context.startActivity(intent)
-                            }
-                        )
+                            })
                     }
                 }
             }
@@ -869,7 +874,7 @@ fun PreviewItem(
                             Icon(
                                 painter = painterResource(R.drawable.ic_download),
                                 contentDescription = "Download",
-                                tint = light_gray,
+                                tint = Color.White,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
@@ -878,7 +883,7 @@ fun PreviewItem(
                                 painter = painterResource(R.drawable.ic_tick),
                                 contentDescription = "Finished Download",
                                 modifier = Modifier.size(14.dp),
-                                tint = light_gray,
+                                tint = Color.White,
                             )
                         }
                         if (isDownloading) {
@@ -891,7 +896,6 @@ fun PreviewItem(
                     }
                 }
             }
-
         }
     }
 }
@@ -1014,8 +1018,7 @@ fun FileItemPreview() {
             onDownloadClick = {},
             isDownloading = false,
             finishedDownloading = false,
-            onPreviewClick = {}
-        )
+            onPreviewClick = {})
     }
 }
 

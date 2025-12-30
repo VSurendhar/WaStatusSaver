@@ -121,7 +121,7 @@ class MainRepoImpl @Inject constructor(@ApplicationContext applicationContext: C
                 "${Environment.DIRECTORY_DOWNLOADS}/WaStatusSaver/Audio"
             )
             put(MediaStore.MediaColumns.DISPLAY_NAME, mediaFile.fileName)
-            put(MediaStore.MediaColumns.MIME_TYPE, "audio/ogg")
+            put(MediaStore.MediaColumns.MIME_TYPE, "audio/opus")
             put(MediaStore.MediaColumns.DATE_ADDED, timeInSeconds)
             put(MediaStore.MediaColumns.IS_PENDING, 1)
         }

@@ -21,15 +21,7 @@ private val LightColorScheme = lightColorScheme(
     onTertiary = md_theme_light_onTertiary,
     background = md_theme_light_background,
     onBackground = md_theme_light_onBackground,
-
-    /* Other default colors to override
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    surfaceVariant = md_theme_light_surfaceVariant
 
 )
 

@@ -1,9 +1,12 @@
 package com.voidDeveloper.wastatussaver.presentation.ui.player.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -46,14 +50,22 @@ fun CustomVideoControls(
             modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
         ) {
             IconButton(
-                onClick = onPlayPauseClick, modifier = Modifier.size(56.dp)
+                onClick = onPlayPauseClick,
+                modifier = Modifier.size(56.dp)
             ) {
-                Icon(
-                    painter = painterResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
-                    contentDescription = if (isPlaying) "Pause" else "Play",
-                    tint = Color.White,
-                    modifier = Modifier.size(40.dp)
-                )
+                Box(
+                    modifier = Modifier.size(40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+                        ),
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         }
 
@@ -79,18 +91,25 @@ fun CustomVideoControls(
                 .background(Color.Transparent),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            val fullDuration = formatTime(duration)
             Text(
-                text = formatTime(sliderPosition?.toLong() ?: currentPosition),
+                text = getCurrentTime(fullDuration = duration, currentPosition = currentPosition),
                 color = Color.White,
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
-                text = formatTime(duration),
+                text = fullDuration,
                 color = Color.White,
                 style = MaterialTheme.typography.bodyMedium
             )
         }
     }
+}
+
+fun getCurrentTime(fullDuration: Long, currentPosition: Long): String {
+    Log.i("Surendhar TAG", "getCurrentTime: $fullDuration $currentPosition")
+    val calculationDuration = ((currentPosition.toFloat() / 100) * fullDuration).toLong()
+    return formatTime(calculationDuration)
 }
 
 // Helper function to format time

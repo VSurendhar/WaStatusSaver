@@ -107,4 +107,8 @@ dependencies {
     // Media3
     implementation("androidx.media3:media3-exoplayer:1.0.0-beta02")
     implementation("androidx.media3:media3-ui:1.0.0-beta02")
+
+    // Material Icons
+    implementation("androidx.compose.material:material-icons-extended")
+
 }
