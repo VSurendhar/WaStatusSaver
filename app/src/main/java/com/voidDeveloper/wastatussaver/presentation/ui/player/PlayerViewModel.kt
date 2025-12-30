@@ -9,6 +9,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
 import com.voidDeveloper.wastatussaver.domain.model.emptyMediaInfo
+import com.voidDeveloper.wastatussaver.presentation.ui.player.helpers.PlayerController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,13 +18,17 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    val player: Player,
+//    val player: Player,
+    val playerController: PlayerController,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     companion object {
         private const val KEY_MEDIA_INFO = "mediaInfo"
     }
+
+    val player: Player
+        get() = playerController.player
 
     val mediaInfo: StateFlow<MediaInfo> =
         savedStateHandle
@@ -37,18 +42,18 @@ class PlayerViewModel @Inject constructor(
     fun playVideo() {
         Log.i("Surendhar TAG", "playVideo: Playing Video")
         val info = mediaInfo.value
-        player.setMediaItem(MediaItem.fromUri(info.uri))
-        player.prepare()
+        playerController.player.setMediaItem(MediaItem.fromUri(info.uri))
+        playerController.player.prepare()
         val lastPlayedMillis = info.lastPlayedMillis
-        if (lastPlayedMillis != 0L && lastPlayedMillis < player.duration) {
-            player.seekTo(lastPlayedMillis)
+        if (lastPlayedMillis != 0L && lastPlayedMillis < playerController.player.duration) {
+            playerController.player.seekTo(lastPlayedMillis)
         }
-        player.play()
+        playerController.player.play()
     }
 
     override fun onCleared() {
         super.onCleared()
-        player.release()
+        playerController.player.release()
     }
 
     fun addVideoUri(uriString: String, fileName: String) {
@@ -72,7 +77,7 @@ class PlayerViewModel @Inject constructor(
     fun persistPlaybackPosition() {
         val current = savedStateHandle.get<MediaInfo>(KEY_MEDIA_INFO) ?: return
         savedStateHandle[KEY_MEDIA_INFO] =
-            current.copy(lastPlayedMillis = player.currentPosition)
+            current.copy(lastPlayedMillis = playerController.player.currentPosition)
     }
 
 }

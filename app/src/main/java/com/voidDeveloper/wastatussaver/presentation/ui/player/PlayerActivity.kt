@@ -71,7 +71,9 @@ class PlayerActivity : ComponentActivity() {
                 val mediaInfo by viewModel.mediaInfo.collectAsStateWithLifecycle()
                 val context = LocalContext.current
                 LaunchedEffect(Unit) {
-                    viewModel.addVideoUri(videoUri, "")
+                    val uri = intent.getStringExtra("videoUri") ?: ""
+                    println("URI $uri")
+                    viewModel.addVideoUri(uri, "")
                 }
 //                viewModel.addVideoUri(videoUri1.toUri())
 //                viewModel.addVideoUri(videoUri2.toUri())

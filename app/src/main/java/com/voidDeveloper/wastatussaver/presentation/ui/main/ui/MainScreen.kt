@@ -95,6 +95,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.utils.LifecycleAwarePause
@@ -118,6 +119,7 @@ import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.NotificationP
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.NotificationPermissionSettingsDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.OnBoardingDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.SAFAccessPermissionDialog
+import com.voidDeveloper.wastatussaver.presentation.ui.player.PlayerActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -761,6 +763,12 @@ fun FilePreviewPage(
                             },
                             isDownloading = uiState.onGoingDownload.contains(mediaFile),
                             finishedDownloading = mediaFile.isDownloaded,
+                            onPreviewClick = {
+                                val intent = Intent(context, PlayerActivity::class.java)
+//                                intent.extras?.putString("videoUri", "${mediaFile.uri.toString()}")
+                                intent.putExtra("videoUri", "${mediaFile.uri.toString()}")
+                                context.startActivity(intent)
+                            }
                         )
                     }
                 }
@@ -776,12 +784,16 @@ fun PreviewItem(
     onDownloadClick: () -> Unit,
     isDownloading: Boolean,
     finishedDownloading: Boolean,
+    onPreviewClick: () -> Unit,
 ) {
     val context = LocalContext.current
     Card(
         modifier = Modifier
             .height(160.dp)
-            .width(130.dp), shape = RoundedCornerShape(
+            .width(130.dp)
+            .clickable {
+                onPreviewClick()
+            }, shape = RoundedCornerShape(
             corner = CornerSize(20.dp),
         ), border = BorderStroke(width = 1.dp, color = gray), colors = CardDefaults.cardColors(
             containerColor = Color.White
@@ -1001,7 +1013,8 @@ fun FileItemPreview() {
             mediaFile = UnknownFile(uri = "".toUri()),
             onDownloadClick = {},
             isDownloading = false,
-            finishedDownloading = false
+            finishedDownloading = false,
+            onPreviewClick = {}
         )
     }
 }
