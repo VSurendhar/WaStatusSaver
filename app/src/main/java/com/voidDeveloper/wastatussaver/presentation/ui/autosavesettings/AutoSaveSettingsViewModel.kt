@@ -99,21 +99,6 @@ class AutoSaveSettingsViewModel @Inject constructor(
         selectedTitle: App? = null,
         selectedMediaTypes: List<MediaType>? = null,
     ) {
-        /*
-                val gson = Gson()
-                val userPrefAutoSave = dataStorePreferenceManager.getPreference(
-                    USER_PREF_AUTO_SAVE, defaultValue = ""
-                ).first()
-                val ufAutoSave: AutoSave =
-                    gson.fromJson(userPrefAutoSave, AutoSave::class.java) ?: AutoSave()
-                if (interval != null) ufAutoSave.interval = interval
-                if (enable != null) {
-                    ufAutoSave.isAutoSaveEnable = enable
-                    if (!enable) ufAutoSave.interval = null
-                }
-                val userPrefNewAutoSave = gson.toJson(ufAutoSave)
-                dataStorePreferenceManager.putPreference(USER_PREF_AUTO_SAVE, userPrefNewAutoSave)
-        */
         autoSaveProtoDataStoreManager.updateAutoSaveUserPref { autoSaveUserPref ->
             if (interval != null) {
                 val autoSaveInterval: AutoSaveInterval = when (interval) {
@@ -138,21 +123,5 @@ class AutoSaveSettingsViewModel @Inject constructor(
             }
         }
     }
-
-    /*
-        private suspend fun getAutoSaveInterval(): Int? {
-            val autoSaveUserPref = autoSaveProtoDataStoreManager.readAutoSaveUserPref()
-            val interval = autoSaveUserPref.getInterval()
-            */
-    /*        val userPrefAutoSave = dataStorePreferenceManager.getPreference(
-                        USER_PREF_AUTO_SAVE, defaultValue = ""
-                    ).first()
-                    val gson = Gson()
-                    val ufAutoSave = gson.fromJson(userPrefAutoSave, AutoSave::class.java)
-                    return ufAutoSave?.interval*//*
-
-        return interval
-    }
-*/
 
 }
