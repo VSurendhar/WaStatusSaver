@@ -5,6 +5,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.util.Log
+import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.utils.Constants
 import com.voidDeveloper.wastatussaver.data.utils.Constants.AUDIO_MIME_TYPE_STARTING
 import com.voidDeveloper.wastatussaver.data.utils.Constants.IMAGE_MIME_TYPE_STARTING
@@ -46,7 +47,10 @@ class StatusesManagerUseCase @Inject constructor(
         downloadedFiles = mainRepo.getSavedMediaFiles()
     }
 
-    fun getFiles(destinationUri: Uri?): List<MediaFile> {
+    fun getFiles(
+        destinationUri: Uri?,
+        preferredMediaTypes: List<MediaType>? = null,
+    ): List<MediaFile> {
         Log.i(Constants.TAG, "getFiles: Getting Files")
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
             destinationUri, DocumentsContract.getTreeDocumentId(destinationUri)
@@ -87,7 +91,7 @@ class StatusesManagerUseCase @Inject constructor(
                             }
                         }
 
-                        else -> UnknownFile(uri = fileUri)
+                        else -> UnknownFile(uri = fileUri, fileName = "void")
                     }
                     resList.add(
                         mediaFile
@@ -96,7 +100,11 @@ class StatusesManagerUseCase @Inject constructor(
             }
 
         }
-        return resList.toList()
+
+        val filteredList =
+            resList.filter { preferredMediaTypes == null || preferredMediaTypes.contains(it.mediaType) }
+        return filteredList.toList()
+
     }
 
     fun isStatusDownloaded(fileName: String): Boolean {

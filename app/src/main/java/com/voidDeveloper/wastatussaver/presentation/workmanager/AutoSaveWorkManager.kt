@@ -12,29 +12,28 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.gson.Gson
 import com.voidDeveloper.wastatussaver.R
-import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.KEY_PREFERRED_TITLE
-import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.LAST_ALARM_SET_MILLIS_KEY
-import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.USER_PREF_AUTO_SAVE
-import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStorePreferenceManager
+import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
+import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManager
+import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.LAST_ALARM_SET_MILLIS_KEY
+import com.voidDeveloper.wastatussaver.data.protodatastoremanager.AutoSaveProtoDataStoreManager
 import com.voidDeveloper.wastatussaver.data.utils.Constants
-import com.voidDeveloper.wastatussaver.data.utils.Constants.DEFAULT_AUTO_SAVE_INTERVAL
+import com.voidDeveloper.wastatussaver.data.utils.extentions.getInterval
+import com.voidDeveloper.wastatussaver.data.utils.extentions.toTitle
 import com.voidDeveloper.wastatussaver.data.utils.getMillisFromNow
 import com.voidDeveloper.wastatussaver.data.utils.helpers.ScheduleAutoSave
-import com.voidDeveloper.wastatussaver.domain.model.AutoSave
 import com.voidDeveloper.wastatussaver.domain.usecases.StatusesManagerUseCase
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.Title
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.first
 
 @HiltWorker
 class AutoSaveWorkManager @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted private val params: WorkerParameters,
     private val dataStorePreferenceManager: DataStorePreferenceManager,
+    private val autoSaveProtoDataStoreManager: AutoSaveProtoDataStoreManager,
     private val statusSaverManager: StatusesManagerUseCase,
     private val scheduleAutoSave: ScheduleAutoSave,
 ) : CoroutineWorker(context, params) {
@@ -88,12 +87,15 @@ class AutoSaveWorkManager @AssistedInject constructor(
     }
 
     private suspend fun getAutoSaveRefreshInterval(): Int {
-        val userPrefAutoSave = dataStorePreferenceManager.getPreference(
-            USER_PREF_AUTO_SAVE, defaultValue = ""
-        ).first()
-        val gson = Gson()
-        val ufAutoSave = gson.fromJson(userPrefAutoSave, AutoSave::class.java)
-        return ufAutoSave?.interval ?: DEFAULT_AUTO_SAVE_INTERVAL
+        val autoSaveUserPref = autoSaveProtoDataStoreManager.readAutoSaveUserPref()
+        val interval = autoSaveUserPref.getInterval()
+        return interval
+    }
+
+    private suspend fun getAutoSaveMediaType(): List<MediaType> {
+        val autoSaveUserPref = autoSaveProtoDataStoreManager.readAutoSaveUserPref()
+        val mediaTypeList = autoSaveUserPref.mediaTypeList
+        return mediaTypeList
     }
 
     private fun sendNotification(status: Boolean, message: String) {
@@ -139,9 +141,11 @@ class AutoSaveWorkManager @AssistedInject constructor(
     private suspend fun saveStatusMedia(preferredTitle: Title): Pair<Boolean, Int> {
         var counter = 0
         return try {
+            val autoSaveMediaType = getAutoSaveMediaType()
             val files =
                 statusSaverManager.getFiles(
                     preferredTitle.uri,
+                    autoSaveMediaType
                 )
             files.forEachIndexed { index, file ->
                 val fileName = file.fileName ?: return@forEachIndexed
@@ -164,26 +168,8 @@ class AutoSaveWorkManager @AssistedInject constructor(
     }
 
     suspend fun getPreferredTitle(): Title {
-
-        val preferredId = try {
-            dataStorePreferenceManager.getPreference(
-                KEY_PREFERRED_TITLE, defaultValue = Title.Whatsapp.packageName
-            ).first()
-        } catch (e: Exception) {
-            Title.Whatsapp.packageName
-        }
-
-        val title = when (preferredId) {
-            Title.WhatsappBusiness.packageName -> {
-                Title.WhatsappBusiness
-            }
-
-            else -> {
-                Title.Whatsapp
-            }
-        }
-
-        return title
+        val preferredApp = autoSaveProtoDataStoreManager.readAutoSaveUserPref().app.toTitle()
+        return preferredApp
     }
 
     fun Context.appInstalled(packageName: String): Boolean {

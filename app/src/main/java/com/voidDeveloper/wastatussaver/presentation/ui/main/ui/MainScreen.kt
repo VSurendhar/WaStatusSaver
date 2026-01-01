@@ -96,7 +96,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.voidDeveloper.wastatussaver.R
+import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.utils.LifecycleAwarePause
 import com.voidDeveloper.wastatussaver.data.utils.createColoredString
 import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrDefault
@@ -106,7 +108,6 @@ import com.voidDeveloper.wastatussaver.data.utils.openAppInPlayStore
 import com.voidDeveloper.wastatussaver.domain.model.AudioFile
 import com.voidDeveloper.wastatussaver.domain.model.ImageFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
-import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
 import com.voidDeveloper.wastatussaver.domain.model.UnknownFile
 import com.voidDeveloper.wastatussaver.domain.model.VideoFile
 import com.voidDeveloper.wastatussaver.navigation.Screens
@@ -118,11 +119,9 @@ import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.NotificationP
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.NotificationPermissionSettingsDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.OnBoardingDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.SAFAccessPermissionDialog
-import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.DownloadState
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.PlayerActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -134,25 +133,15 @@ fun MainScreen(
     uiState: StateFlow<UiState?>,
     onEvent: (Event) -> Unit,
     navigate: (String) -> Unit,
-    infoState: Flow<String?>,
+
 ) {
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val titleItems = listOf(Title.Whatsapp, Title.WhatsappBusiness)
     val pagerState = rememberPagerState(pageCount = { 3 })
-    val fileTypeData = listOf(FileType.IMAGES, FileType.VIDEOS, FileType.AUDIO)
+    val mediaTypeData = listOf(MediaType.IMAGE, MediaType.VIDEO, MediaType.AUDIO)
     val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        scope.launch {
-            infoState.collect { info ->
-                if (info != null) {
-                    Toast.makeText(context, info, Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
 
     LifecycleAwarePause(onResume = {
         onEvent(Event.RefreshUiState)
@@ -183,8 +172,8 @@ fun MainScreen(
             DrawerContent(
                 navigate = {
                     scope.launch {
-                        navigate(it)
                         drawerState.close()
+                        navigate(it)
                     }
                 }, closeDrawer = {
                     scope.launch {
@@ -217,7 +206,7 @@ fun MainScreen(
                         onTitleChanged = { onEvent(Event.ChangeTitle(it)) },
                         pagerState = pagerState,
                         scope = scope,
-                        fileTypeData = fileTypeData,
+                        mediaTypeData = mediaTypeData,
                         onRefreshBtnPressed = {
                             onEvent(Event.RefreshUiState)
                         })
@@ -243,7 +232,7 @@ fun MainTopBar(
     onTitleChanged: (Title) -> Unit,
     pagerState: PagerState,
     scope: CoroutineScope,
-    fileTypeData: List<FileType>,
+    mediaTypeData: List<MediaType>,
     onRefreshBtnPressed: () -> Unit,
 ) {
 
@@ -337,13 +326,13 @@ fun MainTopBar(
                     )
                 }
             }
-            TabsRow(pagerState, scope = scope, fileTypeData = fileTypeData)
+            TabsRow(pagerState, scope = scope, mediaTypeData = mediaTypeData)
         }
     }
 }
 
 @Composable
-fun TabsRow(pagerState: PagerState, scope: CoroutineScope, fileTypeData: List<FileType>) {
+fun TabsRow(pagerState: PagerState, scope: CoroutineScope, mediaTypeData: List<MediaType>) {
     TabRow(
         containerColor = MaterialTheme.colorScheme.primary,
         selectedTabIndex = pagerState.currentPage,
@@ -364,7 +353,7 @@ fun TabsRow(pagerState: PagerState, scope: CoroutineScope, fileTypeData: List<Fi
             .fillMaxWidth()
             .wrapContentHeight()
     ) {
-        fileTypeData.forEachIndexed { index, tab ->
+        mediaTypeData.forEachIndexed { index, tab ->
             Tab(selected = pagerState.currentPage == index, onClick = {
                 scope.launch {
                     pagerState.animateScrollToPage(index)
@@ -442,12 +431,14 @@ fun DrawerContent(
             DrawerItem(
                 title = stringResource(R.string.saved_status),
                 painter = painterResource(R.drawable.ic_saved),
-                onBtnClick = {},
+                onBtnClick = {
+                    navigate(Screens.SavedStatus.route)
+                },
             )
             DrawerItem(
                 title = stringResource(R.string.auto_save),
                 painter = painterResource(R.drawable.ic_auto_save),
-                onBtnClick = showAutoSaveDialog,
+                onBtnClick = { navigate(Screens.AutoSaveSettings.route) },
                 enable = enableAutoSave
             )
             DrawerItem(
@@ -654,7 +645,7 @@ fun FilePreviewPage(
                         requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
                 }
-                onEvent(Event.SaveAutoSaveData(interval, enabled))
+//                onEvent(Event.SaveAutoSaveData(interval, enabled))
             },
             onAutoSaveDialogDismissPressed = {
                 onEvent(Event.AutoSaveDialogDismiss)
@@ -764,15 +755,7 @@ fun FilePreviewPage(
                             finishedDownloading = mediaFile.isDownloaded,
                             onPreviewClick = {
                                 val intent = Intent(context, PlayerActivity::class.java)
-                                intent.putExtra(
-                                    "mediaInfo", MediaInfo(
-                                        uri = mediaFile.uri.toString(),
-                                        lastPlayedMillis = 0,
-                                        fileName = mediaFile.fileName.toString(),
-                                        fileType = mediaFile.fileType,
-                                        downloadStatus = if (mediaFile.isDownloaded) DownloadState.DOWNLOADED else DownloadState.NOT_DOWNLOADED
-                                    )
-                                )
+                                intent.putExtra("mediaInfo", mediaFile.toDomainMediaInfo())
                                 context.startActivity(intent)
                             })
                     }
@@ -786,10 +769,11 @@ fun FilePreviewPage(
 @Composable
 fun PreviewItem(
     mediaFile: MediaFile,
-    onDownloadClick: () -> Unit,
-    isDownloading: Boolean,
-    finishedDownloading: Boolean,
+    onDownloadClick: (() -> Unit)? = null,
+    isDownloading: Boolean = false,
+    finishedDownloading: Boolean = false,
     onPreviewClick: () -> Unit,
+    showDownloadIcon: Boolean = true,
 ) {
     val context = LocalContext.current
     Card(
@@ -840,7 +824,9 @@ fun PreviewItem(
                 }
             } else {
                 AsyncImage(
-                    model = mediaFile.uri,
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(mediaFile.uri).allowHardware(false)
+                        .build(),
                     contentDescription = "Status Image",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
@@ -848,50 +834,55 @@ fun PreviewItem(
                     error = painterResource(R.drawable.ic_failed_document)
                 )
             }
-            Card(
-                colors = CardColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.Gray,
-                    disabledContainerColor = Color.Gray,
-                    disabledContentColor = Color.Gray
-                ),
-                modifier = Modifier
-                    .height(26.dp)
-                    .width(46.dp)
-                    .align(Alignment.BottomEnd),
-                shape = RoundedCornerShape(topStart = 10.dp),
-            ) {
-                IconButton(
+            if (showDownloadIcon) {
+                Card(
+                    colors = CardColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.Gray,
+                        disabledContainerColor = Color.Gray,
+                        disabledContentColor = Color.Gray
+                    ),
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(end = 6.dp)
-                        .align(Alignment.CenterHorizontally), onClick = {
-                        onDownloadClick()
-                    }, enabled = !isDownloading && !finishedDownloading
+                        .height(26.dp)
+                        .width(46.dp)
+                        .align(Alignment.BottomEnd),
+                    shape = RoundedCornerShape(topStart = 10.dp),
                 ) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        if (!isDownloading && !finishedDownloading) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_download),
-                                contentDescription = "Download",
-                                tint = Color.White,
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
-                        if (finishedDownloading) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_tick),
-                                contentDescription = "Finished Download",
-                                modifier = Modifier.size(14.dp),
-                                tint = Color.White,
-                            )
-                        }
-                        if (isDownloading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(15.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
+                    IconButton(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(end = 6.dp)
+                            .align(Alignment.CenterHorizontally), onClick = {
+                            onDownloadClick?.invoke()
+                        }, enabled = !isDownloading && !finishedDownloading
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (!isDownloading && !finishedDownloading) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_download),
+                                    contentDescription = "Download",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                            if (finishedDownloading) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_tick),
+                                    contentDescription = "Finished Download",
+                                    modifier = Modifier.size(14.dp),
+                                    tint = Color.White,
+                                )
+                            }
+                            if (isDownloading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(15.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            }
                         }
                     }
                 }
@@ -971,7 +962,7 @@ fun TopBarPreview() {
             {},
             pagerState = rememberPagerState(pageCount = { 3 }),
             rememberCoroutineScope(),
-            fileTypeData = listOf(FileType.IMAGES, FileType.VIDEOS, FileType.AUDIO),
+            mediaTypeData = listOf(MediaType.IMAGE, MediaType.VIDEO, MediaType.AUDIO),
             onRefreshBtnPressed = {})
     }
 }
@@ -997,7 +988,7 @@ fun NavigationDrawerPreview() {
 fun ImagePagePreview() {
     val imageImageFiles = (1..5).map {
         ImageFile(
-            uri = "".toUri(), fileType = FileType.IMAGES, fileName = ""
+            uri = "".toUri(), mediaType = MediaType.IMAGE, fileName = ""
         )
     }
     WaStatusSaverTheme {
@@ -1014,7 +1005,7 @@ fun ImagePagePreview() {
 fun FileItemPreview() {
     WaStatusSaverTheme {
         PreviewItem(
-            mediaFile = UnknownFile(uri = "".toUri()),
+            mediaFile = UnknownFile(uri = "".toUri() , fileName = "void"),
             onDownloadClick = {},
             isDownloading = false,
             finishedDownloading = false,

@@ -14,12 +14,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
 import com.voidDeveloper.wastatussaver.domain.model.emptyMediaInfo
 import com.voidDeveloper.wastatussaver.domain.model.AudioFocusAction
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.usecases.StatusesManagerUseCase
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.FileType
 import com.voidDeveloper.wastatussaver.presentation.ui.player.helpers.AudioFocusManager
 import com.voidDeveloper.wastatussaver.presentation.ui.player.helpers.PlayerManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -189,15 +189,15 @@ class PlayerViewModel @Inject constructor(
 
     fun saveCache(
         uri: String,
-        fileType: FileType,
+        mediaType: MediaType,
         context: Context,
     ): Uri? {
         return try {
 
-            val suffix = when (fileType) {
-                FileType.AUDIO -> ".opus"
-                FileType.IMAGES -> ".jpg"
-                FileType.VIDEOS -> ".mp4"
+            val suffix = when (mediaType) {
+                MediaType.AUDIO -> ".opus"
+                MediaType.IMAGE -> ".jpg"
+                MediaType.VIDEO -> ".mp4"
                 else -> ""
             }
 

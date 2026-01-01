@@ -1,10 +1,11 @@
 package com.voidDeveloper.wastatussaver.presentation.ui.main.ui
 
+import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 
 sealed interface Event {
     data class ChangeTitle(val title: Title) : Event
-    data class ChangeTab(val fileType: FileType) : Event
+    data class ChangeTab(val mediaType: MediaType) : Event
     data class ChangeSelectionMode(val mode: SelectionMode) : Event
     data class ChangeShowOnBoardingUiStatus(val status: Boolean) : Event
     data class ChangeSAFAccessPermission(val hasSafAccessPermission: Boolean?) : Event
@@ -17,7 +18,5 @@ sealed interface Event {
     data object NotificationPermissionDialogDismiss : Event
     data object AutoSaveDialogDismiss : Event
     data object NotificationSettingsDialogDismiss : Event
-
-    data class SaveAutoSaveData(val interval: Int, val enable: Boolean) : Event
     data class SendLogsTelegram(val logs: String) : Event
 }

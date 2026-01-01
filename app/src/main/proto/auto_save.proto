@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option java_package = "com.voidDeveloper.wastatussaver.data.datastore.proto";
+option java_multiple_files = true;
+import "media_files.proto";
+
+message AutoSaveUserPref {
+  bool enable = 1;
+  repeated MediaType media_type = 2;
+  App app = 3;
+  AutoSaveInterval autoSaveInterval = 4;
+}
+
+enum App {
+  WHATSAPP = 0;
+  WHATSAPP_BUSINESS = 1;
+}
+
+enum AutoSaveInterval {
+  UNKOWN = 0;
+  ONE = 1;
+  SIX = 2;
+  TWELVE = 3;
+  TWENTY_FOUR = 4;
+}
+

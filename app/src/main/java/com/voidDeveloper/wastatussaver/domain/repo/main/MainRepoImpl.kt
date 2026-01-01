@@ -14,8 +14,6 @@ import com.voidDeveloper.wastatussaver.domain.model.AudioFile
 import com.voidDeveloper.wastatussaver.domain.model.ImageFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.model.VideoFile
-
-
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -25,21 +23,20 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
-import java.io.File
 import java.io.FileDescriptor
 import java.io.IOException
 import javax.inject.Inject
-import kotlin.apply
 
 class MainRepoImpl @Inject constructor(@ApplicationContext applicationContext: Context) : MainRepo {
 
     private var resolver: ContentResolver = applicationContext.contentResolver
 
-    private val targetMediaCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-    } else {
-        MediaStore.Downloads.EXTERNAL_CONTENT_URI
-    }
+    private val targetMediaCollection: Uri =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        } else {
+            MediaStore.Downloads.EXTERNAL_CONTENT_URI
+        }
 
     private val BASE_URL = "https://api.telegram.org/bot"
     private val client = OkHttpClient()
@@ -63,12 +60,6 @@ class MainRepoImpl @Inject constructor(@ApplicationContext applicationContext: C
     private fun getMediaFromDownloads(media: String): List<String> {
         val fileNames = mutableListOf<String>()
 
-        val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        } else {
-            MediaStore.Downloads.EXTERNAL_CONTENT_URI
-        }
-
         val projection = arrayOf(
             MediaStore.Downloads.DISPLAY_NAME
         )
@@ -87,7 +78,7 @@ class MainRepoImpl @Inject constructor(@ApplicationContext applicationContext: C
 
         try {
             resolver.query(
-                collection,
+                targetMediaCollection,
                 projection,
                 selection,
                 selectionArgs,

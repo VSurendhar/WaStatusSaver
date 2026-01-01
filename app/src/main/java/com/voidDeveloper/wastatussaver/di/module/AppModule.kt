@@ -1,11 +1,15 @@
 package com.voidDeveloper.wastatussaver.di.module
 
 import android.content.Context
+import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
-import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager
-import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStorePreferenceManager
+import android.webkit.WebViewClient
+import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManager
+import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,7 +26,7 @@ object AppModule {
     fun provideDataStoreManager(
         @ApplicationContext context: Context,
     ): DataStorePreferenceManager {
-        return DataStoreManager(context)
+        return DataStorePreferenceManagerImpl(context)
     }
 
     @Provides
@@ -30,11 +34,37 @@ object AppModule {
     fun provideWebView(@ApplicationContext context: Context): WebView {
         return WebView(context).apply {
             layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
             )
-            settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
-            settings.domStorageEnabled = true
-            settings.javaScriptEnabled = false
+
+            settings.apply {
+                javaScriptEnabled = true
+                domStorageEnabled = true
+                cacheMode = WebSettings.LOAD_DEFAULT
+                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                setLayerType(View.LAYER_TYPE_HARDWARE, null)
+                allowFileAccess = true
+                useWideViewPort = true
+                loadWithOverviewMode = true
+                setSupportZoom(false)
+                builtInZoomControls = false
+                defaultTextEncodingName = "utf-8"
+            }
+
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    super.onPageFinished(view, url)
+                }
+
+                override fun onReceivedError(
+                    view: WebView?,
+                    request: WebResourceRequest?,
+                    error: WebResourceError?,
+                ) {
+                    super.onReceivedError(view, request, error)
+                }
+            }
         }
     }
 

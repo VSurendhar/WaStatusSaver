@@ -2,26 +2,25 @@ package com.voidDeveloper.wastatussaver.presentation.ui.main.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
-import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.KEY_PREFERRED_TITLE
-import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.KEY_SHOULD_SHOW_ONBOARDING_UI
-import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStoreManager.DataStoreKeys.USER_PREF_AUTO_SAVE
-import com.voidDeveloper.wastatussaver.data.datastoremanager.DataStorePreferenceManager
+import com.voidDeveloper.wastatussaver.data.datastore.proto.AutoSaveInterval
+import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
+import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManager
+import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_PREFERRED_TITLE
+import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_SHOULD_SHOW_ONBOARDING_UI
+import com.voidDeveloper.wastatussaver.data.protodatastoremanager.AutoSaveProtoDataStoreManager
+import com.voidDeveloper.wastatussaver.data.protodatastoremanager.StatusMediaProtoDataStoreManager
 import com.voidDeveloper.wastatussaver.data.utils.Constants.DEFAULT_AUTO_SAVE_INTERVAL
-import com.voidDeveloper.wastatussaver.data.utils.getMillisFromNow
-import com.voidDeveloper.wastatussaver.data.utils.helpers.ScheduleAutoSave
-import com.voidDeveloper.wastatussaver.domain.model.AutoSave
+import com.voidDeveloper.wastatussaver.data.utils.extentions.getInterval
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
+import com.voidDeveloper.wastatussaver.domain.model.toStatusMedia
 import com.voidDeveloper.wastatussaver.domain.usecases.AppInstallCheckerUseCase
 import com.voidDeveloper.wastatussaver.domain.usecases.StatusesManagerUseCase
 import com.voidDeveloper.wastatussaver.domain.usecases.TelegramLogUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,10 +28,11 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val dataStorePreferenceManager: DataStorePreferenceManager,
+    private val autoSaveProtoDataStoreManager: AutoSaveProtoDataStoreManager,
     private val statusesManagerUseCase: StatusesManagerUseCase,
     private val appInstallChecker: AppInstallCheckerUseCase,
     private val telegramLogUseCase: TelegramLogUseCase,
-    private val scheduleAutoSave: ScheduleAutoSave,
+    private val statusMediaProtoDataStoreManager: StatusMediaProtoDataStoreManager,
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<UiState?> = MutableStateFlow(
@@ -40,9 +40,6 @@ class MainViewModel @Inject constructor(
     )
 
     val uiState = _uiState.asStateFlow()
-
-    private val _toastInfoChannel = Channel<String?>()
-    val toastInfoChannel = _toastInfoChannel.receiveAsFlow()
 
 
     init {
@@ -57,7 +54,7 @@ class MainViewModel @Inject constructor(
                 shouldShowOnBoardingUi = shouldShowOnBoardingUi,
                 hasSafAccessPermission = hasSafAccessPermission,
                 selectionMode = SelectionMode.SINGLE_SELECT,
-                currentFileType = FileType.IMAGES,
+                currentMediaType = MediaType.IMAGE,
                 mediaFiles = if (!shouldShowOnBoardingUi && appInstalled && hasSafAccessPermission) {
                     getFiles(preferredTitle)
                 } else {
@@ -112,7 +109,7 @@ class MainViewModel @Inject constructor(
     fun onEvent(event: Event) {
         when (event) {
             is Event.ChangeTab -> {
-                _uiState.update { it?.copy(currentFileType = event.fileType) }
+                _uiState.update { it?.copy(currentMediaType = event.mediaType) }
             }
 
             is Event.ChangeTitle -> {
@@ -209,34 +206,6 @@ class MainViewModel @Inject constructor(
                 }
             }
 
-            is Event.SaveAutoSaveData -> {
-                viewModelScope.launch {
-                    try {
-                        val interval = getAutoSaveInterval()
-                        saveAutoSaveData(enable = event.enable)
-                        if (event.enable) {
-                            if (interval != event.interval) {
-                                saveAutoSaveData(interval = event.interval)
-                                val triggerAtMillis = getMillisFromNow(event.interval)
-                                scheduleAutoSave.scheduleAutoSaveWorkAlarm(triggerAtMillis)
-                            } else {
-                                _toastInfoChannel.send("Interval already set")
-                            }
-                        } else {
-                            scheduleAutoSave.cancelAllAlarm()
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-                _uiState.update {
-                    it?.copy(
-                        showAutoSaveDialog = false,
-                        autoSaveEnabled = event.enable,
-                    )
-                }
-            }
-
             is Event.ShowNotificationPermissionDialog -> {
                 _uiState.update {
                     it?.copy(
@@ -288,28 +257,9 @@ class MainViewModel @Inject constructor(
     }
 
     private suspend fun getAutoSaveInterval(): Int? {
-        val userPrefAutoSave = dataStorePreferenceManager.getPreference(
-            USER_PREF_AUTO_SAVE, defaultValue = ""
-        ).first()
-        val gson = Gson()
-        val ufAutoSave = gson.fromJson(userPrefAutoSave, AutoSave::class.java)
-        return ufAutoSave?.interval
-    }
-
-    private suspend fun saveAutoSaveData(interval: Int? = null, enable: Boolean? = null) {
-        val gson = Gson()
-        val userPrefAutoSave = dataStorePreferenceManager.getPreference(
-            USER_PREF_AUTO_SAVE, defaultValue = ""
-        ).first()
-        val ufAutoSave: AutoSave =
-            gson.fromJson(userPrefAutoSave, AutoSave::class.java) ?: AutoSave()
-        if (interval != null) ufAutoSave.interval = interval
-        if (enable != null) {
-            ufAutoSave.isAutoSaveEnable = enable
-            if (!enable) ufAutoSave.interval = null
-        }
-        val userPrefNewAutoSave = gson.toJson(ufAutoSave)
-        dataStorePreferenceManager.putPreference(USER_PREF_AUTO_SAVE, userPrefNewAutoSave)
+        val autoSaveUserPref = autoSaveProtoDataStoreManager.readAutoSaveUserPref()
+        val interval = autoSaveUserPref.getInterval()
+        return interval
     }
 
     private fun refreshUiState() {
@@ -361,12 +311,16 @@ class MainViewModel @Inject constructor(
     }
 
     private suspend fun isAutoSaveEnable(): Boolean {
-        val userPrefAutoSave = dataStorePreferenceManager.getPreference(
-            USER_PREF_AUTO_SAVE, defaultValue = ""
-        ).first()
-        val gson = Gson()
-        val ufAutoSave = gson.fromJson(userPrefAutoSave, AutoSave::class.java)
-        return ufAutoSave?.isAutoSaveEnable ?: false
+        val autoSaveUserPref = autoSaveProtoDataStoreManager.readAutoSaveUserPref()
+        val enable = autoSaveUserPref.enable
+        return enable
+    }
+
+    private fun saveMediaFiles(files: List<MediaFile>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val statusMedia = files.map { it.toStatusMedia() }
+            statusMediaProtoDataStoreManager.writeStatusMedia(statusMedia)
+        }
     }
 
 }

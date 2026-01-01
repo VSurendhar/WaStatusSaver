@@ -4,14 +4,17 @@ import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.core.net.toUri
 import com.voidDeveloper.wastatussaver.R
+import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.utils.Constants.DEFAULT_AUTO_SAVE_INTERVAL
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
+import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
+import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.DownloadState
 
 data class UiState(
     val title: Title? = null,
     val appInstalled: Boolean? = null,
     val selectionMode: SelectionMode? = null,
-    val currentFileType: FileType? = null,
+    val currentMediaType: MediaType? = null,
     val shouldShowOnBoardingUi: Boolean? = null,
     val hasSafAccessPermission: Boolean? = null,
     val mediaFiles: List<MediaFile> = emptyList(),
@@ -21,11 +24,25 @@ data class UiState(
     val showNotificationPermissionSettingsDialog: Boolean = false,
     val savedAutoSaveInterval: Int = DEFAULT_AUTO_SAVE_INTERVAL,
     val autoSaveEnabled: Boolean = false,
-    val lastRefreshTimestamp: Long = 0L
+    val lastRefreshTimestamp: Long = 0L,
 )
 
-enum class FileType {
-    IMAGES, VIDEOS, AUDIO, UNSPECIFIED
+
+fun MediaType.toFileType() = when (this) {
+    MediaType.AUDIO -> MediaType.AUDIO
+    MediaType.IMAGE -> MediaType.IMAGE
+    MediaType.VIDEO -> MediaType.VIDEO
+    else -> MediaType.UNSPECIFIED
+}
+
+fun MediaFile.toDomainMediaInfo(): MediaInfo {
+    return MediaInfo(
+        uri = uri.toString(),
+        lastPlayedMillis = 0,
+        fileName = fileName.toString(),
+        mediaType = mediaType,
+        downloadStatus = if (isDownloaded) DownloadState.DOWNLOADED else DownloadState.NOT_DOWNLOADED
+    )
 }
 
 enum class SelectionMode {

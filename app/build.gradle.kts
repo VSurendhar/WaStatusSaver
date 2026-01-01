@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.dagger)
     kotlin("kapt")
     id("kotlin-parcelize")
+    id("com.google.protobuf") version "0.9.5"
 }
 
 val secrets = Properties()
@@ -17,6 +18,9 @@ if (secretsFile.exists()) {
 }
 
 android {
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
     namespace = "com.voidDeveloper.wastatussaver"
     compileSdk = 36
     android.buildFeatures.buildConfig = true
@@ -25,7 +29,7 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "2.0"
         buildConfigField("String", "BOT_TOKEN", "\"${secrets.getProperty("botToken")}\"")
         buildConfigField("String", "CHAT_ID", "\"${secrets.getProperty("chatId")}\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -33,7 +37,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -49,6 +54,19 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.21.7"
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins.create("java") {
+                option("lite")
+            }
+        }
     }
 }
 
@@ -81,7 +99,7 @@ dependencies {
     implementation(libs.hilt.compose.navigation)
     implementation(libs.androidx.hilt.work)
     kapt(libs.dagger.kapt)
-    kapt (libs.androidx.hilt.compiler)
+    kapt(libs.androidx.hilt.compiler)
     //  Data Store
     implementation(libs.androidx.datastore.preferences)
 
@@ -109,6 +127,14 @@ dependencies {
     implementation("androidx.media3:media3-ui:1.0.0-beta02")
 
     // Material Icons
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.compose.material.icons.extended)
+
+    // ProtoBuf Data Store
+    implementation(libs.androidx.datastore)
+    implementation(libs.protobuf.javalite)
+
+    // Compose Navigation
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.compose.animation:animation:1.6.8")
 
 }

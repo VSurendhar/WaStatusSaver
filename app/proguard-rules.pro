@@ -19,3 +19,16 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep all protobuf generated classes
+-keep class com.voidDeveloper.wastatussaver.data.datastore.proto.** {
+    *;
+}
+
+# Keep protobuf runtime internals
+-keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
+    <fields>;
+    <methods>;
+}
+
+-keep class com.google.protobuf.** { *; }

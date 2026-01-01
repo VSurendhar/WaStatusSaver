@@ -9,25 +9,31 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.voidDeveloper.wastatussaver.R
+import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
+import com.voidDeveloper.wastatussaver.data.datastore.proto.StatusMedia
 import com.voidDeveloper.wastatussaver.data.utils.compressBitmapQuality
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.FileType
-import kotlinx.android.parcel.Parcelize
-import java.util.UUID
 
-abstract class MediaFile(open val uri: Uri, fileName1: String) {
-    val id: String = UUID.randomUUID().toString()
-    var isDownloaded: Boolean = false
-    abstract val fileType: FileType
+@Stable
+abstract class MediaFile() {
+    val id: String
+        get() = fileName
+    var isDownloaded by mutableStateOf(false)
+    abstract val mediaType: MediaType
+    abstract val fileName: String
+    abstract val uri: Uri
     protected val width: Int = 150
     protected val height: Int = 300
-    open val fileName: String? = null
-    protected var thumbnailBitmap: Bitmap? = null
+    var thumbnailBitmap by mutableStateOf<Bitmap?>(null)
     abstract fun getThumbNailBitMap(context: Context): Bitmap?
 }
 
@@ -35,8 +41,8 @@ abstract class MediaFile(open val uri: Uri, fileName1: String) {
 data class ImageFile(
     override val uri: Uri,
     override val fileName: String,
-    override val fileType: FileType = FileType.IMAGES,
-) : MediaFile(uri, fileName) {
+    override val mediaType: MediaType = MediaType.IMAGE,
+) : MediaFile() {
     override fun getThumbNailBitMap(context: Context): Bitmap? {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val source = ImageDecoder.createSource(context.contentResolver, uri)
@@ -55,8 +61,8 @@ data class ImageFile(
 data class AudioFile(
     override val uri: Uri,
     override val fileName: String,
-    override val fileType: FileType = FileType.AUDIO,
-) : MediaFile(uri, fileName) {
+    override val mediaType: MediaType = MediaType.AUDIO,
+) : MediaFile() {
     private var mediaItem: MediaItem? = null
 
     fun getMediaItem(context: Context): MediaItem {
@@ -116,8 +122,8 @@ data class AudioFile(
 data class VideoFile(
     override val uri: Uri,
     override val fileName: String,
-    override val fileType: FileType = FileType.VIDEOS,
-) : MediaFile(uri, fileName) {
+    override val mediaType: MediaType = MediaType.VIDEO,
+) : MediaFile() {
     private var mediaItem: MediaItem = MediaItem.fromUri(uri)
 
     fun getMediaItem(): MediaItem {
@@ -150,8 +156,8 @@ data class VideoFile(
 
 data class UnknownFile(
     override val uri: Uri,
-    override val fileType: FileType = FileType.UNSPECIFIED,
-) : MediaFile(uri, "unknownFile") {
+    override val mediaType: MediaType = MediaType.UNSPECIFIED, override val fileName: String,
+) : MediaFile() {
     override fun getThumbNailBitMap(context: Context): Bitmap? {
         if (thumbnailBitmap != null) {
             return thumbnailBitmap
@@ -161,4 +167,12 @@ data class UnknownFile(
         thumbnailBitmap = bitmap
         return bitmap
     }
+}
+
+fun MediaFile.toStatusMedia(): StatusMedia {
+    return StatusMedia.newBuilder()
+        .setUri(uri.toString())
+        .setFileName(fileName)
+        .setMediaType(mediaType)
+        .build()
 }

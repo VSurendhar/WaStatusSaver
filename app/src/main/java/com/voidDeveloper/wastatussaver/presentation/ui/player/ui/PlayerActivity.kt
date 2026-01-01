@@ -60,10 +60,10 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import com.voidDeveloper.wastatussaver.R
+import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.domain.model.toMediaFile
 import com.voidDeveloper.wastatussaver.presentation.receivers.NoisyAudioReceiver
 import com.voidDeveloper.wastatussaver.presentation.theme.WaStatusSaverTheme
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.FileType
 import com.voidDeveloper.wastatussaver.presentation.ui.player.components.CustomVideoControls
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -218,10 +218,10 @@ class PlayerActivity : ComponentActivity() {
                                 ActionButton(downloadStatus = isDownloaded, onSave = {
                                     viewModel.onDownloadClick(mediaInfo.toMediaFile())
                                 }, onRepost = {
-                                    val mediaFolder = when (mediaInfo.fileType) {
-                                        FileType.AUDIO -> "Audio"
-                                        FileType.IMAGES -> "Image"
-                                        FileType.VIDEOS -> "Video"
+                                    val mediaFolder = when (mediaInfo.mediaType) {
+                                        MediaType.AUDIO -> "Audio"
+                                        MediaType.IMAGE -> "Image"
+                                        MediaType.VIDEO -> "Video"
                                         else -> "*"
                                     }
                                     val uri = if (isDownloaded == DownloadState.DOWNLOADED) {
@@ -234,17 +234,17 @@ class PlayerActivity : ComponentActivity() {
                                         viewModel.saveCache(
                                             uri = mediaInfo.uri,
                                             context = context,
-                                            fileType = mediaInfo.fileType
+                                            mediaType = mediaInfo.mediaType
                                         )
                                     }
-                                    val fileType = when (mediaInfo.fileType) {
-                                        FileType.AUDIO -> "audio/*"
-                                        FileType.IMAGES -> "jpg/*"
-                                        FileType.VIDEOS -> "video/*"
+                                    val mediaType = when (mediaInfo.mediaType) {
+                                        MediaType.AUDIO -> "audio/*"
+                                        MediaType.IMAGE -> "jpg/*"
+                                        MediaType.VIDEO -> "video/*"
                                         else -> "*"
                                     }
                                     val intent = Intent(Intent.ACTION_SEND).apply {
-                                        type = fileType
+                                        type = mediaType
                                         putExtra(Intent.EXTRA_STREAM, uri)
                                         flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
                                     }
@@ -256,64 +256,93 @@ class PlayerActivity : ComponentActivity() {
                                 })
                             }
                         }
-                        if (mediaInfo.fileType == FileType.AUDIO) {
-                            AudioViewer(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clickable(
-                                        indication = null,
-                                        interactionSource = remember { MutableInteractionSource() }) {
-                                        showControls = !showControls
-                                    },
-                                onPause = {
-                                    viewModel.pause()
-                                    viewModel.persistPlaybackPosition()
-                                },
-                            )
-                        } else if (mediaInfo.fileType == FileType.IMAGES) {
-                            ImageViewer(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clickable(
-                                        indication = null,
-                                        interactionSource = remember { MutableInteractionSource() }) {
-                                        showControls = !showControls
-                                    },
-                                uri = mediaInfo.uri
-                            )
-                        } else {
-                            AndroidView(
-                                factory = { context ->
-                                    PlayerView(context).also {
-                                        it.player = viewModel.player
-                                        it.useController = false
-                                        it.keepScreenOn = true
-                                        it.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-                                    }
-                                }, update = {
-                                    when (lifecycle) {
-                                        Lifecycle.Event.ON_PAUSE -> {
-                                            it.onPause()
-                                            it.player?.pause()
-                                            viewModel.persistPlaybackPosition()
-                                        }
+                        val TAG = "MediaViewer"
+                        when (mediaInfo.mediaType) {
 
-                                        Lifecycle.Event.ON_RESUME -> {
-                                            it.onResume()
-                                        }
+                            MediaType.AUDIO -> {
+                                Log.d(TAG, "Rendering AUDIO viewer")
 
-                                        else -> Unit
-                                    }
-                                }, modifier = Modifier
-                                    .fillMaxSize()
-                                    .clickable(
-                                        indication = null,
-                                        interactionSource = remember { MutableInteractionSource() }) {
-                                        showControls = !showControls
-                                    }
-                                    .padding(top = 12.dp))
+                                AudioViewer(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable(
+                                            indication = null,
+                                            interactionSource = remember { MutableInteractionSource() }
+                                        ) {
+                                            showControls = !showControls
+                                            Log.d(TAG, "AUDIO clicked → showControls=$showControls")
+                                        },
+                                    onPause = {
+                                        Log.d(TAG, "AUDIO paused → persisting playback position")
+                                        viewModel.pause()
+                                        viewModel.persistPlaybackPosition()
+                                    },
+                                )
+                            }
+
+                            MediaType.IMAGE -> {
+                                Log.d(TAG, "Rendering IMAGE viewer")
+
+                                ImageViewer(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable(
+                                            indication = null,
+                                            interactionSource = remember { MutableInteractionSource() }
+                                        ) {
+                                            showControls = !showControls
+                                            Log.d(TAG, "IMAGE clicked → showControls=$showControls")
+                                        },
+                                    uri = mediaInfo.uri
+                                )
+                            }
+
+                            else -> {
+                                Log.d(TAG, "Rendering VIDEO viewer")
+
+                                AndroidView(
+                                    factory = { context ->
+                                        Log.d(TAG, "Creating PlayerView")
+
+                                        PlayerView(context).also {
+                                            it.player = viewModel.player
+                                            it.useController = false
+                                            it.keepScreenOn = true
+                                            it.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                                        }
+                                    },
+                                    update = { playerView ->
+                                        when (lifecycle) {
+
+                                            Lifecycle.Event.ON_PAUSE -> {
+                                                Log.d(TAG, "Lifecycle ON_PAUSE → pause player & persist position")
+                                                playerView.onPause()
+                                                playerView.player?.pause()
+                                                viewModel.persistPlaybackPosition()
+                                            }
+
+                                            Lifecycle.Event.ON_RESUME -> {
+                                                Log.d(TAG, "Lifecycle ON_RESUME → resume PlayerView")
+                                                playerView.onResume()
+                                            }
+
+                                            else -> Unit
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable(
+                                            indication = null,
+                                            interactionSource = remember { MutableInteractionSource() }
+                                        ) {
+                                            showControls = !showControls
+                                            Log.d(TAG, "VIDEO clicked → showControls=$showControls")
+                                        }
+                                        .padding(top = 12.dp)
+                                )
+                            }
                         }
-                        if (showControls && (mediaInfo.fileType != FileType.IMAGES)) {
+                        if (showControls && (mediaInfo.mediaType != MediaType.IMAGE)) {
                             CustomVideoControls(
                                 isPlaying = viewPlaying,
                                 currentPosition = currentPosition,
