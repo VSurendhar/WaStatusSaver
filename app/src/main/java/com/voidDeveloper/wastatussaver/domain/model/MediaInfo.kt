@@ -3,7 +3,7 @@ package com.voidDeveloper.wastatussaver.domain.model
 import android.os.Parcelable
 import androidx.core.net.toUri
 import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
-import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.DownloadState
+import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

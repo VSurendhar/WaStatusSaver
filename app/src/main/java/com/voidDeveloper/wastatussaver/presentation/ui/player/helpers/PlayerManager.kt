@@ -14,31 +14,7 @@ class PlayerManager @Inject constructor(
     private val audioFocusManager: AudioFocusManager,
 ) {
 
-    private val _mediaEnded = MutableStateFlow(false)
-    val mediaEnded: StateFlow<Boolean> = _mediaEnded
-
-    private val _isPlaying = MutableStateFlow(false)
-    val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
-
-    private val listener = object : Player.Listener {
-        override fun onPlaybackStateChanged(state: Int) {
-            when (state) {
-                Player.STATE_ENDED -> _mediaEnded.value = true
-            }
-        }
-
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
-            _isPlaying.value = isPlaying
-        }
-
-    }
-
-    init {
-        player.addListener(listener)
-    }
-
     fun play() {
-        _mediaEnded.value = false
         if (audioFocusManager.requestFocus()) {
             player.play()
         }
@@ -82,7 +58,6 @@ class PlayerManager @Inject constructor(
     fun duration(): Long = player.duration
 
     fun release() {
-        player.removeListener(listener)
         audioFocusManager.abandonFocus()
         player.release()
     }

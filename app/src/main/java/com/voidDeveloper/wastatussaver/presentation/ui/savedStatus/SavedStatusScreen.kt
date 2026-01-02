@@ -53,7 +53,7 @@ import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.MissingSetupInfo
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.PreviewItem
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.TabsRow
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.toDomainMediaInfo
-import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.DownloadState
+import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.PlayerActivity
 
 @Composable

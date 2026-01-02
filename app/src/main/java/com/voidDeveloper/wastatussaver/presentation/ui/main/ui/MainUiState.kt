@@ -8,7 +8,7 @@ import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.utils.Constants.DEFAULT_AUTO_SAVE_INTERVAL
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
-import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.DownloadState
+import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 
 data class UiState(
     val title: Title? = null,

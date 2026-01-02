@@ -17,7 +17,7 @@ import com.voidDeveloper.wastatussaver.domain.model.ImageFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
 import com.voidDeveloper.wastatussaver.domain.model.VideoFile
-import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.DownloadState
+import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -254,5 +254,66 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
         }
         return null
     }
+
+
+    fun getMediaUriFromDownloads(
+        fileName: String,
+        mediaFolder: String,
+    ): Uri? {
+
+        val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        } else {
+            MediaStore.Downloads.EXTERNAL_CONTENT_URI
+        }
+
+        val projection = arrayOf(
+            MediaStore.Downloads._ID,
+            MediaStore.Downloads.DISPLAY_NAME
+        )
+
+        val selection: String?
+        val selectionArgs: Array<String>?
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            selection =
+                "${MediaStore.Downloads.DISPLAY_NAME} = ? AND " +
+                        "${MediaStore.Downloads.RELATIVE_PATH} LIKE ?"
+
+            selectionArgs = arrayOf(
+                fileName,
+                "%Download/WaStatusSaver/$mediaFolder/%"
+            )
+        } else {
+            selection = "${MediaStore.Downloads.DISPLAY_NAME} = ?"
+            selectionArgs = arrayOf(fileName)
+        }
+
+        return try {
+            resolver.query(
+                collection,
+                projection,
+                selection,
+                selectionArgs,
+                null
+            )?.use { cursor ->
+
+                if (cursor.moveToFirst()) {
+                    val idIndex =
+                        cursor.getColumnIndexOrThrow(MediaStore.Downloads._ID)
+
+                    val id = cursor.getLong(idIndex)
+
+                    ContentUris.withAppendedId(collection, id)
+                } else {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("WaStatusSaver", "Failed to get media URI", e)
+            null
+        }
+    }
+
 
 }
