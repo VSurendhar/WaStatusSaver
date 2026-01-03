@@ -59,7 +59,9 @@ fun AppNavHost(navController: NavHostController, startDestination: String) {
             arguments = listOf(navArgument("url") { type = NavType.StringType })
         ) { backStackEntry ->
             val url = URLDecoder.decode(backStackEntry.arguments?.getString("url"), "UTF-8")
-            WebViewScreen(url = url)
+            WebViewScreen(url = url, onBackClick = {
+                navController.popBackStack()
+            })
         }
     }
 

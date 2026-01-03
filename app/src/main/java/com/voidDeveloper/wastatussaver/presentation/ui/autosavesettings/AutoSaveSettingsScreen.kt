@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -74,7 +73,6 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
     val appTitles = listOf(
         Title.Whatsapp, Title.WhatsappBusiness
     )
-
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -161,8 +159,8 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
                             modifier = Modifier
-                                .padding(12.dp)
                                 .height(30.dp)
+                                .padding(end = 12.dp)
                                 .singleClick {
                                     onBackClick()
                                 })
@@ -182,7 +180,7 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                     AutoSaveSettingsEvent.NotificationPermissionOkClicked
                 )
             }, onDialogDismissed = {
-                    viewModel.onEvent(AutoSaveSettingsEvent.NotificationPermissionDialogDismiss)
+                viewModel.onEvent(AutoSaveSettingsEvent.NotificationPermissionDialogDismiss)
             })
         } else if (uiState.showNotificationPermissionSettingsDialog) {
             val context = LocalContext.current
@@ -229,7 +227,7 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                         )
                     })
             }
-
+            AutoSaveNote()
             if (uiState.isAutoSaveEnabled) {
                 HorizontalDivider()
 
@@ -243,11 +241,27 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                                 label = stringResource(id = title.resId),
                                 isSelected = uiState.selectedTitle == title,
                                 onClick = {
-                                    viewModel.onEvent(
-                                        AutoSaveSettingsEvent.SelectTitle(
-                                            title
+                                    if (viewModel.hasSafPermission(title.uri)) {
+                                        viewModel.onEvent(
+                                            AutoSaveSettingsEvent.SelectTitle(
+                                                title
+                                            )
                                         )
-                                    )
+                                    } else {
+                                        if (viewModel.appInstalled(title.packageName)) {
+                                            Toast.makeText(
+                                                context,
+                                                "Please grant SAF permission",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                "Please Install the Application to Continue",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
                                 })
                         }
                     }
@@ -412,6 +426,41 @@ fun AppFilterChip(
             1.dp, if (isSelected) Color.Transparent else Color(0xFF7E7D82)
         )
     )
+}
+
+@Composable
+fun AutoSaveNote() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                shape = MaterialTheme.shapes.medium
+            )
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(
+            text = "Note",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Text(
+            text = "• Auto-save runs in the background.",
+            style = MaterialTheme.typography.bodySmall
+        )
+
+        Text(
+            text = "• If Storage Access permission is missing, auto-save will be disabled automatically.",
+            style = MaterialTheme.typography.bodySmall
+        )
+
+        Text(
+            text = "• If the selected application is not installed, auto-save will be disabled automatically.",
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
 }
 
 @Composable

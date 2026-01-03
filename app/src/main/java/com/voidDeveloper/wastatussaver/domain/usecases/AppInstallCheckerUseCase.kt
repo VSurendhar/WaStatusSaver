@@ -2,7 +2,9 @@ package com.voidDeveloper.wastatussaver.domain.usecases
 
 import android.app.Application
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import com.voidDeveloper.wastatussaver.data.utils.extentions.hasReadPermission
 import javax.inject.Inject
 
 class AppInstallCheckerUseCase @Inject constructor(
@@ -26,4 +28,9 @@ class AppInstallCheckerUseCase @Inject constructor(
             false
         }
     }
+
+    fun hasSafAccessPermission(uri: Uri): Boolean {
+        return appContext.hasReadPermission(uri)
+    }
+
 }

@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -151,4 +152,13 @@ fun Modifier.singleClick(
             }
         )
     )
+}
+
+fun Context.hasReadPermission(uri: Uri?): Boolean {
+    if (uri == null) {
+        return false
+    }
+    return contentResolver.persistedUriPermissions.any { perm ->
+        perm.uri == uri && perm.isReadPermission
+    }
 }

@@ -45,6 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.utils.createColoredString
+import com.voidDeveloper.wastatussaver.data.utils.extentions.singleClick
 import com.voidDeveloper.wastatussaver.domain.model.AudioFile
 import com.voidDeveloper.wastatussaver.domain.model.ImageFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
@@ -53,8 +54,8 @@ import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.MissingSetupInfo
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.PreviewItem
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.TabsRow
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.toDomainMediaInfo
-import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.PlayerActivity
+import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 
 @Composable
 fun SavedStatusScreen(onBack: () -> Boolean) {
@@ -94,16 +95,15 @@ fun SavedStatusScreen(onBack: () -> Boolean) {
                             .padding(horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        IconButton(onClick = {
-                            onBack()
-                        }) {
-                            Icon(
-                                modifier = Modifier.height(30.dp),
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Dropdown",
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .height(30.dp)
+                                .singleClick {
+                                    onBack()
+                                })
                         Text(
                             text = "Saved Status Media",
                             modifier = Modifier.height(30.dp),

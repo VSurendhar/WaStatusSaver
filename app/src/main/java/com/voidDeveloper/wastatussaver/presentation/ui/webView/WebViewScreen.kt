@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,10 +45,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.utils.extentions.findActivity
 import com.voidDeveloper.wastatussaver.data.utils.extentions.isInternetAvailable
+import com.voidDeveloper.wastatussaver.data.utils.extentions.singleClick
 import com.voidDeveloper.wastatussaver.presentation.ui.main.MainActivity
 
 @Composable
-fun WebViewScreen(url: String? = "https://www.google.com") {
+fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Unit) {
 
     val webView =
         (LocalContext.current.findActivity() as MainActivity).webViewManager.getWebViewInstance()
@@ -65,21 +67,29 @@ fun WebViewScreen(url: String? = "https://www.google.com") {
             .background(MaterialTheme.colorScheme.primary)
             .statusBarsPadding(),
         topBar = {
-            PrivacyPolicyTopBar(onRefreshPressed = {
-                internetAvailable = context.isInternetAvailable()
-            })
+            PrivacyPolicyTopBar(
+                onRefreshPressed = {
+                    internetAvailable = context.isInternetAvailable()
+                },
+                onBackClick = onBackClick
+            )
         }) { innerPadding ->
         if (internetAvailable) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
                 if (isLoading) {
                     LinearProgressIndicator(
                         progress = { progress },
                         modifier = Modifier
-                            .fillMaxWidth(),
-                        trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                     )
                 }
-                AndroidView(modifier = Modifier.padding(innerPadding), factory = {
+                AndroidView(modifier = Modifier.fillMaxSize(), factory = {
                     webView.apply {
                         settings.domStorageEnabled = true
                         webChromeClient = object : WebChromeClient() {
@@ -122,7 +132,7 @@ fun WebViewScreen(url: String? = "https://www.google.com") {
 
 
 @Composable
-fun PrivacyPolicyTopBar(onRefreshPressed: () -> Unit) {
+fun PrivacyPolicyTopBar(onRefreshPressed: () -> Unit, onBackClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -139,6 +149,15 @@ fun PrivacyPolicyTopBar(onRefreshPressed: () -> Unit) {
                 .padding(horizontal = 18.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = null,
+                modifier = Modifier
+                    .height(30.dp)
+                    .padding(end = 12.dp)
+                    .singleClick {
+                        onBackClick()
+                    })
             Text(
                 modifier = Modifier,
                 text = "Privacy Policy",

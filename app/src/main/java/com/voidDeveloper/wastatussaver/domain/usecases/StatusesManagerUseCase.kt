@@ -10,6 +10,7 @@ import com.voidDeveloper.wastatussaver.data.utils.Constants
 import com.voidDeveloper.wastatussaver.data.utils.Constants.AUDIO_MIME_TYPE_STARTING
 import com.voidDeveloper.wastatussaver.data.utils.Constants.IMAGE_MIME_TYPE_STARTING
 import com.voidDeveloper.wastatussaver.data.utils.Constants.VIDEO_MIME_TYPE_STARTING
+import com.voidDeveloper.wastatussaver.data.utils.extentions.hasReadPermission
 import com.voidDeveloper.wastatussaver.domain.model.AudioFile
 import com.voidDeveloper.wastatussaver.domain.model.ImageFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
@@ -23,14 +24,8 @@ class StatusesManagerUseCase @Inject constructor(
     private val mainRepo: MainRepo,
 ) {
 
-
     fun hasPermission(uri: Uri?): Boolean {
-        if (uri == null) {
-            return false
-        }
-        return appContext.contentResolver.persistedUriPermissions.any { perm ->
-            perm.uri == uri && perm.isReadPermission
-        }
+        return appContext.hasReadPermission(uri)
     }
 
     private lateinit var downloadedFiles: List<String>

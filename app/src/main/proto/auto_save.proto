@@ -12,8 +12,9 @@ message AutoSaveUserPref {
 }
 
 enum App {
-  WHATSAPP = 0;
-  WHATSAPP_BUSINESS = 1;
+  UNKOWN_APP = 0;
+  WHATSAPP = 1;
+  WHATSAPP_BUSINESS = 2;
 }
 
 enum AutoSaveInterval {

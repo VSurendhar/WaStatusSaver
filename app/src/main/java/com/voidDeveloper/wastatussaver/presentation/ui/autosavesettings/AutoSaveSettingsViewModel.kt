@@ -1,5 +1,6 @@
 package com.voidDeveloper.wastatussaver.presentation.ui.autosavesettings
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.voidDeveloper.wastatussaver.data.datastore.proto.App
@@ -15,6 +16,7 @@ import com.voidDeveloper.wastatussaver.data.utils.extentions.toTitle
 import com.voidDeveloper.wastatussaver.data.utils.getMillisFromNow
 import com.voidDeveloper.wastatussaver.data.utils.helpers.ScheduleAutoSave
 import com.voidDeveloper.wastatussaver.domain.model.AutoSaveIntervalDomain
+import com.voidDeveloper.wastatussaver.domain.usecases.AppInstallCheckerUseCase
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.Title
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -29,17 +31,15 @@ import javax.inject.Inject
 @HiltViewModel
 class AutoSaveSettingsViewModel @Inject constructor(
     private val scheduleAutoSave: ScheduleAutoSave,
+    private val appInstallCheckerUseCase: AppInstallCheckerUseCase,
     private val autoSaveProtoDataStoreManager: AutoSaveProtoDataStoreManager,
 ) : ViewModel() {
 
-    private val _uiState =
-        MutableStateFlow(AutoSaveSettingsUiState())
+    private val _uiState = MutableStateFlow(AutoSaveSettingsUiState())
 
-    val uiState: StateFlow<AutoSaveSettingsUiState> =
-        _uiState.asStateFlow()
+    val uiState: StateFlow<AutoSaveSettingsUiState> = _uiState.asStateFlow()
 
-    private val _effect =
-        Channel<AutoSaveSettingsEffect>(Channel.BUFFERED)
+    private val _effect = Channel<AutoSaveSettingsEffect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
 
     private var previousAutoSavePref: AutoSaveUserPref? = null
@@ -48,25 +48,22 @@ class AutoSaveSettingsViewModel @Inject constructor(
     fun onEvent(event: AutoSaveSettingsEvent) {
         when (event) {
 
-            is AutoSaveSettingsEvent.ToggleAutoSave ->
-                updateState { copy(isAutoSaveEnabled = event.enabled) }
+            is AutoSaveSettingsEvent.ToggleAutoSave -> updateState { copy(isAutoSaveEnabled = event.enabled) }
 
-            is AutoSaveSettingsEvent.SelectTitle ->
-                updateState { copy(selectedTitle = event.title) }
+            is AutoSaveSettingsEvent.SelectTitle -> updateState {
+                copy(
+                    selectedTitle = event.title
+                )
+            }
 
-            is AutoSaveSettingsEvent.SelectInterval ->
-                updateState { copy(selectedInterval = event.interval) }
+            is AutoSaveSettingsEvent.SelectInterval -> updateState { copy(selectedInterval = event.interval) }
 
-            is AutoSaveSettingsEvent.ToggleMediaType ->
-                updateState {
-                    copy(
-                        selectedMediaTypes =
-                            if (event.enabled)
-                                selectedMediaTypes + event.mediaType
-                            else
-                                selectedMediaTypes - event.mediaType
-                    )
-                }
+            is AutoSaveSettingsEvent.ToggleMediaType -> updateState {
+                copy(
+                    selectedMediaTypes = if (event.enabled) selectedMediaTypes + event.mediaType
+                    else selectedMediaTypes - event.mediaType
+                )
+            }
 
             is AutoSaveSettingsEvent.NotificationPermissionDenied -> {
                 viewModelScope.launch {
@@ -99,8 +96,7 @@ class AutoSaveSettingsViewModel @Inject constructor(
                 }
             }
 
-            AutoSaveSettingsEvent.SaveClicked ->
-                saveAutoSaveUserPref()
+            AutoSaveSettingsEvent.SaveClicked -> saveAutoSaveUserPref()
 
         }
     }
@@ -121,15 +117,26 @@ class AutoSaveSettingsViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isAutoSaveEnabled = pref.enable,
-                        selectedTitle = pref.app.toTitle(),
-                        selectedInterval = pref.autoSaveInterval
-                            .toAutoSaveIntervalDomain()
+                        selectedTitle = ensureInstalledTitle(pref.app.toTitle()), // Will Return this if installed or the installed Title
+                        selectedInterval = pref.autoSaveInterval.toAutoSaveIntervalDomain()
                             .safeAutoSaveIntervalDomain(),
                         selectedMediaTypes = pref.mediaTypeList.toSet()
                     )
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+            }
+        }
+    }
+
+    fun ensureInstalledTitle(title: Title): Title {
+        return if (appInstalled(title.packageName)) {
+            title
+        } else {
+            if (appInstalled(Title.Whatsapp.packageName)) {
+                Title.Whatsapp
+            } else {
+                Title.WhatsappBusiness
             }
         }
     }
@@ -150,6 +157,14 @@ class AutoSaveSettingsViewModel @Inject constructor(
                 val selectedTitle = state.selectedTitle.toApp()
                 val selectedMediaTypes = state.selectedMediaTypes.toList()
 
+                if(!appInstalled(selectedTitle.toTitle().packageName)){
+                    emitEffect(AutoSaveSettingsEffect.ShowToast("Please Install the Application to Continue"))
+                    return@launch
+                }else if(!hasSafPermission(selectedTitle.toTitle().uri)){
+                    emitEffect(AutoSaveSettingsEffect.ShowToast("Please grant SAF permission"))
+                    return@launch
+                }
+
                 saveAutoSaveData(
                     enable = enable,
                     selectedTitle = selectedTitle,
@@ -164,10 +179,7 @@ class AutoSaveSettingsViewModel @Inject constructor(
 
                 val previousInterval = previousPref?.getInterval()
                 val isSameConfig =
-                    previousPref?.enable == true &&
-                            previousInterval == scheduledInterval &&
-                            previousPref.app == selectedTitle &&
-                            previousPref.mediaTypeList == selectedMediaTypes
+                    previousPref?.enable == true && previousInterval == scheduledInterval && previousPref.app == selectedTitle && previousPref.mediaTypeList == selectedMediaTypes
 
                 if (isSameConfig) {
                     emitEffect(
@@ -226,6 +238,7 @@ class AutoSaveSettingsViewModel @Inject constructor(
         }
     }
 
+
     private fun updateState(
         reducer: AutoSaveSettingsUiState.() -> AutoSaveSettingsUiState,
     ) {
@@ -236,15 +249,23 @@ class AutoSaveSettingsViewModel @Inject constructor(
         _effect.send(effect)
     }
 
+    fun hasSafPermission(uri: Uri): Boolean {
+        return appInstallCheckerUseCase.hasSafAccessPermission(uri)
+    }
+
+    fun appInstalled(packageName: String): Boolean {
+        return appInstallCheckerUseCase.isInstalled(packageName)
+    }
+
 }
 
 data class AutoSaveSettingsUiState(
     val isAutoSaveEnabled: Boolean = false,
     val selectedTitle: Title = Title.Whatsapp,
-    val selectedInterval: AutoSaveIntervalDomain =
-        AutoSaveIntervalDomain.TWENTY_FOUR_HOURS,
-    val selectedMediaTypes: Set<MediaType> =
-        setOf(MediaType.IMAGE, MediaType.VIDEO, MediaType.AUDIO),
+    val selectedInterval: AutoSaveIntervalDomain = AutoSaveIntervalDomain.TWENTY_FOUR_HOURS,
+    val selectedMediaTypes: Set<MediaType> = setOf(
+        MediaType.IMAGE, MediaType.VIDEO, MediaType.AUDIO
+    ),
     val showNotificationPermissionDialog: Boolean = false,
     val showNotificationPermissionSettingsDialog: Boolean = false,
 )
