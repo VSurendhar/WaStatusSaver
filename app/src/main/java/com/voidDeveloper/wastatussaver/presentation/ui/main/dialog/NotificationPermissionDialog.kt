@@ -35,44 +35,45 @@ import com.voidDeveloper.wastatussaver.R
 import kotlinx.coroutines.launch
 
 @Composable
-fun NotificationPermissionDialog(onOkPressed: () -> Unit, onDialogDismissed: () -> Unit) {
-    var openDialog by remember { mutableStateOf(true) }
-    if (openDialog) {
-        Dialog(
-            onDismissRequest = { openDialog = false },
-            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+fun NotificationPermissionDialog(
+    onOkPressed: () -> Unit,
+    onDialogDismissed: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onDialogDismissed,
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .wrapContentSize()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White)
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
+            OnBoardingBody(
+                imageRes = R.drawable.ic_notfication_permission,
+                title = "Auto-Save Notifications",
+                bodyText = "We'd like to notify you when a status is auto-saved successfully or fails due to an issue."
+            )
+
+            Text(
+                text = "Okay",
                 modifier = Modifier
-                    .wrapContentSize()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
-                    .padding(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                OnBoardingBody(
-                    imageRes = R.drawable.ic_notfication_permission,
-                    title = "Auto-Save Notifications",
-                    bodyText = "We'd like to notify you when a status is auto-saved successfully or fails due to an issue."
-                )
-                Text(
-                    text = "Okay",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 12.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            openDialog = false
-                            onOkPressed()
-                        },
-                    textAlign = TextAlign.End,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+                    .fillMaxWidth()
+                    .padding(end = 12.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        onOkPressed()
+                    },
+                textAlign = TextAlign.End,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
-    } else {
-        onDialogDismissed()
     }
 }

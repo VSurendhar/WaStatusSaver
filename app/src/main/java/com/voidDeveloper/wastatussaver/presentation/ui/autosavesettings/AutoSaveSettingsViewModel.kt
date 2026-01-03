@@ -8,15 +8,21 @@ import com.voidDeveloper.wastatussaver.data.datastore.proto.AutoSaveUserPref
 import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.protodatastoremanager.AutoSaveProtoDataStoreManager
 import com.voidDeveloper.wastatussaver.data.utils.extentions.getInterval
+import com.voidDeveloper.wastatussaver.data.utils.extentions.safeAutoSaveIntervalDomain
+import com.voidDeveloper.wastatussaver.data.utils.extentions.toApp
+import com.voidDeveloper.wastatussaver.data.utils.extentions.toAutoSaveIntervalDomain
+import com.voidDeveloper.wastatussaver.data.utils.extentions.toTitle
 import com.voidDeveloper.wastatussaver.data.utils.getMillisFromNow
 import com.voidDeveloper.wastatussaver.data.utils.helpers.ScheduleAutoSave
+import com.voidDeveloper.wastatussaver.domain.model.AutoSaveIntervalDomain
+import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.Title
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,17 +32,105 @@ class AutoSaveSettingsViewModel @Inject constructor(
     private val autoSaveProtoDataStoreManager: AutoSaveProtoDataStoreManager,
 ) : ViewModel() {
 
-    private val _toastInfoChannel = Channel<String?>()
-    val toastInfoChannel = _toastInfoChannel.receiveAsFlow()
+    private val _uiState =
+        MutableStateFlow(AutoSaveSettingsUiState())
 
-    private val _saved = MutableSharedFlow<Boolean>()
-    val saved = _saved.asSharedFlow()
-    private val _previousAutoSavePref: MutableStateFlow<AutoSaveUserPref?> = MutableStateFlow(null)
-    val previousAutoSavePref = _previousAutoSavePref.asStateFlow()
+    val uiState: StateFlow<AutoSaveSettingsUiState> =
+        _uiState.asStateFlow()
+
+    private val _effect =
+        Channel<AutoSaveSettingsEffect>(Channel.BUFFERED)
+    val effect = _effect.receiveAsFlow()
+
+    private var previousAutoSavePref: AutoSaveUserPref? = null
+
+
+    fun onEvent(event: AutoSaveSettingsEvent) {
+        when (event) {
+
+            is AutoSaveSettingsEvent.ToggleAutoSave ->
+                updateState { copy(isAutoSaveEnabled = event.enabled) }
+
+            is AutoSaveSettingsEvent.SelectTitle ->
+                updateState { copy(selectedTitle = event.title) }
+
+            is AutoSaveSettingsEvent.SelectInterval ->
+                updateState { copy(selectedInterval = event.interval) }
+
+            is AutoSaveSettingsEvent.ToggleMediaType ->
+                updateState {
+                    copy(
+                        selectedMediaTypes =
+                            if (event.enabled)
+                                selectedMediaTypes + event.mediaType
+                            else
+                                selectedMediaTypes - event.mediaType
+                    )
+                }
+
+            is AutoSaveSettingsEvent.NotificationPermissionDenied -> {
+                viewModelScope.launch {
+                    if (event.shouldShowRationale) {
+                        updateState { copy(showNotificationPermissionDialog = true) }
+                    } else {
+                        emitEffect(AutoSaveSettingsEffect.NavigateBack)
+                    }
+                }
+            }
+
+            AutoSaveSettingsEvent.NotificationPermissionDialogDismiss -> {
+                viewModelScope.launch {
+                    updateState { copy(showNotificationPermissionDialog = false) }
+                    emitEffect(AutoSaveSettingsEffect.NavigateBack)
+                }
+            }
+
+            AutoSaveSettingsEvent.NotificationSettingsDialogDismiss -> {
+                viewModelScope.launch {
+                    updateState { copy(showNotificationPermissionSettingsDialog = false) }
+                    emitEffect(AutoSaveSettingsEffect.NavigateBack)
+                }
+            }
+
+            AutoSaveSettingsEvent.NotificationPermissionOkClicked -> {
+                viewModelScope.launch {
+                    updateState { copy(showNotificationPermissionDialog = false) }
+                    emitEffect(AutoSaveSettingsEffect.RequestNotificationPermission)
+                }
+            }
+
+            AutoSaveSettingsEvent.SaveClicked ->
+                saveAutoSaveUserPref()
+
+        }
+    }
+
 
     init {
+        loadPreviousPreferences()
+    }
+
+
+    private fun loadPreviousPreferences() {
         viewModelScope.launch {
-            _previousAutoSavePref.value = getAutoSavePref()
+            try {
+                val pref = getAutoSavePref()
+
+                previousAutoSavePref = pref
+
+                _uiState.update {
+                    it.copy(
+                        isAutoSaveEnabled = pref.enable,
+                        selectedTitle = pref.app.toTitle(),
+                        selectedInterval = pref.autoSaveInterval
+                            .toAutoSaveIntervalDomain()
+                            .safeAutoSaveIntervalDomain(),
+                        selectedMediaTypes = pref.mediaTypeList.toSet()
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -45,15 +139,16 @@ class AutoSaveSettingsViewModel @Inject constructor(
         return autoSaveUserPref
     }
 
-    fun saveAutoSaveUserPref(
-        enable: Boolean,
-        scheduledInterval: Int,
-        selectedTitle: App,
-        selectedMediaTypes: List<MediaType>,
-    ) {
+    private fun saveAutoSaveUserPref() {
         viewModelScope.launch {
             try {
-                val previousPref = _previousAutoSavePref.value
+                val state = uiState.value
+                val previousPref = previousAutoSavePref
+
+                val enable = state.isAutoSaveEnabled
+                val scheduledInterval = state.selectedInterval.hours
+                val selectedTitle = state.selectedTitle.toApp()
+                val selectedMediaTypes = state.selectedMediaTypes.toList()
 
                 saveAutoSaveData(
                     enable = enable,
@@ -63,7 +158,7 @@ class AutoSaveSettingsViewModel @Inject constructor(
 
                 if (!enable) {
                     scheduleAutoSave.cancelAllAlarm()
-                    _saved.emit(true)
+                    emitEffect(AutoSaveSettingsEffect.NavigateBack)
                     return@launch
                 }
 
@@ -75,8 +170,10 @@ class AutoSaveSettingsViewModel @Inject constructor(
                             previousPref.mediaTypeList == selectedMediaTypes
 
                 if (isSameConfig) {
-                    _toastInfoChannel.send("Interval already set")
-                    _saved.emit(true)
+                    emitEffect(
+                        AutoSaveSettingsEffect.ShowToast("Interval already set")
+                    )
+                    emitEffect(AutoSaveSettingsEffect.RequestNotificationPermission)
                     return@launch
                 }
 
@@ -85,10 +182,15 @@ class AutoSaveSettingsViewModel @Inject constructor(
                 val triggerAtMillis = getMillisFromNow(scheduledInterval)
                 scheduleAutoSave.scheduleAutoSaveWorkAlarm(triggerAtMillis)
 
-                _saved.emit(true)
+                emitEffect(AutoSaveSettingsEffect.RequestNotificationPermission)
 
             } catch (e: Exception) {
                 e.printStackTrace()
+                emitEffect(
+                    AutoSaveSettingsEffect.ShowToast(
+                        "Something went wrong while saving"
+                    )
+                )
             }
         }
     }
@@ -124,4 +226,56 @@ class AutoSaveSettingsViewModel @Inject constructor(
         }
     }
 
+    private fun updateState(
+        reducer: AutoSaveSettingsUiState.() -> AutoSaveSettingsUiState,
+    ) {
+        _uiState.update(reducer)
+    }
+
+    private suspend fun emitEffect(effect: AutoSaveSettingsEffect) {
+        _effect.send(effect)
+    }
+
 }
+
+data class AutoSaveSettingsUiState(
+    val isAutoSaveEnabled: Boolean = false,
+    val selectedTitle: Title = Title.Whatsapp,
+    val selectedInterval: AutoSaveIntervalDomain =
+        AutoSaveIntervalDomain.TWENTY_FOUR_HOURS,
+    val selectedMediaTypes: Set<MediaType> =
+        setOf(MediaType.IMAGE, MediaType.VIDEO, MediaType.AUDIO),
+    val showNotificationPermissionDialog: Boolean = false,
+    val showNotificationPermissionSettingsDialog: Boolean = false,
+)
+
+sealed interface AutoSaveSettingsEvent {
+
+    data class ToggleAutoSave(val enabled: Boolean) : AutoSaveSettingsEvent
+
+    data class SelectTitle(val title: Title) : AutoSaveSettingsEvent
+    data class SelectInterval(val interval: AutoSaveIntervalDomain) : AutoSaveSettingsEvent
+
+    data class ToggleMediaType(
+        val mediaType: MediaType,
+        val enabled: Boolean,
+    ) : AutoSaveSettingsEvent
+
+    data class NotificationPermissionDenied(val shouldShowRationale: Boolean) :
+        AutoSaveSettingsEvent
+
+    object NotificationPermissionDialogDismiss : AutoSaveSettingsEvent
+    object NotificationSettingsDialogDismiss : AutoSaveSettingsEvent
+    object NotificationPermissionOkClicked : AutoSaveSettingsEvent
+
+    object SaveClicked : AutoSaveSettingsEvent
+}
+
+sealed interface AutoSaveSettingsEffect {
+    data class ShowToast(val message: String) : AutoSaveSettingsEffect
+    object NavigateBack : AutoSaveSettingsEffect
+    object RequestNotificationPermission : AutoSaveSettingsEffect
+    object OpenNotificationSettings : AutoSaveSettingsEffect
+}
+
+

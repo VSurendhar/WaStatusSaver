@@ -1,6 +1,15 @@
 package com.voidDeveloper.wastatussaver.presentation.ui.autosavesettings
 
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -36,9 +45,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,71 +55,83 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
-import com.voidDeveloper.wastatussaver.data.utils.extentions.safeAutoSaveIntervalDomain
 import com.voidDeveloper.wastatussaver.data.utils.extentions.singleClick
-import com.voidDeveloper.wastatussaver.data.utils.extentions.toApp
-import com.voidDeveloper.wastatussaver.data.utils.extentions.toAutoSaveIntervalDomain
-import com.voidDeveloper.wastatussaver.data.utils.extentions.toTitle
 import com.voidDeveloper.wastatussaver.domain.model.AutoSaveIntervalDomain
 import com.voidDeveloper.wastatussaver.presentation.theme.WaStatusSaverTheme
+import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.NotificationPermissionDialog
+import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.NotificationPermissionSettingsDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.Title
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
 
+    val activity = LocalActivity.current
     val viewModel = hiltViewModel<AutoSaveSettingsViewModel>()
-    var isAutoSaveEnabled by remember { mutableStateOf(false) }
-    var selectedTitle by remember { mutableStateOf<Title>(Title.Whatsapp) }
-    var selectedInterval by remember {
-        mutableStateOf(AutoSaveIntervalDomain.TWENTY_FOUR_HOURS)
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val appTitles = listOf(
+        Title.Whatsapp, Title.WhatsappBusiness
+    )
+
+
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+
+        if (!isGranted) {
+            val shouldShowRationale =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    activity?.shouldShowRequestPermissionRationale(
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) == true
+                } else {
+                    false
+                }
+            viewModel.onEvent(
+                AutoSaveSettingsEvent.NotificationPermissionDenied(
+                    shouldShowRationale = shouldShowRationale
+                )
+            )
+        } else {
+            onBackClick()
+        }
     }
 
     val mediaMediaTypes = listOf(
         MediaType.IMAGE, MediaType.VIDEO, MediaType.AUDIO
     )
 
-    var selectedMediaTypes by remember {
-        mutableStateOf(
-            setOf(
-                MediaType.IMAGE, MediaType.VIDEO, MediaType.AUDIO
-            )
-        )
-    }
-
-    val appTitles = listOf(
-        Title.Whatsapp, Title.WhatsappBusiness
-    )
-
     val intervals = AutoSaveIntervalDomain.entries
     val primaryAlpha80 = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-    val toastInfo by viewModel.toastInfoChannel.collectAsStateWithLifecycle(null)
-    val saved by viewModel.saved.collectAsStateWithLifecycle(false)
-    val previousAutoSavePref by viewModel.previousAutoSavePref.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    LaunchedEffect(toastInfo) {
-        if (toastInfo != null) {
-            Toast.makeText(context, toastInfo, Toast.LENGTH_SHORT).show()
-        }
-    }
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
 
-    LaunchedEffect(previousAutoSavePref) {
-        if (previousAutoSavePref != null) {
-            isAutoSaveEnabled = previousAutoSavePref!!.enable
-            selectedTitle = previousAutoSavePref!!.app.toTitle()
-            selectedInterval = previousAutoSavePref!!.autoSaveInterval.toAutoSaveIntervalDomain()
-                .safeAutoSaveIntervalDomain()
-            selectedMediaTypes = previousAutoSavePref!!
-                .mediaTypeList
-                .toSet()
-        }
-    }
+                AutoSaveSettingsEffect.RequestNotificationPermission -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        requestPermissionLauncher.launch(
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    }
+                }
 
+                AutoSaveSettingsEffect.OpenNotificationSettings -> {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+                    context.startActivity(intent)
+                }
 
-    LaunchedEffect(saved) {
-        if (saved) {
-            onBackClick()
+                is AutoSaveSettingsEffect.ShowToast -> {
+                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                }
+
+                AutoSaveSettingsEffect.NavigateBack -> onBackClick()
+            }
         }
     }
 
@@ -147,8 +165,7 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                                 .height(30.dp)
                                 .singleClick {
                                     onBackClick()
-                                }
-                        )
+                                })
                         Text(
                             text = "Auto Save Settings",
                             modifier = Modifier.height(30.dp),
@@ -159,6 +176,25 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                 }
             }
         }) { paddingValues ->
+        if (uiState.showNotificationPermissionDialog) {
+            NotificationPermissionDialog(onOkPressed = {
+                viewModel.onEvent(
+                    AutoSaveSettingsEvent.NotificationPermissionOkClicked
+                )
+            }, onDialogDismissed = {
+                    viewModel.onEvent(AutoSaveSettingsEvent.NotificationPermissionDialogDismiss)
+            })
+        } else if (uiState.showNotificationPermissionSettingsDialog) {
+            val context = LocalContext.current
+            NotificationPermissionSettingsDialog(onGoToSettingsPressed = {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
+                }
+                context.startActivity(intent)
+            }, onCancelPressed = {
+                viewModel.onEvent(AutoSaveSettingsEvent.NotificationSettingsDialogDismiss)
+            })
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -187,10 +223,14 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                         uncheckedBorderColor = primaryAlpha80,
                         checkedTrackColor = primaryAlpha80,
                         checkedBorderColor = primaryAlpha80,
-                    ), checked = isAutoSaveEnabled, onCheckedChange = { isAutoSaveEnabled = it })
+                    ), checked = uiState.isAutoSaveEnabled, onCheckedChange = {
+                        viewModel.onEvent(
+                            AutoSaveSettingsEvent.ToggleAutoSave(it)
+                        )
+                    })
             }
 
-            if (isAutoSaveEnabled) {
+            if (uiState.isAutoSaveEnabled) {
                 HorizontalDivider()
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -201,8 +241,14 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                         appTitles.forEach { title ->
                             AppFilterChip(
                                 label = stringResource(id = title.resId),
-                                isSelected = selectedTitle == title,
-                                onClick = { selectedTitle = title })
+                                isSelected = uiState.selectedTitle == title,
+                                onClick = {
+                                    viewModel.onEvent(
+                                        AutoSaveSettingsEvent.SelectTitle(
+                                            title
+                                        )
+                                    )
+                                })
                         }
                     }
                 }
@@ -210,17 +256,23 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Auto-save Interval", style = MaterialTheme.typography.titleMedium)
                     ScrollableTabRow(
-                        selectedTabIndex = intervals.indexOf(selectedInterval),
+                        selectedTabIndex = intervals.indexOf(uiState.selectedInterval),
                         edgePadding = 0.dp,
                         divider = {},
                         indicator = {}) {
                         intervals.forEach { interval ->
                             SuggestionChip(
-                                onClick = { selectedInterval = interval },
+                                onClick = {
+                                    viewModel.onEvent(
+                                        AutoSaveSettingsEvent.SelectInterval(
+                                            interval
+                                        )
+                                    )
+                                },
                                 label = {
                                     Text(
                                         text = interval.label,
-                                        color = if (selectedInterval == interval) {
+                                        color = if (uiState.selectedInterval == interval) {
                                             MaterialTheme.colorScheme.onPrimary
                                         } else {
                                             Color(0xFF1C1C1C)
@@ -228,7 +280,7 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                                     )
                                 },
                                 modifier = Modifier.padding(horizontal = 4.dp),
-                                colors = if (selectedInterval == interval) {
+                                colors = if (uiState.selectedInterval == interval) {
                                     SuggestionChipDefaults.suggestionChipColors(
                                         containerColor = MaterialTheme.colorScheme.primary.copy(
                                             alpha = 0.8f
@@ -240,7 +292,7 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                                     )
                                 },
                                 border = BorderStroke(
-                                    1.dp, if (selectedInterval == interval) {
+                                    1.dp, if (uiState.selectedInterval == interval) {
                                         Color.Transparent
                                     } else {
                                         Color(0xFF7E7D82)
@@ -257,12 +309,22 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                     mediaMediaTypes.forEach { fileType ->
                         CheckboxRow(
                             label = fileType.name.lowercase().replaceFirstChar { it.uppercase() },
-                            checked = selectedMediaTypes.contains(fileType),
+                            checked = uiState.selectedMediaTypes.contains(fileType),
                             onCheckedChange = { isChecked ->
-                                selectedMediaTypes = if (isChecked) {
-                                    selectedMediaTypes + fileType
+                                if (isChecked) {
+                                    viewModel.onEvent(
+                                        AutoSaveSettingsEvent.ToggleMediaType(
+                                            mediaType = fileType,
+                                            enabled = true
+                                        )
+                                    )
                                 } else {
-                                    selectedMediaTypes - fileType
+                                    viewModel.onEvent(
+                                        AutoSaveSettingsEvent.ToggleMediaType(
+                                            mediaType = fileType,
+                                            enabled = false
+                                        )
+                                    )
                                 }
                             })
                     }
@@ -274,18 +336,11 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
 
             Button(
                 onClick = {
-                    if (selectedMediaTypes.isNotEmpty() || !isAutoSaveEnabled) {
-                        viewModel.saveAutoSaveUserPref(
-                            enable = isAutoSaveEnabled,
-                            scheduledInterval = selectedInterval.hours,
-                            selectedMediaTypes = selectedMediaTypes.toList(),
-                            selectedTitle = selectedTitle.toApp()
-                        )
+                    if (uiState.selectedMediaTypes.isNotEmpty() || !uiState.isAutoSaveEnabled) {
+                        viewModel.onEvent(AutoSaveSettingsEvent.SaveClicked)
                     } else {
                         Toast.makeText(
-                            context,
-                            "Please select at least one media type",
-                            Toast.LENGTH_SHORT
+                            context, "Please select at least one media type", Toast.LENGTH_SHORT
                         ).show()
                     }
                 },
