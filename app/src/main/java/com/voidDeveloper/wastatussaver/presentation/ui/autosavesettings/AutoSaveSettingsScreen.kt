@@ -152,7 +152,8 @@ fun AutoSaveSettingsScreen(onBackClick: () -> Unit) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
-                            .padding(horizontal = 12.dp),
+                            .padding(horizontal = 12.dp)
+                            .padding(bottom = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(

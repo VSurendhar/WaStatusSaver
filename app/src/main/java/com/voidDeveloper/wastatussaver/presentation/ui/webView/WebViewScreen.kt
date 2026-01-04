@@ -39,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -46,6 +47,8 @@ import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.utils.extentions.findActivity
 import com.voidDeveloper.wastatussaver.data.utils.extentions.isInternetAvailable
 import com.voidDeveloper.wastatussaver.data.utils.extentions.singleClick
+import com.voidDeveloper.wastatussaver.presentation.theme.WaStatusSaverTheme
+import com.voidDeveloper.wastatussaver.presentation.ui.autosavesettings.AutoSaveSettingsScreen
 import com.voidDeveloper.wastatussaver.presentation.ui.main.MainActivity
 
 @Composable
@@ -62,6 +65,7 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
     LaunchedEffect(Unit) {
         internetAvailable = context.isInternetAvailable()
     }
+
     Scaffold(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.primary)
@@ -146,7 +150,8 @@ fun PrivacyPolicyTopBar(onRefreshPressed: () -> Unit, onBackClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 12.dp)
-                .padding(horizontal = 18.dp),
+                .padding(horizontal = 18.dp)
+                .padding(bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -178,4 +183,10 @@ fun PrivacyPolicyTopBar(onRefreshPressed: () -> Unit, onBackClick: () -> Unit) {
 
 }
 
-
+@Composable
+@Preview
+fun PreviewWebViewScreen() {
+    WaStatusSaverTheme {
+        WebViewScreen {}
+    }
+}
