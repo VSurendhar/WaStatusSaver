@@ -4,7 +4,6 @@ import android.app.Application
 import android.database.Cursor
 import android.net.Uri
 import android.provider.DocumentsContract
-import android.util.Log
 import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.utils.Constants
 import com.voidDeveloper.wastatussaver.data.utils.Constants.AUDIO_MIME_TYPE_STARTING
@@ -17,11 +16,13 @@ import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.model.UnknownFile
 import com.voidDeveloper.wastatussaver.domain.model.VideoFile
 import com.voidDeveloper.wastatussaver.domain.repo.main.MainRepo
+import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import javax.inject.Inject
 
 class StatusesManagerUseCase @Inject constructor(
     private val appContext: Application,
     private val mainRepo: MainRepo,
+    private val statusMediaHandlingUserCase: SavedMediaHandlingUserCase
 ) {
 
     fun hasPermission(uri: Uri?): Boolean {
@@ -35,29 +36,53 @@ class StatusesManagerUseCase @Inject constructor(
     }
 
     fun loadDownloadedFiles() {
-        downloadedFiles = mainRepo.getSavedMediaFiles()
+        downloadedFiles = statusMediaHandlingUserCase.getSavedMediaFiles().map { it.fileName }
     }
 
     fun refreshDownloadedFiles() {
-        downloadedFiles = mainRepo.getSavedMediaFiles()
+        downloadedFiles = statusMediaHandlingUserCase.getSavedMediaFiles().map { it.fileName }
+    }
+
+    fun addDownloadedFileToCache(mediaFile: MediaFile) {
+        downloadedFiles = downloadedFiles + mediaFile.fileName
     }
 
     fun getFiles(
         destinationUri: Uri?,
         preferredMediaTypes: List<MediaType>? = null,
     ): List<MediaFile> {
-        Log.i(Constants.TAG, "getFiles: Getting Files")
+
+        if (destinationUri == null) {
+            return emptyList()
+        }
+
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-            destinationUri, DocumentsContract.getTreeDocumentId(destinationUri)
+            destinationUri,
+            DocumentsContract.getTreeDocumentId(destinationUri)
         )
         refreshDownloadedFiles()
-        val cursor: Cursor? = appContext.contentResolver.query(childrenUri, null, null, null, null)
-        val resList = mutableListOf<MediaFile>()
-        cursor?.use { c ->
 
-            val nameIndex = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
-            val mimeTypeIndex = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
-            val docIdIndex = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
+        val cursor: Cursor? = appContext.contentResolver.query(
+            childrenUri,
+            null,
+            null,
+            null,
+            null
+        )
+
+        if (cursor == null) {
+            return emptyList()
+        }
+
+        val resList = mutableListOf<MediaFile>()
+
+        cursor.use { c ->
+            val nameIndex =
+                c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+            val mimeTypeIndex =
+                c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
+            val docIdIndex =
+                c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
 
             while (c.moveToNext()) {
                 val name = c.getString(nameIndex)
@@ -65,26 +90,29 @@ class StatusesManagerUseCase @Inject constructor(
                 val documentId = c.getString(docIdIndex)
                 val fileUri =
                     DocumentsContract.buildDocumentUriUsingTree(destinationUri, documentId)
-                Log.i(Constants.TAG, "getFiles: $name $mimeType $documentId $fileUri")
-                if (name != Constants.NO_MEDIA) {
-                    val mediaFile: MediaFile = when {
-                        mimeType.startsWith(IMAGE_MIME_TYPE_STARTING, ignoreCase = true) -> {
-                            ImageFile(uri = fileUri, fileName = name).apply {
-                                isDownloaded = isStatusDownloaded(fileName)
-                            }
-                        }
 
-                        mimeType.startsWith(VIDEO_MIME_TYPE_STARTING, ignoreCase = true) -> {
-                            VideoFile(uri = fileUri, fileName = name).apply {
-                                isDownloaded = isStatusDownloaded(fileName)
-                            }
-                        }
+                if (name == Constants.NO_MEDIA) {
+                    continue
+                }
 
-                        mimeType.startsWith(AUDIO_MIME_TYPE_STARTING, ignoreCase = true) -> {
-                            AudioFile(fileName = name, uri = fileUri).apply {
-                                isDownloaded = isStatusDownloaded(fileName)
-                            }
+                val mediaFile: MediaFile = when {
+                    mimeType.startsWith(IMAGE_MIME_TYPE_STARTING, ignoreCase = true) -> {
+                        ImageFile(uri = fileUri, fileName = name).apply {
+                            downloadState = if(isStatusDownloaded(fileName)) DownloadState.DOWNLOADED else DownloadState.NOT_DOWNLOADED
                         }
+                    }
+
+                    mimeType.startsWith(VIDEO_MIME_TYPE_STARTING, ignoreCase = true) -> {
+                        VideoFile(uri = fileUri, fileName = name).apply {
+                            downloadState = if(isStatusDownloaded(fileName)) DownloadState.DOWNLOADED else DownloadState.NOT_DOWNLOADED
+                        }
+                    }
+
+                    mimeType.startsWith(AUDIO_MIME_TYPE_STARTING, ignoreCase = true) -> {
+                        AudioFile(uri = fileUri, fileName = name).apply {
+                            downloadState = if(isStatusDownloaded(fileName)) DownloadState.DOWNLOADED else DownloadState.NOT_DOWNLOADED
+                        }
+                    }
 
                         else -> UnknownFile(uri = fileUri, fileName = "void")
                     }
@@ -94,10 +122,10 @@ class StatusesManagerUseCase @Inject constructor(
                 }
             }
 
+        val filteredList = resList.filter {
+            preferredMediaTypes == null || preferredMediaTypes.contains(it.mediaType)
         }
 
-        val filteredList =
-            resList.filter { preferredMediaTypes == null || preferredMediaTypes.contains(it.mediaType) }
         return filteredList.toList()
 
     }
@@ -107,7 +135,7 @@ class StatusesManagerUseCase @Inject constructor(
     }
 
     suspend fun saveMediaFile(mediaFile: MediaFile, onSaveCompleted: () -> Unit = {}) {
-        mainRepo.saveMediaFile(mediaFile = mediaFile, onSaveCompleted = onSaveCompleted)
+        statusMediaHandlingUserCase.saveMediaFile(mediaFile = mediaFile, onSaveCompleted = onSaveCompleted)
     }
 
 }

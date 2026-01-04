@@ -1,15 +1,9 @@
 package com.voidDeveloper.wastatussaver.presentation.ui.main.ui
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
-import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -114,12 +108,10 @@ import com.voidDeveloper.wastatussaver.navigation.Screens
 import com.voidDeveloper.wastatussaver.presentation.theme.WaStatusSaverTheme
 import com.voidDeveloper.wastatussaver.presentation.theme.gray
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.AppNotInstalledDialog
-import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.AutoSaveDialog
-import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.NotificationPermissionDialog
-import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.NotificationPermissionSettingsDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.OnBoardingDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.SAFAccessPermissionDialog
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.PlayerActivity
+import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
@@ -148,9 +140,6 @@ fun MainScreen(
     })
 
     val state by uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(state?.mediaFiles) {
-        Log.i("State TAG", "MainScreen: MediaFiles changed ${state?.mediaFiles?.map { it.id }}")
-    }
 
     val launcher: ActivityResultLauncher<Intent> =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -187,11 +176,6 @@ fun MainScreen(
                             )
                         )
                         drawerState.close()
-                    }
-                }, showAutoSaveDialog = {
-                    scope.launch {
-                        drawerState.close()
-                        onEvent(Event.ShowAutoSaveDialog)
                     }
                 }, enableAutoSave = state?.hasSafAccessPermission == true
             )
@@ -375,7 +359,6 @@ fun DrawerContent(
     navigate: (String) -> Unit,
     closeDrawer: () -> Unit,
     showOnBoardingUI: () -> Unit,
-    showAutoSaveDialog: () -> Unit,
     enableAutoSave: Boolean,
 ) {
     val context = LocalContext.current
@@ -567,42 +550,11 @@ fun MainBody(
 
 @Composable
 fun FilePreviewPage(
-    imageFiles: List<MediaFile>,
+    mediaFiles: List<MediaFile>,
     uiState: UiState,
     onEvent: (Event) -> Unit,
     launchSafPermission: (Intent) -> Unit,
 ) {
-    uiState.mediaFiles.forEach { println(it.id) }
-    val activity = LocalActivity.current
-    val requestPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (!isGranted) {
-            Log.d("Surendhar TAG 1 1", "Permission denied")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && activity != null) {
-                val shouldShowRationale = activity.shouldShowRequestPermissionRationale(
-                    Manifest.permission.POST_NOTIFICATIONS
-                )
-                Log.d("Surendhar TAG 1 1", "shouldShowRationale: $shouldShowRationale")
-
-                if (shouldShowRationale) {
-                    // Show Why Permission is Needed
-                    Log.d(
-                        "Surendhar TAG 1 1", "Showing notification permission dialog"
-                    )
-                    onEvent(Event.ShowNotificationPermissionDialog)
-                } else {
-                    // Show How to turn on the Notification Permission Settings in App Info
-                    Log.d(
-                        "Surendhar TAG 1 1", "Showing notification permission settings dialog"
-                    )
-                    onEvent(Event.ShowNotificationPermissionSettingsDialog)
-                }
-            }
-        } else {
-            Log.d("Surendhar TAG 1 1", "Permission granted")
-        }
-    }
     val context = LocalContext.current
     if (uiState.shouldShowOnBoardingUi == true) {
         OnBoardingDialog(onDialogDismissed = {
@@ -630,48 +582,6 @@ fun FilePreviewPage(
             onEvent(Event.ChangeSAFAccessPermission(null))
         })
         return
-    } else if (uiState.showAutoSaveDialog) {
-        AutoSaveDialog(
-            selectedInterval = uiState.savedAutoSaveInterval,
-            autoSaveEnable = uiState.autoSaveEnabled,
-            onApplyPressed = { enabled, interval ->
-                if (enabled) {
-                    val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        activity?.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-                    } else {
-                        true
-                    }
-                    if (!hasPermission) {
-                        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    }
-                }
-//                onEvent(Event.SaveAutoSaveData(interval, enabled))
-            },
-            onAutoSaveDialogDismissPressed = {
-                onEvent(Event.AutoSaveDialogDismiss)
-            })
-    } else if (uiState.showNotificationPermissionDialog) {
-        NotificationPermissionDialog(onOkPressed = {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }, onDialogDismissed = {
-            onEvent(
-                Event.NotificationPermissionDialogDismiss
-            )
-        })
-    } else if (uiState.showNotificationPermissionSettingsDialog) {
-        val context = LocalContext.current
-        NotificationPermissionSettingsDialog(onGoToSettingsPressed = {
-            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.fromParts("package", context.packageName, null)
-            }
-            context.startActivity(intent)
-        }, onCancelPressed = {
-            onEvent(
-                Event.NotificationSettingsDialogDismiss
-            )
-        })
     }
 
     Surface(
@@ -724,7 +634,7 @@ fun FilePreviewPage(
                     )
                 })
         } else {
-            if (imageFiles.isEmpty()) {
+            if (mediaFiles.isEmpty()) {
                 MissingSetupInfo(
                     imageId = R.drawable.ic_empty_folder, title = createColoredString(
                         stringResource(R.string.no_status_files_available),
@@ -745,14 +655,14 @@ fun FilePreviewPage(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(items = imageFiles, key = { it.id }) { mediaFile ->
+                    items(
+                        items = mediaFiles,
+                        key = { "${it.uri} ${it.downloadState}" }) { mediaFile ->
                         PreviewItem(
                             mediaFile,
                             onDownloadClick = {
                                 onEvent(Event.OnDownloadClick(mediaFile))
                             },
-                            isDownloading = uiState.onGoingDownload.contains(mediaFile),
-                            finishedDownloading = mediaFile.isDownloaded,
                             onPreviewClick = {
                                 val intent = Intent(context, PlayerActivity::class.java)
                                 intent.putExtra("mediaInfo", mediaFile.toDomainMediaInfo())
@@ -770,8 +680,6 @@ fun FilePreviewPage(
 fun PreviewItem(
     mediaFile: MediaFile,
     onDownloadClick: (() -> Unit)? = null,
-    isDownloading: Boolean = false,
-    finishedDownloading: Boolean = false,
     onPreviewClick: () -> Unit,
     showDownloadIcon: Boolean = true,
 ) {
@@ -854,34 +762,38 @@ fun PreviewItem(
                             .padding(end = 6.dp)
                             .align(Alignment.CenterHorizontally), onClick = {
                             onDownloadClick?.invoke()
-                        }, enabled = !isDownloading && !finishedDownloading
+                        }, enabled = mediaFile.downloadState == DownloadState.NOT_DOWNLOADED
                     ) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (!isDownloading && !finishedDownloading) {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_download),
-                                    contentDescription = "Download",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
-                            if (finishedDownloading) {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_tick),
-                                    contentDescription = "Finished Download",
-                                    modifier = Modifier.size(14.dp),
-                                    tint = Color.White,
-                                )
-                            }
-                            if (isDownloading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(15.dp),
-                                    color = Color.White,
-                                    strokeWidth = 2.dp
-                                )
+                            when (mediaFile.downloadState) {
+                                DownloadState.NOT_DOWNLOADED -> {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_download),
+                                        contentDescription = "Download",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+
+                                DownloadState.DOWNLOADED -> {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_tick),
+                                        contentDescription = "Finished Download",
+                                        modifier = Modifier.size(14.dp),
+                                        tint = Color.White,
+                                    )
+                                }
+
+                                else -> {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(15.dp),
+                                        color = Color.White,
+                                        strokeWidth = 2.dp
+                                    )
+                                }
                             }
                         }
                     }
@@ -976,7 +888,6 @@ fun NavigationDrawerPreview() {
             navigate = {},
             closeDrawer = {},
             showOnBoardingUI = {},
-            showAutoSaveDialog = {},
             enableAutoSave = true,
         )
     }
@@ -1005,10 +916,8 @@ fun ImagePagePreview() {
 fun FileItemPreview() {
     WaStatusSaverTheme {
         PreviewItem(
-            mediaFile = UnknownFile(uri = "".toUri() , fileName = "void"),
+            mediaFile = UnknownFile(uri = "".toUri(), fileName = "void"),
             onDownloadClick = {},
-            isDownloading = false,
-            finishedDownloading = false,
             onPreviewClick = {})
     }
 }

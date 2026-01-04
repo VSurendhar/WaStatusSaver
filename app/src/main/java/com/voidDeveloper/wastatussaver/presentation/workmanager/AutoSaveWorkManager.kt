@@ -72,10 +72,12 @@ class AutoSaveWorkManager @AssistedInject constructor(
             val res = if (!responsePair.first) {
                 Result.failure()
             } else {
-                sendNotification(
-                    true,
-                    "Saved ${responsePair.second} Statuses in Downloads"
-                )
+                if (responsePair.second > 0) {
+                    sendNotification(
+                        true,
+                        "Saved ${responsePair.second} Statuses in Downloads"
+                    )
+                }
                 Result.success()
             }
             val refreshInterval = getAutoSaveRefreshInterval()

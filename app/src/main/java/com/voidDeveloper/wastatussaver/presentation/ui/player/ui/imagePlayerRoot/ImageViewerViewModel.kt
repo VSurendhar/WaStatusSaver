@@ -29,6 +29,7 @@ class ImageViewerViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val savedMediaHandlingUserCase: SavedMediaHandlingUserCase,
     private val statusesManagerUseCase: StatusesManagerUseCase,
+    private val statusMediaDownloadHandler : SavedMediaHandlingUserCase
 ) : ViewModel() {
 
     companion object {
@@ -115,8 +116,7 @@ class ImageViewerViewModel @Inject constructor(
     fun onDownloadClick(mediaFile: MediaFile) {
         viewModelScope.launch {
             updateUiState { copy(downloadState = DownloadState.DOWNLOADING) }
-
-            statusesManagerUseCase.saveMediaFile(mediaFile) {
+            statusMediaDownloadHandler.saveMediaFile(mediaFile) {
                 updateUiState { copy(downloadState = DownloadState.DOWNLOADED) }
             }
         }

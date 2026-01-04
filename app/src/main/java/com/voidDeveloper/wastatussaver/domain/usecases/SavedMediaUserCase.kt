@@ -30,11 +30,6 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
 
     private var resolver: ContentResolver = context.contentResolver
 
-    private val targetMediaCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-    } else {
-        MediaStore.Downloads.EXTERNAL_CONTENT_URI
-    }
 
     suspend fun saveMediaFile(mediaFile: MediaFile, onSaveCompleted: () -> Unit) {
         when (mediaFile) {
@@ -46,57 +41,92 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
     }
 
     fun getSavedMediaFiles(): List<MediaInfo> {
-        val imageFiles = getMediaFromDownloads("Image")
-        val videoFiles = getMediaFromDownloads("Video")
-        val audioFiles = getMediaFromDownloads("Audio")
-        return (imageFiles + videoFiles + audioFiles)
+        val result = getAllSavedMedia()
+        return result
     }
 
-    private fun getMediaFromDownloads(media: String): List<MediaInfo> {
-        val fileNames = mutableListOf<MediaInfo>()
 
-        val mediaType = when (media) {
-            "Image" -> MediaType.IMAGE
-            "Video" -> MediaType.VIDEO
-            "Audio" -> MediaType.AUDIO
-            else -> MediaType.UNSPECIFIED
+    private fun getAllSavedMedia(): List<MediaInfo> {
+        val result = mutableListOf<MediaInfo>()
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return emptyList()
         }
 
+        val imageCount = queryMedia(
+            mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+            relativePath = "%Download/WaStatusSaver/Image%",
+            mediaType = MediaType.IMAGE
+        )
+        result += imageCount
+
+        val videoCount = queryMedia(
+            mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+            relativePath = "%Download/WaStatusSaver/Video%",
+            mediaType = MediaType.VIDEO
+        )
+        result += videoCount
+
+        val audioCount = queryMedia(
+            mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+            relativePath = "%Download/WaStatusSaver/Audio%",
+            mediaType = MediaType.AUDIO
+        )
+        result += audioCount
+
+        return result.sortedByDescending { it.lastPlayedMillis }
+    }
+
+    private fun queryMedia(
+        mediaStoreUri: Uri,
+        relativePath: String,
+        mediaType: MediaType,
+    ): List<MediaInfo> {
+        val list = mutableListOf<MediaInfo>()
+
         val projection = arrayOf(
-            MediaStore.Downloads._ID,
-            MediaStore.Downloads.DISPLAY_NAME
+            MediaStore.MediaColumns._ID,
+            MediaStore.MediaColumns.DISPLAY_NAME
         )
 
-        val selection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            "${MediaStore.Downloads.RELATIVE_PATH} LIKE ?"
-        } else null
+        val selection = "${MediaStore.MediaColumns.RELATIVE_PATH} LIKE ?"
+        val selectionArgs = arrayOf(relativePath)
 
-        val selectionArgs = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            arrayOf("%Download/WaStatusSaver/$media/%")
-        } else null
+        val queryArgs = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            android.os.Bundle().apply {
+                putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
+                putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
+                putString(ContentResolver.QUERY_ARG_SQL_SORT_ORDER, "${MediaStore.MediaColumns.DATE_ADDED} DESC")
+                putInt(MediaStore.QUERY_ARG_MATCH_PENDING, MediaStore.MATCH_INCLUDE)
+                putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE)
+            }
+        } else {
+            null
+        }
 
         try {
-            resolver.query(
-                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
-                projection,
-                selection,
-                selectionArgs,
-                "${MediaStore.Downloads.DATE_ADDED} DESC"
-            )?.use { cursor ->
+            val cursor = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && queryArgs != null) {
+                resolver.query(mediaStoreUri, projection, queryArgs, null)
+            } else {
+                resolver.query(
+                    mediaStoreUri,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    "${MediaStore.MediaColumns.DATE_ADDED} DESC"
+                )
+            }
 
-                val idIndex = cursor.getColumnIndexOrThrow(MediaStore.Downloads._ID)
-                val nameIndex = cursor.getColumnIndexOrThrow(MediaStore.Downloads.DISPLAY_NAME)
+            cursor?.use {
+                val idIndex = it.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
+                val nameIndex = it.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
 
-                while (cursor.moveToNext()) {
-                    val id = cursor.getLong(idIndex)
-                    val name = cursor.getString(nameIndex)
+                while (it.moveToNext()) {
+                    val id = it.getLong(idIndex)
+                    val name = it.getString(nameIndex)
+                    val uri = ContentUris.withAppendedId(mediaStoreUri, id)
 
-                    val uri = ContentUris.withAppendedId(
-                        MediaStore.Downloads.EXTERNAL_CONTENT_URI,
-                        id
-                    )
-
-                    fileNames.add(
+                    list.add(
                         MediaInfo(
                             fileName = name,
                             uri = uri.toString(),
@@ -112,7 +142,7 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
             Log.e("WaStatusSaver", "Failed to read downloads", e)
         }
 
-        return fileNames
+        return list
     }
 
     suspend fun saveAudioFile(
@@ -131,9 +161,16 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
             put(MediaStore.MediaColumns.MIME_TYPE, "audio/opus")
             put(MediaStore.MediaColumns.DATE_ADDED, timeInSeconds)
             put(MediaStore.MediaColumns.IS_PENDING, 1)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.MediaColumns.IS_DOWNLOAD, 1)
+            }
         }
 
-        val uri = resolver.insert(targetMediaCollection, values) ?: return@withContext
+        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+        if (uri == null) {
+            return@withContext
+        }
 
         try {
             resolver.openOutputStream(uri)?.use { outputStream ->
@@ -173,9 +210,18 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
                 put(MediaStore.MediaColumns.DATE_ADDED, timeInSeconds)
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    put(MediaStore.MediaColumns.IS_DOWNLOAD, 1)
+                }
             }
 
-            val uri = resolver.insert(targetMediaCollection, values) ?: return@withContext
+            val uri = resolver.insert(
+                MediaStore.Downloads.EXTERNAL_CONTENT_URI, values
+            )
+            if (uri == null) {
+                return@withContext
+            }
 
             try {
                 resolver.openOutputStream(uri)?.use { output ->
@@ -214,12 +260,19 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
                 put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
                 put(MediaStore.MediaColumns.DATE_ADDED, timeInSeconds)
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    put(MediaStore.MediaColumns.IS_DOWNLOAD, 1)
+                }
             }
 
             val videoUri = resolver.insert(
-                targetMediaCollection,
+                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
                 videoContentValues
-            ) ?: return@withContext
+            )
+            if (videoUri == null) {
+                return@withContext
+            }
 
             try {
                 resolver.openOutputStream(videoUri)?.use { outputStream ->
@@ -290,21 +343,24 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
         }
 
         return try {
-            resolver.query(
-                collection,
-                projection,
-                selection,
-                selectionArgs,
-                null
-            )?.use { cursor ->
+            val cursor = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val queryArgs = android.os.Bundle().apply {
+                    putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
+                    putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
+                    putInt(MediaStore.QUERY_ARG_MATCH_PENDING, MediaStore.MATCH_INCLUDE)
+                    putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE)
+                }
+                resolver.query(collection, projection, queryArgs, null)
+            } else {
+                resolver.query(collection, projection, selection, selectionArgs, null)
+            }
 
-                if (cursor.moveToFirst()) {
-                    val idIndex =
-                        cursor.getColumnIndexOrThrow(MediaStore.Downloads._ID)
-
-                    val id = cursor.getLong(idIndex)
-
-                    ContentUris.withAppendedId(collection, id)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val idIndex = it.getColumnIndexOrThrow(MediaStore.Downloads._ID)
+                    val id = it.getLong(idIndex)
+                    val uri = ContentUris.withAppendedId(collection, id)
+                    uri
                 } else {
                     null
                 }

@@ -41,21 +41,23 @@ class MainRepoImpl @Inject constructor(@ApplicationContext applicationContext: C
     private val BASE_URL = "https://api.telegram.org/bot"
     private val client = OkHttpClient()
 
-    override suspend fun saveMediaFile(mediaFile: MediaFile, onSaveCompleted: () -> Unit) {
+/*    override suspend fun saveMediaFile(mediaFile: MediaFile, onSaveCompleted: () -> Unit) {
         when (mediaFile) {
             is ImageFile -> saveImageFile(mediaFile = mediaFile, onSaveCompleted = onSaveCompleted)
             is VideoFile -> saveVideoFile(mediaFile = mediaFile, onSaveCompleted = onSaveCompleted)
             is AudioFile -> saveAudioFile(mediaFile = mediaFile, onSaveCompleted = onSaveCompleted)
             else -> {}
         }
-    }
+    }*/
 
+/*
     override fun getSavedMediaFiles(): List<String> {
         val imageFiles = getMediaFromDownloads("Image")
         val videoFiles = getMediaFromDownloads("Video")
         val audioFiles = getMediaFromDownloads("Audio")
         return (imageFiles + videoFiles + audioFiles)
     }
+*/
 
     private fun getMediaFromDownloads(media: String): List<String> {
         val fileNames = mutableListOf<String>()

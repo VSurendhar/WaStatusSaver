@@ -8,7 +8,6 @@ import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.utils.Constants.DEFAULT_AUTO_SAVE_INTERVAL
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
-import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 
 data class UiState(
     val title: Title? = null,
@@ -18,7 +17,6 @@ data class UiState(
     val shouldShowOnBoardingUi: Boolean? = null,
     val hasSafAccessPermission: Boolean? = null,
     val mediaFiles: List<MediaFile> = emptyList(),
-    val onGoingDownload: MutableList<MediaFile> = mutableListOf(),
     val showAutoSaveDialog: Boolean = false,
     val showNotificationPermissionDialog: Boolean = false,
     val showNotificationPermissionSettingsDialog: Boolean = false,
@@ -39,9 +37,9 @@ fun MediaFile.toDomainMediaInfo(): MediaInfo {
     return MediaInfo(
         uri = uri.toString(),
         lastPlayedMillis = 0,
-        fileName = fileName.toString(),
+        fileName = fileName,
         mediaType = mediaType,
-        downloadStatus = if (isDownloaded) DownloadState.DOWNLOADED else DownloadState.NOT_DOWNLOADED
+        downloadStatus = downloadState
     )
 }
 

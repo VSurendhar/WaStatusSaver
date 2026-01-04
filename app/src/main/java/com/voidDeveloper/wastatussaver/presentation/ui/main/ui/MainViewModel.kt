@@ -2,20 +2,19 @@ package com.voidDeveloper.wastatussaver.presentation.ui.main.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.voidDeveloper.wastatussaver.data.datastore.proto.AutoSaveInterval
 import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManager
 import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_PREFERRED_TITLE
 import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_SHOULD_SHOW_ONBOARDING_UI
 import com.voidDeveloper.wastatussaver.data.protodatastoremanager.AutoSaveProtoDataStoreManager
-import com.voidDeveloper.wastatussaver.data.protodatastoremanager.StatusMediaProtoDataStoreManager
 import com.voidDeveloper.wastatussaver.data.utils.Constants.DEFAULT_AUTO_SAVE_INTERVAL
 import com.voidDeveloper.wastatussaver.data.utils.extentions.getInterval
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
-import com.voidDeveloper.wastatussaver.domain.model.toStatusMedia
 import com.voidDeveloper.wastatussaver.domain.usecases.AppInstallCheckerUseCase
+import com.voidDeveloper.wastatussaver.domain.usecases.SavedMediaHandlingUserCase
 import com.voidDeveloper.wastatussaver.domain.usecases.StatusesManagerUseCase
 import com.voidDeveloper.wastatussaver.domain.usecases.TelegramLogUseCase
+import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,7 +31,7 @@ class MainViewModel @Inject constructor(
     private val statusesManagerUseCase: StatusesManagerUseCase,
     private val appInstallChecker: AppInstallCheckerUseCase,
     private val telegramLogUseCase: TelegramLogUseCase,
-    private val statusMediaProtoDataStoreManager: StatusMediaProtoDataStoreManager,
+    private val statusMediaDownloadHandler : SavedMediaHandlingUserCase
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<UiState?> = MutableStateFlow(
@@ -185,12 +184,6 @@ class MainViewModel @Inject constructor(
             }
 
             is Event.OnDownloadClick -> {
-                _uiState.update {
-                    it?.copy(
-                        onGoingDownload = (it.onGoingDownload + event.mediaFile).distinct()
-                            .toMutableList()
-                    )
-                }
                 saveMediaFile(event.mediaFile)
             }
 
@@ -289,14 +282,10 @@ class MainViewModel @Inject constructor(
 
     fun saveMediaFile(mediaFile: MediaFile) {
         viewModelScope.launch {
-            statusesManagerUseCase.saveMediaFile(mediaFile, onSaveCompleted = {
-                mediaFile.isDownloaded = true
-                _uiState.update {
-                    it?.copy(
-                        onGoingDownload = (it.onGoingDownload - mediaFile).distinct()
-                            .toMutableList()
-                    )
-                }
+            mediaFile.downloadState = DownloadState.DOWNLOADING
+            statusMediaDownloadHandler.saveMediaFile(mediaFile, onSaveCompleted = {
+                addDownloadedFileToCache(mediaFile)
+                mediaFile.downloadState = DownloadState.DOWNLOADED
             })
         }
     }
@@ -316,11 +305,8 @@ class MainViewModel @Inject constructor(
         return enable
     }
 
-    private fun saveMediaFiles(files: List<MediaFile>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val statusMedia = files.map { it.toStatusMedia() }
-            statusMediaProtoDataStoreManager.writeStatusMedia(statusMedia)
-        }
+    private fun addDownloadedFileToCache(mediaFile: MediaFile) {
+        statusesManagerUseCase.addDownloadedFileToCache(mediaFile)
     }
 
 }

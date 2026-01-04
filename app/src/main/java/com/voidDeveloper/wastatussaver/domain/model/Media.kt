@@ -22,12 +22,13 @@ import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.datastore.proto.StatusMedia
 import com.voidDeveloper.wastatussaver.data.utils.compressBitmapQuality
+import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 
 @Stable
 abstract class MediaFile() {
     val id: String
         get() = fileName
-    var isDownloaded by mutableStateOf(false)
+    var downloadState by mutableStateOf(DownloadState.NOT_DOWNLOADED)
     abstract val mediaType: MediaType
     abstract val fileName: String
     abstract val uri: Uri
@@ -55,6 +56,11 @@ data class ImageFile(
         }
         return thumbnailBitmap
     }
+
+    override fun toString(): String {
+        return "$fileName $downloadState"
+    }
+
 }
 
 @Suppress("DEPRECATION")
@@ -89,8 +95,10 @@ data class AudioFile(
             canvas.drawColor(0x1A007F68)
 
             drawable?.let {
-                val drawableWidth = it.intrinsicWidth
-                val drawableHeight = it.intrinsicHeight
+                val drawableWidth =
+                    if (it.intrinsicWidth > 0) drawable.intrinsicWidth else width
+                val drawableHeight =
+                    if (it.intrinsicHeight > 0) drawable.intrinsicHeight else height
 
                 val scaleX = (width.toFloat() / drawableWidth) * 0.8f
                 val scaleY = height.toFloat() / drawableHeight
