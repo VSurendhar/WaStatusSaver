@@ -20,7 +20,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
-import com.voidDeveloper.wastatussaver.data.datastore.proto.StatusMedia
 import com.voidDeveloper.wastatussaver.data.utils.compressBitmapQuality
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 
@@ -175,12 +174,4 @@ data class UnknownFile(
         thumbnailBitmap = bitmap
         return bitmap
     }
-}
-
-fun MediaFile.toStatusMedia(): StatusMedia {
-    return StatusMedia.newBuilder()
-        .setUri(uri.toString())
-        .setFileName(fileName)
-        .setMediaType(mediaType)
-        .build()
 }

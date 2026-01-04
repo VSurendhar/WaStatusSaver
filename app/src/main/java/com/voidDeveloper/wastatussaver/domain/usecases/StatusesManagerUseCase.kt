@@ -15,13 +15,11 @@ import com.voidDeveloper.wastatussaver.domain.model.ImageFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.model.UnknownFile
 import com.voidDeveloper.wastatussaver.domain.model.VideoFile
-import com.voidDeveloper.wastatussaver.domain.repo.main.MainRepo
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import javax.inject.Inject
 
 class StatusesManagerUseCase @Inject constructor(
     private val appContext: Application,
-    private val mainRepo: MainRepo,
     private val statusMediaHandlingUserCase: SavedMediaHandlingUserCase
 ) {
 

@@ -2,7 +2,6 @@ syntax = "proto3";
 
 option java_package = "com.voidDeveloper.wastatussaver.data.datastore.proto";
 option java_multiple_files = true;
-import "media_files.proto";
 
 message AutoSaveUserPref {
   bool enable = 1;
@@ -25,3 +24,9 @@ enum AutoSaveInterval {
   TWENTY_FOUR = 4;
 }
 
+enum MediaType {
+  UNSPECIFIED = 0;
+  IMAGE = 1;
+  VIDEO = 2;
+  AUDIO = 3;
+}

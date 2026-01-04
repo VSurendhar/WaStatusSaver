@@ -15,23 +15,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.core.net.toUri
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.datastore.proto.App
 import com.voidDeveloper.wastatussaver.data.datastore.proto.AutoSaveInterval
 import com.voidDeveloper.wastatussaver.data.datastore.proto.AutoSaveUserPref
-import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
-import com.voidDeveloper.wastatussaver.data.datastore.proto.StatusMedia
-import com.voidDeveloper.wastatussaver.domain.model.AudioFile
 import com.voidDeveloper.wastatussaver.domain.model.AutoSaveIntervalDomain
-import com.voidDeveloper.wastatussaver.domain.model.ImageFile
-import com.voidDeveloper.wastatussaver.domain.model.MediaFile
-import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
-import com.voidDeveloper.wastatussaver.domain.model.UnknownFile
-import com.voidDeveloper.wastatussaver.domain.model.VideoFile
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.Title
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.toFileType
-import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 
 fun Context.findActivity(): Activity? {
     if (this is Activity) {
@@ -54,37 +43,6 @@ fun Context.isInternetAvailable(): Boolean {
         else -> false
     }
 }
-
-fun StatusMedia.toDomainMediaFile(): MediaFile {
-    return when (mediaType) {
-        MediaType.AUDIO -> {
-            AudioFile(uri.toUri(), fileName)
-        }
-
-        MediaType.VIDEO -> {
-            VideoFile(uri.toUri(), fileName)
-        }
-
-        MediaType.IMAGE -> {
-            ImageFile(uri.toUri(), fileName)
-        }
-
-        else -> {
-            UnknownFile(uri.toUri(), fileName = fileName)
-        }
-    }
-}
-
-fun StatusMedia.toDomainMediaInfo(): MediaInfo {
-    return MediaInfo(
-        uri = uri,
-        lastPlayedMillis = 0,
-        fileName = fileName,
-        mediaType = mediaType.toFileType(),
-        downloadStatus = DownloadState.NOT_DOWNLOADED
-    )
-}
-
 
 fun Context.fileNotFoundBitmap(): Bitmap =
     BitmapFactory.decodeResource(resources, R.drawable.img_loading_placeholder)
