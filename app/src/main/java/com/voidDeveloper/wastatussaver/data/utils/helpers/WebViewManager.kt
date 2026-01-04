@@ -1,6 +1,5 @@
 package com.voidDeveloper.wastatussaver.data.utils.helpers
 
-import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import android.webkit.WebView
@@ -17,7 +16,6 @@ class WebViewManager @Inject constructor(
         WebStorage.getInstance().deleteAllData()
         val cookieManager = CookieManager.getInstance()
         cookieManager.removeAllCookies { success ->
-            Log.d("WebViewCleanup", "Cookies removed: $success")
         }
         cookieManager.flush()
         webView.destroy()

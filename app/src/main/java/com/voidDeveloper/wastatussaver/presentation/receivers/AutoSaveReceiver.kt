@@ -61,12 +61,12 @@ class AutoSaveReceiver : BroadcastReceiver() {
 
                             var timeToTrigger =
                                 lastAlarmSetTimeMillis +
-                                        TimeUnit.MINUTES.toMillis(autoSaveInterval.toLong())
+                                        TimeUnit.HOURS.toMillis(autoSaveInterval.toLong())
 
                             if (timeToTrigger <= System.currentTimeMillis()) {
                                 timeToTrigger =
                                     System.currentTimeMillis() +
-                                            TimeUnit.MINUTES.toMillis(autoSaveInterval.toLong())
+                                            TimeUnit.HOURS.toMillis(autoSaveInterval.toLong())
                             }
 
                             scheduleAutoSave.scheduleAutoSaveWorkAlarm(timeToTrigger)

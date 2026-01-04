@@ -189,7 +189,6 @@ fun AudioVideoPlayer(intent: Intent) {
                     })
                 }
             }
-            val TAG = "MediaViewer"
             if (state.mediaInfo.mediaType == MediaType.AUDIO) {
 
                 AudioViewer(
@@ -206,11 +205,9 @@ fun AudioVideoPlayer(intent: Intent) {
                     },
                 )
             } else {
-                Log.d(TAG, "Rendering VIDEO viewer")
 
                 AndroidView(
                     factory = { context ->
-                        Log.d(TAG, "Creating PlayerView")
 
                         PlayerView(context).also {
                             it.player = viewModel.player
@@ -222,16 +219,12 @@ fun AudioVideoPlayer(intent: Intent) {
                         when (lifecycle) {
 
                             Lifecycle.Event.ON_PAUSE -> {
-                                Log.d(
-                                    TAG, "Lifecycle ON_PAUSE → pause player & persist position"
-                                )
                                 playerView.onPause()
                                 playerView.player?.pause()
                                 viewModel.persistPlaybackPosition()
                             }
 
                             Lifecycle.Event.ON_RESUME -> {
-                                Log.d(TAG, "Lifecycle ON_RESUME → resume PlayerView")
                                 playerView.onResume()
                             }
 
@@ -252,9 +245,6 @@ fun AudioVideoPlayer(intent: Intent) {
                     currentPosition = state.progressPercent,
                     duration = state.durationMs,
                     onPlayPauseClick = {
-                        Log.i(
-                            "Play Status", "onCreate: ${viewModel.isPlayerPlaying()}"
-                        )
                         if (state.isPlaying) {
                             viewModel.pause()
                         } else {

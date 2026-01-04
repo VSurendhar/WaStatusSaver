@@ -1,6 +1,5 @@
 package com.voidDeveloper.wastatussaver.presentation.ui.player.components
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -107,7 +106,6 @@ fun CustomVideoControls(
 }
 
 fun getCurrentTime(fullDuration: Long, currentPosition: Long): String {
-    Log.i("Surendhar TAG", "getCurrentTime: $fullDuration $currentPosition")
     val calculationDuration = ((currentPosition.toFloat() / 100) * fullDuration).toLong()
     return formatTime(calculationDuration)
 }

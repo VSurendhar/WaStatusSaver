@@ -227,7 +227,7 @@ fun Bitmap.compressBitmapQuality(quality: Int = 50): Bitmap? {
 }
 
 fun getMillisFromNow(hour: Int): Long {
-    return System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(hour.toLong())
+    return System.currentTimeMillis() + TimeUnit.HOURS.toMillis(hour.toLong())
 }
 
 fun formatTime(millis: Long): String {

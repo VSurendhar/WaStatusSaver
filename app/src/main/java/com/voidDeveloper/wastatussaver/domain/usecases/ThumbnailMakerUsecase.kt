@@ -6,9 +6,6 @@ import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
-import androidx.core.graphics.scale
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.utils.compressBitmapQuality
@@ -22,15 +19,10 @@ class ThumbnailMakerUseCase @Inject constructor(@ApplicationContext private val 
     private val resources = context.resources
 
     fun getImageThumbnailFromUri(imageUri: Uri, quality: Int = 80): Bitmap? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val source = ImageDecoder.createSource(context.contentResolver, imageUri)
-            ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
-                decoder.setTargetSize(150, 300)
-            }.compressBitmapQuality()
-        } else {
-            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
-            bitmap.scale(150, 300).compressBitmapQuality()
-        }
+        val source = ImageDecoder.createSource(context.contentResolver, imageUri)
+        return ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+            decoder.setTargetSize(150, 300)
+        }.compressBitmapQuality()
     }
 
     fun getVideoThumbnailFromUri(videoUri: Uri): Bitmap? {

@@ -26,7 +26,7 @@ android {
     android.buildFeatures.buildConfig = true
     defaultConfig {
         applicationId = "com.voidDeveloper.wastatussaver"
-        minSdk = 26
+        minSdk = 29
         targetSdk = 36
         versionCode = 1
         versionName = "2.0"
@@ -116,15 +116,15 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
 
     // Ok Http
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp:5.3.2")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.3.2")
 
-    implementation("io.coil-kt:coil-compose:2.5.0")
-    implementation("io.coil-kt:coil-video:2.5.0")
+    implementation(libs.coil.compose)
+    implementation(libs.coil.video)
 
     // Media3
-    implementation("androidx.media3:media3-exoplayer:1.0.0-beta02")
-    implementation("androidx.media3:media3-ui:1.0.0-beta02")
+    implementation(libs.androidx.media3.exoplayer.v100beta02)
+    implementation(libs.androidx.media3.ui.v100beta02)
 
     // Material Icons
     implementation(libs.androidx.compose.material.icons.extended)
@@ -134,7 +134,7 @@ dependencies {
     implementation(libs.protobuf.javalite)
 
     // Compose Navigation
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation(libs.androidx.navigation.compose)
     implementation("androidx.compose.animation:animation:1.6.8")
 
 }

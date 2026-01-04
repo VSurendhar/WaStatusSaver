@@ -34,7 +34,7 @@ class AudioVideoPlayerViewModel @Inject constructor(
     private val audioFocusManager: AudioFocusManager,
     private val savedStateHandle: SavedStateHandle,
     private val savedMediaHandlingUserCase: SavedMediaHandlingUserCase,
-    private val statusesManagerUseCase: StatusesManagerUseCase,
+    private val statusMediaDownloadHandler : SavedMediaHandlingUserCase
 ) : ViewModel() {
 
     companion object {
@@ -103,9 +103,7 @@ class AudioVideoPlayerViewModel @Inject constructor(
                         playerManager.seekTo(info.lastPlayedMillis)
                     }
 
-//                    if (!playerManager.player.isPlaying) {
                     play()
-//                    }
 
                     playerManager.removeListener(this)
                 }
@@ -252,7 +250,7 @@ class AudioVideoPlayerViewModel @Inject constructor(
         viewModelScope.launch {
             updateUiState { copy(downloadState = DownloadState.DOWNLOADING) }
 
-            statusesManagerUseCase.saveMediaFile(mediaFile) {
+            statusMediaDownloadHandler.saveMediaFile(mediaFile) {
                 updateUiState { copy(downloadState = DownloadState.DOWNLOADED) }
             }
         }

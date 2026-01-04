@@ -139,7 +139,6 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.e("WaStatusSaver", "Failed to read downloads", e)
         }
 
         return list
@@ -366,7 +365,6 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
                 }
             }
         } catch (e: Exception) {
-            Log.e("WaStatusSaver", "Failed to get media URI", e)
             null
         }
     }

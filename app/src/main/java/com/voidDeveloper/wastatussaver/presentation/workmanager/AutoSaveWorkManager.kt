@@ -45,19 +45,10 @@ class AutoSaveWorkManager @AssistedInject constructor(
 
             val isAppInstalled = context.appInstalled(preferredTitle.packageName)
             if (isAppInstalled && !statusSaverManager.hasPermission(preferredTitle.uri)) {
-//                sendNotification(
-//                    status = false,
-//                    message = "Tied to Auto Save Status. Failed Due to Unfulfilled Permission"
-//                )
                 scheduleAutoSave.cancelAllAlarm()
                 disableAutoSaveFeature()
                 return Result.failure()
             } else if (!isAppInstalled) {
-//                val appName = context.getString(preferredTitle.resId)
-//                sendNotification(
-//                    status = false,
-//                    message = "Tied to Auto Save Status. Failed Due to $appName App Not Installed"
-//                )
                 scheduleAutoSave.cancelAllAlarm()
                 disableAutoSaveFeature()
                 return Result.failure()
@@ -113,20 +104,18 @@ class AutoSaveWorkManager @AssistedInject constructor(
     private fun sendNotification(status: Boolean, message: String) {
         val notificationId = System.currentTimeMillis().toInt()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                Constants.AUTO_SAVE_NOTIFICATION_CHANNEL_ID,
-                Constants.AUTO_SAVE_NOTIFICATION_CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = "Notifications for app status save updates"
-                setSound(null, null)
-                enableVibration(false)
-            }
-            val notificationManager =
-                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+        val channel = NotificationChannel(
+            Constants.AUTO_SAVE_NOTIFICATION_CHANNEL_ID,
+            Constants.AUTO_SAVE_NOTIFICATION_CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = "Notifications for app status save updates"
+            setSound(null, null)
+            enableVibration(false)
         }
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
 
         val builder =
             NotificationCompat.Builder(context, Constants.AUTO_SAVE_NOTIFICATION_CHANNEL_ID)

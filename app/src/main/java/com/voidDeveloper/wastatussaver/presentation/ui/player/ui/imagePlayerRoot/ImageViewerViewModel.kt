@@ -28,7 +28,6 @@ import javax.inject.Inject
 class ImageViewerViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val savedMediaHandlingUserCase: SavedMediaHandlingUserCase,
-    private val statusesManagerUseCase: StatusesManagerUseCase,
     private val statusMediaDownloadHandler : SavedMediaHandlingUserCase
 ) : ViewModel() {
 
