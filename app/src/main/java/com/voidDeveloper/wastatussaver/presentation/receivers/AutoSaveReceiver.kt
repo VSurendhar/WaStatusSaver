@@ -10,7 +10,6 @@ import com.voidDeveloper.wastatussaver.data.protodatastoremanager.AutoSaveProtoD
 import com.voidDeveloper.wastatussaver.data.utils.Constants.AUTO_SAVE_ACTION
 import com.voidDeveloper.wastatussaver.data.utils.extentions.getInterval
 import com.voidDeveloper.wastatussaver.data.utils.helpers.ScheduleAutoSave
-import com.voidDeveloper.wastatussaver.domain.usecases.TelegramLogUseCase
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,8 +32,10 @@ class AutoSaveReceiver : BroadcastReceiver() {
     @Inject
     lateinit var autoSaveProtoDataStoreManager: AutoSaveProtoDataStoreManager
 
+/*
     @Inject
     lateinit var telegramLogUseCase: TelegramLogUseCase
+*/
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 

@@ -387,15 +387,15 @@ fun DrawerContent(
                 color = Color.White
             )
             Spacer(modifier = Modifier.weight(1f))
-            IconButton(modifier = Modifier.size(50.dp), onClick = {}) {
-                Icon(
-                    tint = Color.White,
-                    painter = if (isSystemInDarkTheme()) painterResource(R.drawable.ic_moon) else painterResource(
-                        R.drawable.ic_sun
-                    ),
-                    contentDescription = ""
-                )
-            }
+//            IconButton(modifier = Modifier.size(50.dp), onClick = {}) {
+//                Icon(
+//                    tint = Color.White,
+//                    painter = if (isSystemInDarkTheme()) painterResource(R.drawable.ic_moon) else painterResource(
+//                        R.drawable.ic_sun
+//                    ),
+//                    contentDescription = ""
+//                )
+//            }
         }
         Column(
             modifier = Modifier
