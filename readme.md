@@ -10,10 +10,12 @@ A high-performance Android utility designed to permanently save WhatsApp and Wha
 * **Dual Source Support**: Easily toggle and save media from both **WhatsApp** and **WhatsApp Business**.
 
 ## Screenshots
-![Auto Save Configuration Screen](screenshots/Frame1.png)
-![Home Screen](screenshots/Frame2.png)
-![Saved Status Screen](screenshots/Frame3.png)
-![Navigation Drawer](screenshots/Frame4.png)
+<div style="display: flex; gap: 16px; flex-wrap: wrap;">
+    <img src="screenshots/Frame1.png" width="300" />
+    <img src="screenshots/Frame2.png" width="300" />
+    <img src="screenshots/Frame3.png" width="300" />
+    <img src="screenshots/Frame4.png" width="300" />
+</div>
 
 ## 🤖 Advanced Auto-Saving Feature
 
