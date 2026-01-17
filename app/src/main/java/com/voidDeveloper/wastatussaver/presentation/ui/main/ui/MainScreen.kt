@@ -64,7 +64,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,9 +72,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -89,7 +86,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
@@ -113,10 +112,8 @@ import com.voidDeveloper.wastatussaver.presentation.ui.main.dialog.SAFAccessPerm
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.PlayerActivity
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -126,7 +123,7 @@ fun MainScreen(
     onEvent: (Event) -> Unit,
     navigate: (String) -> Unit,
 
-) {
+    ) {
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -464,6 +461,7 @@ fun DrawerContent(
                     } catch (e: Exception) {
                         Toast.makeText(context, "No email client installed.", Toast.LENGTH_SHORT)
                             .show()
+                        e.printStackTrace()
                     }
                     closeDrawer()
                 },
@@ -697,50 +695,48 @@ fun PreviewItem(
         )
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            if (mediaFile is VideoFile || mediaFile is AudioFile) {
-                var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
-                var isLoading by remember { mutableStateOf(true) }
+            when (mediaFile) {
+                is ImageFile -> {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(mediaFile.uri).allowHardware(false)
+                            .build(),
+                        contentDescription = "Status Image",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(R.drawable.img_loading_placeholder),
+                        error = painterResource(R.drawable.ic_failed_document)
+                    )
+                }
 
-                LaunchedEffect(mediaFile.id) {
-                    isLoading = true
-                    imageBitmap = withContext(Dispatchers.IO) {
-                        mediaFile.getThumbNailBitMap(context)?.asImageBitmap()
+                is VideoFile -> {
+                    val imageLoader = remember {
+                        ImageLoader.Builder(context)
+                            .components {
+                                add(VideoFrameDecoder.Factory())
+                            }
+                            .crossfade(true)
+                            .build()
                     }
-                    isLoading = false
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(mediaFile.uri)
+                            .build(),
+                        imageLoader = imageLoader,
+                        contentDescription = "Thumbnail",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
 
-                if (isLoading) {
+                else -> {
                     Image(
-                        modifier = Modifier.fillMaxSize(),
-                        painter = painterResource(R.drawable.img_loading_placeholder),
-                        contentDescription = "Loading",
-                        contentScale = ContentScale.Crop
-                    )
-                } else if (imageBitmap != null) {
-                    Image(
-                        modifier = Modifier.fillMaxSize(),
-                        bitmap = imageBitmap!!,
-                        contentDescription = "Video Thumbnail",
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Image(
-                        modifier = Modifier.fillMaxSize(),
-                        painter = painterResource(R.drawable.ic_failed_document),
-                        contentDescription = "Failed"
+                        painter = painterResource(id = R.drawable.ic_audio_preview),
+                        contentDescription = "Audio Preview",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
-            } else {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(mediaFile.uri).allowHardware(false)
-                        .build(),
-                    contentDescription = "Status Image",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    placeholder = painterResource(R.drawable.img_loading_placeholder),
-                    error = painterResource(R.drawable.ic_failed_document)
-                )
             }
             if (showDownloadIcon) {
                 Card(
