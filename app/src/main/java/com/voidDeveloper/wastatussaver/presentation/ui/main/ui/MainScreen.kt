@@ -92,7 +92,6 @@ import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
-import com.voidDeveloper.wastatussaver.data.utils.LifecycleAwarePause
 import com.voidDeveloper.wastatussaver.data.utils.createColoredString
 import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrDefault
 import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrEmptyString
@@ -131,10 +130,6 @@ fun MainScreen(
     val pagerState = rememberPagerState(pageCount = { 3 })
     val mediaTypeData = listOf(MediaType.IMAGE, MediaType.VIDEO, MediaType.AUDIO)
     val context = LocalContext.current
-
-    LifecycleAwarePause(onResume = {
-        onEvent(Event.RefreshUiState)
-    })
 
     val state by uiState.collectAsStateWithLifecycle()
 
@@ -715,7 +710,6 @@ fun PreviewItem(
                             .components {
                                 add(VideoFrameDecoder.Factory())
                             }
-                            .crossfade(true)
                             .build()
                     }
                     AsyncImage(
@@ -725,7 +719,9 @@ fun PreviewItem(
                         imageLoader = imageLoader,
                         contentDescription = "Thumbnail",
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        placeholder = painterResource(R.drawable.img_loading_placeholder),
+                        error = painterResource(R.drawable.ic_failed_document)
                     )
                 }
 

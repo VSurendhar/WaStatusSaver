@@ -136,7 +136,7 @@ fun Floating(
 }
 
 @Composable
-fun LifecycleAwarePause(
+fun LifecycleAwareEventCallBacks(
     onPause: (() -> Unit)? = null,
     onDestroy: (() -> Unit)? = null,
     onResume: (() -> Unit)? = null,

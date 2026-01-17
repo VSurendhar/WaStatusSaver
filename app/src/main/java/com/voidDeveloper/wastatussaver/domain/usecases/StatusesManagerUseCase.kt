@@ -129,7 +129,8 @@ class StatusesManagerUseCase @Inject constructor(
     }
 
     fun isStatusDownloaded(fileName: String): Boolean {
-        return downloadedFiles.contains(fileName)
+        val baseName = fileName.substringBeforeLast(".")
+        return downloadedFiles.any { it.startsWith(baseName) }
     }
 
     suspend fun saveMediaFile(mediaFile: MediaFile, onSaveCompleted: () -> Unit = {}) {
