@@ -12,10 +12,8 @@ sealed interface Event {
     data class ChangeAppInstalledStatus(val status: Boolean?) : Event
     object RefreshUiState : Event
     data class OnDownloadClick(val mediaFile: MediaFile) : Event
-    data object ShowAutoSaveDialog : Event
     data object ShowNotificationPermissionDialog : Event
     data object ShowNotificationPermissionSettingsDialog : Event
     data object NotificationPermissionDialogDismiss : Event
-    data object AutoSaveDialogDismiss : Event
     data object NotificationSettingsDialogDismiss : Event
 }

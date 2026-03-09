@@ -169,7 +169,7 @@ fun MainScreen(
                         )
                         drawerState.close()
                     }
-                }, enableAutoSave = state?.hasSafAccessPermission == true
+                }
             )
         },
         content = {
@@ -351,7 +351,6 @@ fun DrawerContent(
     navigate: (String) -> Unit,
     closeDrawer: () -> Unit,
     showOnBoardingUI: () -> Unit,
-    enableAutoSave: Boolean,
 ) {
     val context = LocalContext.current
     Column(
@@ -409,12 +408,6 @@ fun DrawerContent(
                 onBtnClick = {
                     navigate(Screens.SavedStatus.route)
                 },
-            )
-            DrawerItem(
-                title = stringResource(R.string.auto_save),
-                painter = painterResource(R.drawable.ic_auto_save),
-                onBtnClick = { navigate(Screens.AutoSaveSettings.route) },
-                enable = enableAutoSave
             )
             DrawerItem(
                 title = stringResource(R.string.privacy_policy),
@@ -880,7 +873,6 @@ fun NavigationDrawerPreview() {
             navigate = {},
             closeDrawer = {},
             showOnBoardingUI = {},
-            enableAutoSave = true,
         )
     }
 }

@@ -4,7 +4,7 @@
 [![Kotlin](https://img.shields.io/badge/Language-Kotlin-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-A high-performance Android utility designed to permanently save **WhatsApp** and **WhatsApp Business** statuses in their original quality. This application eliminates the 24-hour expiration barrier with an advanced background automation engine. 🚀
+A high-performance Android utility designed to permanently save **WhatsApp** and **WhatsApp Business** statuses in their original quality. 🚀
 
 ---
 
@@ -26,20 +26,8 @@ A high-performance Android utility designed to permanently save **WhatsApp** and
   <img src="screenshots/Frame4.png" width="200" style="border-radius: 10px; margin: 5px" />
 </div>
 
----
 
-## 🤖 Advanced Auto-Saving Feature
-
-The standout feature of this application is the **Automation Suite**, which runs silently in the background without user intervention.
-
-* ⏰ **Configurable Intervals**: Set the background sync to run every **1, 6, 12, or 24 hours**.
-* 📲 **Data Source Selection**: Choose between WhatsApp or WhatsApp Business as the primary source.
-* 🎯 **Targeted Saving**: Filter exactly what to auto-save (Images, Videos, or Audio) to optimize storage.
-* ✅ **Set & Forget**: Once the configuration is saved, the app handles all future updates automatically.
-
----
-
-## 📁 Organized File Architecture
+##  Organized File Architecture
 
 The application maintains a clean and professional directory structure within your local storage:
 
@@ -52,7 +40,6 @@ The application maintains a clean and professional directory structure within yo
 
 ## 🛠️ Technical Implementation
 
-* ⚙️ **Background Processing**: Uses modern Android architecture (**WorkManager**) to trigger saves at specific intervals.
 * 🛡️ **Scoped Storage Compliant**: Designed to work with the latest Android permission models.
 * 🔒 **Privacy-First**: Operates entirely on-device; no media is ever uploaded or shared externally.
 

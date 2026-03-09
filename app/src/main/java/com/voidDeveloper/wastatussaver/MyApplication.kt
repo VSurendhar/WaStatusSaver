@@ -11,23 +11,17 @@ import javax.inject.Inject
 import androidx.work.Configuration
 
 @HiltAndroidApp
-class MyApplication : Application(), Configuration.Provider {
+class MyApplication : Application() {
 
     @Inject
     lateinit var appProcessObserver: AppProcessObserver
 
-    @Inject
-    lateinit var workerFactory: HiltWorkerFactory
 
     override fun onCreate() {
         super.onCreate()
         ProcessLifecycleOwner.get().lifecycle.addObserver(appProcessObserver)
     }
 
-    override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder()
-            .setWorkerFactory(workerFactory)
-            .build()
 }
 
 class AppProcessObserver @Inject constructor(

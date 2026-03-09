@@ -17,9 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.data.datastore.proto.App
-import com.voidDeveloper.wastatussaver.data.datastore.proto.AutoSaveInterval
-import com.voidDeveloper.wastatussaver.data.datastore.proto.AutoSaveUserPref
-import com.voidDeveloper.wastatussaver.domain.model.AutoSaveIntervalDomain
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.Title
 
 fun Context.findActivity(): Activity? {
@@ -47,16 +44,6 @@ fun Context.isInternetAvailable(): Boolean {
 fun Context.fileNotFoundBitmap(): Bitmap =
     BitmapFactory.decodeResource(resources, R.drawable.img_loading_placeholder)
 
-fun AutoSaveUserPref.getInterval(): Int {
-    return when (autoSaveInterval) {
-        AutoSaveInterval.ONE -> 1
-        AutoSaveInterval.SIX -> 6
-        AutoSaveInterval.TWELVE -> 12
-        AutoSaveInterval.TWENTY_FOUR -> 24
-        AutoSaveInterval.UNRECOGNIZED, AutoSaveInterval.UNKOWN -> 0
-    }
-}
-
 fun Title.toApp(): App {
     return when (this) {
         Title.Whatsapp -> App.WHATSAPP
@@ -71,29 +58,6 @@ fun App.toTitle(): Title {
         else -> Title.Whatsapp
     }
 }
-
-fun AutoSaveInterval.toAutoSaveIntervalDomain(): AutoSaveIntervalDomain? {
-    return when (this) {
-        AutoSaveInterval.UNKOWN -> null
-        AutoSaveInterval.ONE -> AutoSaveIntervalDomain.ONE_HOUR
-        AutoSaveInterval.SIX -> AutoSaveIntervalDomain.SIX_HOURS
-        AutoSaveInterval.TWELVE -> AutoSaveIntervalDomain.TWELVE_HOURS
-        AutoSaveInterval.TWENTY_FOUR -> AutoSaveIntervalDomain.TWENTY_FOUR_HOURS
-        AutoSaveInterval.UNRECOGNIZED -> null
-    }
-}
-
-fun AutoSaveIntervalDomain?.safeAutoSaveIntervalDomain(): AutoSaveIntervalDomain {
-    return when (this) {
-        null -> AutoSaveIntervalDomain.TWENTY_FOUR_HOURS
-        else -> this
-    }
-}
-
-fun AutoSaveUserPref?.string(): String {
-    return "App ${this?.app}, Enable ${this?.enable}, Interval ${this?.autoSaveInterval}, MediaList ${this?.mediaTypeList}"
-}
-
 
 fun Modifier.singleClick(
     enabled: Boolean = true,

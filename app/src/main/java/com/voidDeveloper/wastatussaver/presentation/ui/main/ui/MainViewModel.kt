@@ -6,12 +6,8 @@ import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManager
 import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_PREFERRED_TITLE
 import com.voidDeveloper.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_SHOULD_SHOW_ONBOARDING_UI
-import com.voidDeveloper.wastatussaver.data.protodatastoremanager.AutoSaveProtoDataStoreManager
-import com.voidDeveloper.wastatussaver.data.utils.Constants.DEFAULT_AUTO_SAVE_INTERVAL
-import com.voidDeveloper.wastatussaver.data.utils.extentions.getInterval
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.usecases.AppInstallCheckerUseCase
-import com.voidDeveloper.wastatussaver.domain.usecases.SavedMediaHandlingUserCase
 import com.voidDeveloper.wastatussaver.domain.usecases.StatusesManagerUseCase
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +21,6 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val dataStorePreferenceManager: DataStorePreferenceManager,
-    private val autoSaveProtoDataStoreManager: AutoSaveProtoDataStoreManager,
     private val statusesManagerUseCase: StatusesManagerUseCase,
     private val appInstallChecker: AppInstallCheckerUseCase,
 ) : ViewModel() {
@@ -54,8 +49,7 @@ class MainViewModel @Inject constructor(
                     getFiles(preferredTitle)
                 } else {
                     emptyList()
-                },
-                autoSaveEnabled = isAutoSaveEnable()
+                }
             )
         }
 
@@ -182,18 +176,6 @@ class MainViewModel @Inject constructor(
                 saveMediaFile(event.mediaFile)
             }
 
-            is Event.ShowAutoSaveDialog -> {
-                viewModelScope.launch {
-                    _uiState.update {
-                        it?.copy(
-                            showAutoSaveDialog = true,
-                            savedAutoSaveInterval = getAutoSaveInterval()
-                                ?: DEFAULT_AUTO_SAVE_INTERVAL
-                        )
-                    }
-                }
-            }
-
             is Event.ShowNotificationPermissionDialog -> {
                 _uiState.update {
                     it?.copy(
@@ -226,23 +208,10 @@ class MainViewModel @Inject constructor(
                 }
             }
 
-            is Event.AutoSaveDialogDismiss -> {
-                _uiState.update {
-                    it?.copy(
-                        showAutoSaveDialog = false,
-                    )
-                }
-            }
-
         }
 
     }
 
-    private suspend fun getAutoSaveInterval(): Int? {
-        val autoSaveUserPref = autoSaveProtoDataStoreManager.readAutoSaveUserPref()
-        val interval = autoSaveUserPref.getInterval()
-        return interval
-    }
 
     private fun refreshUiState() {
         viewModelScope.launch {
@@ -285,12 +254,6 @@ class MainViewModel @Inject constructor(
     private fun getFiles(title: Title): List<MediaFile> {
         val files = statusesManagerUseCase.getFiles(title.uri)
         return files
-    }
-
-    private suspend fun isAutoSaveEnable(): Boolean {
-        val autoSaveUserPref = autoSaveProtoDataStoreManager.readAutoSaveUserPref()
-        val enable = autoSaveUserPref.enable
-        return enable
     }
 
     private fun addDownloadedFileToCache(mediaFile: MediaFile) {

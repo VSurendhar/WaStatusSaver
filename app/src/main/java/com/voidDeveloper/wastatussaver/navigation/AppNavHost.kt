@@ -10,7 +10,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.voidDeveloper.wastatussaver.data.utils.LifecycleAwareEventCallBacks
-import com.voidDeveloper.wastatussaver.presentation.ui.autosavesettings.AutoSaveSettingsScreen
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.Event
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.MainScreen
 import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.MainViewModel
@@ -51,11 +50,6 @@ fun AppNavHost(navController: NavHostController, startDestination: String) {
         }
         composable(Screens.SavedStatus.route) {
             SavedStatusScreen(onBack = {
-                navController.popBackStack()
-            })
-        }
-        composable(Screens.AutoSaveSettings.route) {
-            AutoSaveSettingsScreen(onBackClick = {
                 navController.popBackStack()
             })
         }

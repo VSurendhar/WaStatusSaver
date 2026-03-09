@@ -48,7 +48,6 @@ import com.voidDeveloper.wastatussaver.data.utils.extentions.findActivity
 import com.voidDeveloper.wastatussaver.data.utils.extentions.isInternetAvailable
 import com.voidDeveloper.wastatussaver.data.utils.extentions.singleClick
 import com.voidDeveloper.wastatussaver.presentation.theme.WaStatusSaverTheme
-import com.voidDeveloper.wastatussaver.presentation.ui.autosavesettings.AutoSaveSettingsScreen
 import com.voidDeveloper.wastatussaver.presentation.ui.main.MainActivity
 
 @Composable
