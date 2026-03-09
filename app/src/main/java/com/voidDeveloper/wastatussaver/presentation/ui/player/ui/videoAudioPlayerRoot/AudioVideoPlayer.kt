@@ -46,7 +46,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.voidDeveloper.wastatussaver.R
-import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
+import com.voidDeveloper.wastatussaver.domain.model.MediaType
 import com.voidDeveloper.wastatussaver.domain.model.toMediaFile
 import com.voidDeveloper.wastatussaver.presentation.receivers.NoisyAudioReceiver
 import com.voidDeveloper.wastatussaver.presentation.ui.player.components.CustomVideoControls

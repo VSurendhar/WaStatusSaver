@@ -4,9 +4,9 @@ import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.core.net.toUri
 import com.voidDeveloper.wastatussaver.R
-import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
+import com.voidDeveloper.wastatussaver.domain.model.MediaType
 
 data class UiState(
     val title: Title? = null,

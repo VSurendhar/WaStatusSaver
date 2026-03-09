@@ -16,8 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import com.voidDeveloper.wastatussaver.R
-import com.voidDeveloper.wastatussaver.data.datastore.proto.App
-import com.voidDeveloper.wastatussaver.presentation.ui.main.ui.Title
 
 fun Context.findActivity(): Activity? {
     if (this is Activity) {
@@ -43,22 +41,6 @@ fun Context.isInternetAvailable(): Boolean {
 
 fun Context.fileNotFoundBitmap(): Bitmap =
     BitmapFactory.decodeResource(resources, R.drawable.img_loading_placeholder)
-
-fun Title.toApp(): App {
-    return when (this) {
-        Title.Whatsapp -> App.WHATSAPP
-        Title.WhatsappBusiness -> App.WHATSAPP_BUSINESS
-    }
-}
-
-fun App.toTitle(): Title {
-    return when (this) {
-        App.WHATSAPP -> Title.Whatsapp
-        App.WHATSAPP_BUSINESS -> Title.WhatsappBusiness
-        else -> Title.Whatsapp
-    }
-}
-
 fun Modifier.singleClick(
     enabled: Boolean = true,
     onClick: () -> Unit

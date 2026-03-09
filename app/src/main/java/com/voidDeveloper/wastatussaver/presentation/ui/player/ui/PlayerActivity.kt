@@ -2,15 +2,13 @@ package com.voidDeveloper.wastatussaver.presentation.ui.player.ui
 
 import android.os.Build
 import android.os.Bundle
-import android.os.PersistableBundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.OptIn
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.media3.common.util.UnstableApi
-import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
+import com.voidDeveloper.wastatussaver.domain.model.MediaType
 import com.voidDeveloper.wastatussaver.presentation.theme.WaStatusSaverTheme
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.imagePlayerRoot.ImageViewer
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.AudioVideoPlayer

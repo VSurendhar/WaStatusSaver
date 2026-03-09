@@ -1,7 +1,7 @@
 package com.voidDeveloper.wastatussaver.presentation.ui.main.ui
 
-import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
+import com.voidDeveloper.wastatussaver.domain.model.MediaType
 
 sealed interface Event {
     data class ChangeTitle(val title: Title) : Event

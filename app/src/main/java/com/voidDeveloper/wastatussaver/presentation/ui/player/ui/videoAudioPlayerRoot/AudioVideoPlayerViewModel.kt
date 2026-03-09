@@ -11,10 +11,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.domain.model.AudioFocusAction
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
+import com.voidDeveloper.wastatussaver.domain.model.MediaType
 import com.voidDeveloper.wastatussaver.domain.model.emptyMediaInfo
 import com.voidDeveloper.wastatussaver.domain.usecases.SavedMediaHandlingUserCase
 import com.voidDeveloper.wastatussaver.domain.usecases.StatusesManagerUseCase

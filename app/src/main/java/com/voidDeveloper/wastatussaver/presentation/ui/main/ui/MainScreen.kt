@@ -91,7 +91,6 @@ import coil.compose.AsyncImage
 import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import com.voidDeveloper.wastatussaver.R
-import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.data.utils.createColoredString
 import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrDefault
 import com.voidDeveloper.wastatussaver.data.utils.extentions.valueOrEmptyString
@@ -100,6 +99,7 @@ import com.voidDeveloper.wastatussaver.data.utils.openAppInPlayStore
 import com.voidDeveloper.wastatussaver.domain.model.AudioFile
 import com.voidDeveloper.wastatussaver.domain.model.ImageFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
+import com.voidDeveloper.wastatussaver.domain.model.MediaType
 import com.voidDeveloper.wastatussaver.domain.model.UnknownFile
 import com.voidDeveloper.wastatussaver.domain.model.VideoFile
 import com.voidDeveloper.wastatussaver.navigation.Screens

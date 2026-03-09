@@ -27,7 +27,7 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
+import com.voidDeveloper.wastatussaver.domain.model.MediaType
 import com.voidDeveloper.wastatussaver.domain.model.toMediaFile
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.component.ActionButton
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState

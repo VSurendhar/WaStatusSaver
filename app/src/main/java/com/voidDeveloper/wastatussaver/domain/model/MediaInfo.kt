@@ -2,7 +2,6 @@ package com.voidDeveloper.wastatussaver.domain.model
 
 import android.os.Parcelable
 import androidx.core.net.toUri
-import com.voidDeveloper.wastatussaver.data.datastore.proto.MediaType
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import kotlinx.parcelize.Parcelize
 
@@ -29,7 +28,7 @@ fun MediaInfo.toMediaFile(): MediaFile {
             VideoFile(uri.toUri(), fileName)
         }
 
-        MediaType.UNSPECIFIED, MediaType.UNRECOGNIZED -> {
+        MediaType.UNSPECIFIED -> {
             UnknownFile(uri.toUri(), fileName = fileName)
         }
     }
