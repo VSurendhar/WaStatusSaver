@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
+@Suppress("DEPRECATION")
 @HiltViewModel
 class AudioVideoPlayerViewModel @Inject constructor(
     private val playerManager: PlayerManager,

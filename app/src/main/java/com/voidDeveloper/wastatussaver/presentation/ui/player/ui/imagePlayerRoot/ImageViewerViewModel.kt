@@ -14,7 +14,6 @@ import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.model.MediaInfo
 import com.voidDeveloper.wastatussaver.domain.model.emptyMediaInfo
 import com.voidDeveloper.wastatussaver.domain.usecases.SavedMediaHandlingUserCase
-import com.voidDeveloper.wastatussaver.domain.usecases.StatusesManagerUseCase
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +23,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
+@Suppress("DEPRECATION")
 @HiltViewModel
 class ImageViewerViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,

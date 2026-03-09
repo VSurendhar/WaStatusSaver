@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.model.toMediaFile
 import com.voidDeveloper.wastatussaver.domain.usecases.SavedMediaHandlingUserCase
-import com.voidDeveloper.wastatussaver.domain.usecases.ThumbnailMakerUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -15,7 +14,6 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class SavedStatusViewModel @Inject constructor(
-    private val thumbnailMakerUseCase: ThumbnailMakerUseCase,
     private val savedMediaHandlingUserCase: SavedMediaHandlingUserCase,
 ) : ViewModel() {
 
@@ -30,8 +28,5 @@ class SavedStatusViewModel @Inject constructor(
             _savedStatus.value = mediaFiles
         }
     }
-
-    fun getThumbnail(mediaFile: MediaFile) =
-        thumbnailMakerUseCase.getThumbnailFromUri(mediaFile.mediaType, mediaFile.uri)
 
 }

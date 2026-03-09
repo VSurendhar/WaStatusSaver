@@ -22,7 +22,6 @@ data class UiState(
     val showNotificationPermissionSettingsDialog: Boolean = false,
     val savedAutoSaveInterval: Int = DEFAULT_AUTO_SAVE_INTERVAL,
     val autoSaveEnabled: Boolean = false,
-    val lastRefreshTimestamp: Long = 0L,
 )
 
 

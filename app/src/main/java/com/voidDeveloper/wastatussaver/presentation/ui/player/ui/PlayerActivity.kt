@@ -16,7 +16,7 @@ import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.imagePlayerRoot
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.AudioVideoPlayer
 import dagger.hilt.android.AndroidEntryPoint
 
-@Suppress("COMPOSE_APPLIER_CALL_MISMATCH")
+@Suppress("COMPOSE_APPLIER_CALL_MISMATCH", "DEPRECATION")
 @AndroidEntryPoint
 class PlayerActivity : ComponentActivity() {
 

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,7 +7,7 @@ plugins {
     alias(libs.plugins.dagger)
     kotlin("kapt")
     id("kotlin-parcelize")
-    id("com.google.protobuf") version "0.9.5"
+    alias(libs.plugins.protobuf)
 }
 
 /*val secrets = Properties()
@@ -47,17 +49,22 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
     }
     buildFeatures {
         compose = true
+    }
+    kotlinOptions {
+        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
     }
 }
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.21.7"
+        artifact = libs.protobuf.protoc.get().toString()
     }
     generateProtoTasks {
         all().forEach { task ->
@@ -114,15 +121,11 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
 
     // Ok Http
-    implementation("com.squareup.okhttp3:okhttp:5.3.2")
-    implementation("com.squareup.okhttp3:logging-interceptor:5.3.2")
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
 
     implementation(libs.coil.compose)
     implementation(libs.coil.video)
-
-    // Media3
-    implementation(libs.androidx.media3.exoplayer.v100beta02)
-    implementation(libs.androidx.media3.ui.v100beta02)
 
     // Material Icons
     implementation(libs.androidx.compose.material.icons.extended)
@@ -133,6 +136,6 @@ dependencies {
 
     // Compose Navigation
     implementation(libs.androidx.navigation.compose)
-    implementation("androidx.compose.animation:animation:1.6.8")
+    implementation(libs.androidx.compose.animation)
 
 }

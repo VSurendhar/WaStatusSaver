@@ -49,10 +49,6 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
     private fun getAllSavedMedia(): List<MediaInfo> {
         val result = mutableListOf<MediaInfo>()
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            return emptyList()
-        }
-
         val imageCount = queryMedia(
             mediaStoreUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI,
             relativePath = "%Download/WaStatusSaver/Image%",
@@ -161,9 +157,7 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
             put(MediaStore.MediaColumns.DATE_ADDED, timeInSeconds)
             put(MediaStore.MediaColumns.IS_PENDING, 1)
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.MediaColumns.IS_DOWNLOAD, 1)
-            }
+            put(MediaStore.MediaColumns.IS_DOWNLOAD, 1)
         }
 
         val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
@@ -210,9 +204,7 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
                 put(MediaStore.MediaColumns.DATE_ADDED, timeInSeconds)
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    put(MediaStore.MediaColumns.IS_DOWNLOAD, 1)
-                }
+                put(MediaStore.MediaColumns.IS_DOWNLOAD, 1)
             }
 
             val uri = resolver.insert(
@@ -260,9 +252,7 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
                 put(MediaStore.MediaColumns.DATE_ADDED, timeInSeconds)
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    put(MediaStore.MediaColumns.IS_DOWNLOAD, 1)
-                }
+                put(MediaStore.MediaColumns.IS_DOWNLOAD, 1)
             }
 
             val videoUri = resolver.insert(
@@ -313,33 +303,21 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
         mediaFolder: String,
     ): Uri? {
 
-        val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        val collection =
             MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        } else {
-            MediaStore.Downloads.EXTERNAL_CONTENT_URI
-        }
 
         val projection = arrayOf(
             MediaStore.Downloads._ID,
             MediaStore.Downloads.DISPLAY_NAME
         )
 
-        val selection: String?
-        val selectionArgs: Array<String>?
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            selection =
-                "${MediaStore.Downloads.DISPLAY_NAME} = ? AND " +
+        val selection = "${MediaStore.Downloads.DISPLAY_NAME} = ? AND " +
                         "${MediaStore.Downloads.RELATIVE_PATH} LIKE ?"
 
-            selectionArgs = arrayOf(
+        val selectionArgs = arrayOf(
                 fileName,
                 "%Download/WaStatusSaver/$mediaFolder/%"
             )
-        } else {
-            selection = "${MediaStore.Downloads.DISPLAY_NAME} = ?"
-            selectionArgs = arrayOf(fileName)
-        }
 
         return try {
             val cursor = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

@@ -29,7 +29,6 @@ class MainViewModel @Inject constructor(
     private val statusesManagerUseCase: StatusesManagerUseCase,
     private val appInstallChecker: AppInstallCheckerUseCase,
 //    private val telegramLogUseCase: TelegramLogUseCase,
-    private val statusMediaDownloadHandler : SavedMediaHandlingUserCase
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<UiState?> = MutableStateFlow(
@@ -57,7 +56,6 @@ class MainViewModel @Inject constructor(
                 } else {
                     emptyList()
                 },
-                lastRefreshTimestamp = System.currentTimeMillis(),
                 autoSaveEnabled = isAutoSaveEnable()
             )
         }
@@ -266,7 +264,6 @@ class MainViewModel @Inject constructor(
                     shouldShowOnBoardingUi = shouldShowOnBoardingUi,
                     hasSafAccessPermission = hasSafAccessPermission,
                     appInstalled = appInstalled,
-                    lastRefreshTimestamp = System.currentTimeMillis(),
                     mediaFiles = if (hasSafAccessPermission && !shouldShowOnBoardingUi && appInstalled && current.title != null) {
                         getFiles(current.title).toList()
                     } else {
@@ -283,7 +280,7 @@ class MainViewModel @Inject constructor(
     fun saveMediaFile(mediaFile: MediaFile) {
         viewModelScope.launch {
             mediaFile.downloadState = DownloadState.DOWNLOADING
-            statusMediaDownloadHandler.saveMediaFile(mediaFile, onSaveCompleted = {
+            statusesManagerUseCase.saveMediaFile(mediaFile, onSaveCompleted = {
                 addDownloadedFileToCache(mediaFile)
                 mediaFile.downloadState = DownloadState.DOWNLOADED
             })

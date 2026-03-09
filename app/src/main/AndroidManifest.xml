@@ -31,7 +31,6 @@
             android:name=".presentation.ui.main.MainActivity"
             android:configChanges="uiMode|screenSize|orientation"
             android:exported="true"
-            android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.WaStatusSaver">
             <intent-filter>
