@@ -28,7 +28,6 @@ class MainViewModel @Inject constructor(
     private val autoSaveProtoDataStoreManager: AutoSaveProtoDataStoreManager,
     private val statusesManagerUseCase: StatusesManagerUseCase,
     private val appInstallChecker: AppInstallCheckerUseCase,
-//    private val telegramLogUseCase: TelegramLogUseCase,
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<UiState?> = MutableStateFlow(
@@ -234,14 +233,6 @@ class MainViewModel @Inject constructor(
                     )
                 }
             }
-
-/*
-            is Event.SendLogsTelegram -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    telegramLogUseCase.sendLogs(event.logs)
-                }
-            }
-*/
 
         }
 

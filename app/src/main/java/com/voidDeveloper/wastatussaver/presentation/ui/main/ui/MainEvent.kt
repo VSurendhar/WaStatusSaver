@@ -18,5 +18,4 @@ sealed interface Event {
     data object NotificationPermissionDialogDismiss : Event
     data object AutoSaveDialogDismiss : Event
     data object NotificationSettingsDialogDismiss : Event
-//    data class SendLogsTelegram(val logs: String) : Event
 }

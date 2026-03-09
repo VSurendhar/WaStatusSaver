@@ -32,10 +32,6 @@ class AutoSaveReceiver : BroadcastReceiver() {
     @Inject
     lateinit var autoSaveProtoDataStoreManager: AutoSaveProtoDataStoreManager
 
-/*
-    @Inject
-    lateinit var telegramLogUseCase: TelegramLogUseCase
-*/
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 

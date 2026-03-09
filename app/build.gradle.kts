@@ -10,11 +10,7 @@ plugins {
     alias(libs.plugins.protobuf)
 }
 
-/*val secrets = Properties()
-val secretsFile = rootProject.file("secrets.properties")
-if (secretsFile.exists()) {
-    secrets.load(FileInputStream(secretsFile))
-}*/
+
 
 android {
     lint {
@@ -29,8 +25,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "2.0"
-//        buildConfigField("String", "BOT_TOKEN", "\"${secrets.getProperty("botToken")}\"")
-//        buildConfigField("String", "CHAT_ID", "\"${secrets.getProperty("chatId")}\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -120,9 +115,6 @@ dependencies {
     // Work Manager
     implementation(libs.androidx.work.runtime.ktx)
 
-    // Ok Http
-    implementation(libs.okhttp)
-    implementation(libs.okhttp.logging)
 
     implementation(libs.coil.compose)
     implementation(libs.coil.video)

@@ -22,7 +22,6 @@ import javax.inject.Singleton
 @Singleton
 class ScheduleAutoSave @Inject constructor(
     @ApplicationContext private val context: Context,
-//    private val telegramLogUseCase: TelegramLogUseCase,
 ) {
 
     fun scheduleAutoSaveWorkManager() {
@@ -38,14 +37,6 @@ class ScheduleAutoSave @Inject constructor(
     }
 
     fun scheduleAutoSaveWorkAlarm(triggerAtMillis: Long) {
-        /*
-                val scope = CoroutineScope(Dispatchers.IO)
-                scope.launch {
-                    val message = "Trigger time millis: ${formatTime(triggerAtMillis)}"
-                    val escapedMessage = escapeForMarkdownV2(message)
-                    telegramLogUseCase.sendLogs(escapedMessage)
-                }
-        */
 
         val alarmManager =
             context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
