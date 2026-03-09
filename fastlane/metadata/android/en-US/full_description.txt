@@ -1,0 +1,12 @@
+A high-performance Android utility designed to permanently save WhatsApp and WhatsApp Business statuses in their original quality. This application eliminates the 24-hour expiration barrier with an advanced background automation engine.
+
+Features 
+
+✨ Save Audio, Video, and Image formats
+💎 Original quality with zero compression
+⚡ Instant one-tap manual saving
+🔄 Support for WhatsApp & WhatsApp Business
+🤖 Advanced background auto-saving suite
+⏰ Configurable auto-save intervals (1, 6, 12, or 24 hrs)
+📁 Organized storage in dedicated folders
+🔒 Privacy-first: all operations stay on-device

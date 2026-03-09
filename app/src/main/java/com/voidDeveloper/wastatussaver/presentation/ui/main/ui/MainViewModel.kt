@@ -13,10 +13,8 @@ import com.voidDeveloper.wastatussaver.domain.model.MediaFile
 import com.voidDeveloper.wastatussaver.domain.usecases.AppInstallCheckerUseCase
 import com.voidDeveloper.wastatussaver.domain.usecases.SavedMediaHandlingUserCase
 import com.voidDeveloper.wastatussaver.domain.usecases.StatusesManagerUseCase
-import com.voidDeveloper.wastatussaver.domain.usecases.TelegramLogUseCase
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -30,7 +28,7 @@ class MainViewModel @Inject constructor(
     private val autoSaveProtoDataStoreManager: AutoSaveProtoDataStoreManager,
     private val statusesManagerUseCase: StatusesManagerUseCase,
     private val appInstallChecker: AppInstallCheckerUseCase,
-    private val telegramLogUseCase: TelegramLogUseCase,
+//    private val telegramLogUseCase: TelegramLogUseCase,
     private val statusMediaDownloadHandler : SavedMediaHandlingUserCase
 ) : ViewModel() {
 
@@ -239,11 +237,13 @@ class MainViewModel @Inject constructor(
                 }
             }
 
+/*
             is Event.SendLogsTelegram -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     telegramLogUseCase.sendLogs(event.logs)
                 }
             }
+*/
 
         }
 

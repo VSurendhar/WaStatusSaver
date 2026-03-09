@@ -1,14 +1,7 @@
 package com.voidDeveloper.wastatussaver.domain.usecases
 
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
-import java.io.IOException
-import javax.inject.Inject
 
-
+/*
 class TelegramLogUseCase @Inject constructor(private val client: OkHttpClient) {
 
     private val BASE_URL = "https://api.telegram.org/bot"
@@ -48,4 +41,4 @@ class TelegramLogUseCase @Inject constructor(private val client: OkHttpClient) {
         }
     }
 
-}
+}*/

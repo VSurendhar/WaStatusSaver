@@ -1,6 +1,3 @@
-import java.io.FileInputStream
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -11,11 +8,11 @@ plugins {
     id("com.google.protobuf") version "0.9.5"
 }
 
-val secrets = Properties()
+/*val secrets = Properties()
 val secretsFile = rootProject.file("secrets.properties")
 if (secretsFile.exists()) {
     secrets.load(FileInputStream(secretsFile))
-}
+}*/
 
 android {
     lint {
@@ -30,8 +27,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "2.0"
-        buildConfigField("String", "BOT_TOKEN", "\"${secrets.getProperty("botToken")}\"")
-        buildConfigField("String", "CHAT_ID", "\"${secrets.getProperty("chatId")}\"")
+//        buildConfigField("String", "BOT_TOKEN", "\"${secrets.getProperty("botToken")}\"")
+//        buildConfigField("String", "CHAT_ID", "\"${secrets.getProperty("chatId")}\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -43,6 +40,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
