@@ -15,7 +15,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -410,6 +409,13 @@ fun DrawerContent(
                 },
             )
             DrawerItem(
+                title = stringResource(R.string.quick_save),
+                painter = painterResource(R.drawable.ic_quick_save),
+                onBtnClick = {
+                    navigate(Screens.QuickSaveSettings.route)
+                },
+            )
+            DrawerItem(
                 title = stringResource(R.string.privacy_policy),
                 painter = painterResource(R.drawable.ic_privacypolicy),
                 onBtnClick = {
@@ -449,7 +455,6 @@ fun DrawerContent(
                     } catch (e: Exception) {
                         Toast.makeText(context, "No email client installed.", Toast.LENGTH_SHORT)
                             .show()
-                        e.printStackTrace()
                     }
                     closeDrawer()
                 },
@@ -919,4 +924,3 @@ fun MissingSetupInfoPreview() {
             onBtnClick = {})
     }
 }
-

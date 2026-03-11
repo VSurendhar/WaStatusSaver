@@ -3,8 +3,8 @@ package com.voidDeveloper.wastatussaver.domain.usecases
 import android.app.Application
 import android.database.Cursor
 import android.net.Uri
+import android.os.Build
 import android.provider.DocumentsContract
-import android.util.Log
 import com.voidDeveloper.wastatussaver.data.utils.Constants
 import com.voidDeveloper.wastatussaver.data.utils.Constants.AUDIO_MIME_TYPE_STARTING
 import com.voidDeveloper.wastatussaver.data.utils.Constants.IMAGE_MIME_TYPE_STARTING
@@ -20,11 +20,10 @@ import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlaye
 import javax.inject.Inject
 
 class StatusesManagerUseCase @Inject constructor(
-    private val appContext: Application,
-    private val statusMediaHandlingUserCase: SavedMediaHandlingUserCase,
+    val appContext: Application,
+    val statusMediaHandlingUserCase: SavedMediaHandlingUserCase,
 ) {
 
-    private val TAG = "Surendhar TAG"
     fun hasPermission(uri: Uri?): Boolean {
         return appContext.hasReadPermission(uri)
     }
@@ -43,10 +42,6 @@ class StatusesManagerUseCase @Inject constructor(
         downloadedFiles = statusMediaHandlingUserCase.getSavedMediaFiles().map { it.fileName }
     }
 
-    fun addDownloadedFileToCache(mediaFile: MediaFile) {
-        downloadedFiles = downloadedFiles + mediaFile.fileName
-    }
-
     fun getFiles(
         destinationUri: Uri?,
         preferredMediaTypes: List<MediaType>? = null,
@@ -60,6 +55,7 @@ class StatusesManagerUseCase @Inject constructor(
             destinationUri,
             DocumentsContract.getTreeDocumentId(destinationUri)
         )
+
         refreshDownloadedFiles()
 
         val cursor: Cursor? = appContext.contentResolver.query(
@@ -83,6 +79,7 @@ class StatusesManagerUseCase @Inject constructor(
                 c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
             val docIdIndex =
                 c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
+            val flagsIndex = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_FLAGS)
 
             while (c.moveToNext()) {
                 val name = c.getString(nameIndex)
@@ -91,33 +88,50 @@ class StatusesManagerUseCase @Inject constructor(
                 val fileUri =
                     DocumentsContract.buildDocumentUriUsingTree(destinationUri, documentId)
 
+                val flags = c.getInt(flagsIndex)
+                val isTrashed = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    flags and DocumentsContract.Document.FLAG_SUPPORTS_DELETE != 0
+                } else {
+                    false
+                }
+
                 if (name == Constants.NO_MEDIA) {
                     continue
                 }
 
+                val downloadState =
+                    if (isStatusDownloaded(name)) DownloadState.DOWNLOADED else DownloadState.NOT_DOWNLOADED
+
                 val mediaFile: MediaFile = when {
                     mimeType.startsWith(IMAGE_MIME_TYPE_STARTING, ignoreCase = true) -> {
-                        ImageFile(uri = fileUri, fileName = name).apply {
-                            downloadState =
-                                if (isStatusDownloaded(fileName)) DownloadState.DOWNLOADED else DownloadState.NOT_DOWNLOADED
-                        }
+                        ImageFile(
+                            uri = fileUri,
+                            fileName = name,
+                            initialDownloadState = downloadState
+                        )
                     }
 
                     mimeType.startsWith(VIDEO_MIME_TYPE_STARTING, ignoreCase = true) -> {
-                        VideoFile(uri = fileUri, fileName = name).apply {
-                            downloadState =
-                                if (isStatusDownloaded(fileName)) DownloadState.DOWNLOADED else DownloadState.NOT_DOWNLOADED
-                        }
+                        VideoFile(
+                            uri = fileUri,
+                            fileName = name,
+                            initialDownloadState = downloadState
+                        )
                     }
 
                     mimeType.startsWith(AUDIO_MIME_TYPE_STARTING, ignoreCase = true) -> {
-                        AudioFile(uri = fileUri, fileName = name).apply {
-                            downloadState =
-                                if (isStatusDownloaded(fileName)) DownloadState.DOWNLOADED else DownloadState.NOT_DOWNLOADED
-                        }
+                        AudioFile(
+                            uri = fileUri,
+                            fileName = name,
+                            initialDownloadState = downloadState
+                        )
                     }
 
-                    else -> UnknownFile(uri = fileUri, fileName = "void")
+                    else -> UnknownFile(
+                        uri = fileUri,
+                        fileName = "void",
+                        initialDownloadState = downloadState
+                    )
                 }
                 resList.add(
                     mediaFile
@@ -133,21 +147,12 @@ class StatusesManagerUseCase @Inject constructor(
 
     }
 
-    /*fun isStatusDownloaded(fileName: String): Boolean {
-        return downloadedFiles.contains(fileName)
-    }*/
-
     fun isStatusDownloaded(fileName: String): Boolean {
         val baseName = fileName.substringBeforeLast(".")
-        Log.i(TAG, "isStatusDownloaded: BaseName $baseName")
-        Log.i(
-            TAG,
-            "isStatusDownloaded: isStatusDownloaded ${downloadedFiles.any { it.startsWith(baseName) }}"
-        )
         return downloadedFiles.any { it.startsWith(baseName) }
     }
 
-    suspend fun saveMediaFile(mediaFile: MediaFile, onSaveCompleted: () -> Unit = {}) {
+    suspend fun saveMediaFile(mediaFile: MediaFile, onSaveCompleted: suspend () -> Unit = {}) {
         statusMediaHandlingUserCase.saveMediaFile(
             mediaFile = mediaFile,
             onSaveCompleted = onSaveCompleted

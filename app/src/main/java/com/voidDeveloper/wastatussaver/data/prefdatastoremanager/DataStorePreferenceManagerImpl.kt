@@ -15,7 +15,7 @@ class DataStorePreferenceManagerImpl(private val context: Context) : DataStorePr
     companion object DataStoreKeys {
         val KEY_SHOULD_SHOW_ONBOARDING_UI = booleanPreferencesKey("key.should.show.onboarding.ui")
         val KEY_PREFERRED_TITLE = stringPreferencesKey("key.preferred.title")
-        val LAST_ALARM_SET_MILLIS_KEY = longPreferencesKey("key.last.alarm.set.millis")
+        val KEY_QUICK_SAVE_USER_PREF = stringPreferencesKey("key.quick.save.user.pref")
     }
 
     private val preferenceName = "WhatsappAppStatusSaver"

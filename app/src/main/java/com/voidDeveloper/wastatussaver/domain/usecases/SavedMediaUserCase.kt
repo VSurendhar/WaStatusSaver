@@ -30,7 +30,7 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
     private var resolver: ContentResolver = context.contentResolver
 
 
-    suspend fun saveMediaFile(mediaFile: MediaFile, onSaveCompleted: () -> Unit) {
+    suspend fun saveMediaFile(mediaFile: MediaFile, onSaveCompleted: suspend () -> Unit) {
         when (mediaFile) {
             is ImageFile -> saveImageFile(mediaFile = mediaFile, onSaveCompleted = onSaveCompleted)
             is VideoFile -> saveVideoFile(mediaFile = mediaFile, onSaveCompleted = onSaveCompleted)
@@ -81,7 +81,8 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
 
         val projection = arrayOf(
             MediaStore.MediaColumns._ID,
-            MediaStore.MediaColumns.DISPLAY_NAME
+            MediaStore.MediaColumns.DISPLAY_NAME,
+            MediaStore.MediaColumns.IS_TRASHED
         )
 
         val selection = "${MediaStore.MediaColumns.RELATIVE_PATH} LIKE ?"
@@ -115,21 +116,24 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
             cursor?.use {
                 val idIndex = it.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
                 val nameIndex = it.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
+                val isTrashedIndex = it.getColumnIndexOrThrow(MediaStore.MediaColumns.IS_TRASHED)
 
                 while (it.moveToNext()) {
                     val id = it.getLong(idIndex)
                     val name = it.getString(nameIndex)
+                    val isTrashed = it.getInt(isTrashedIndex) == 1
                     val uri = ContentUris.withAppendedId(mediaStoreUri, id)
-
-                    list.add(
-                        MediaInfo(
-                            fileName = name,
-                            uri = uri.toString(),
-                            lastPlayedMillis = 0,
-                            mediaType = mediaType,
-                            downloadStatus = DownloadState.DOWNLOADED
+                    if (!isTrashed) {
+                        list.add(
+                            MediaInfo(
+                                fileName = name,
+                                uri = uri.toString(),
+                                lastPlayedMillis = 0,
+                                mediaType = mediaType,
+                                downloadStatus = DownloadState.DOWNLOADED
+                            )
                         )
-                    )
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -141,7 +145,7 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
 
     suspend fun saveAudioFile(
         mediaFile: AudioFile,
-        onSaveCompleted: () -> Unit,
+        onSaveCompleted:suspend () -> Unit,
     ) = withContext(Dispatchers.IO) {
 
         val timeInSeconds = System.currentTimeMillis() / 1000
@@ -186,7 +190,7 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
 
     suspend fun saveImageFile(
         mediaFile: ImageFile,
-        onSaveCompleted: () -> Unit,
+        onSaveCompleted: suspend () -> Unit,
     ) {
         withContext(Dispatchers.IO) {
             val bitmap = uriToBitmap(mediaFile.uri) ?: return@withContext
@@ -235,7 +239,7 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
 
     suspend fun saveVideoFile(
         mediaFile: VideoFile,
-        onSaveCompleted: () -> Unit,
+        onSaveCompleted: suspend () -> Unit,
     ) {
         withContext(Dispatchers.IO) {
 

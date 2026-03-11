@@ -32,7 +32,10 @@ protobufJavalite = "4.33.2"
 composeAnimation = "1.6.8"
 workRuntimeKtx = "2.11.0"
 
+ksp = "2.2.20-2.0.4"
+
 [libraries]
+
 accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanistPagerIndicators" }
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -82,3 +85,4 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 dagger = { id = "com.google.dagger.hilt.android", version = "2.57.1" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

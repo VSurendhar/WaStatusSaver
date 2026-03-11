@@ -13,10 +13,10 @@ import com.voidDeveloper.wastatussaver.R
 import com.voidDeveloper.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 
 @Stable
-abstract class MediaFile() {
+abstract class MediaFile(initialDownloadState: DownloadState = DownloadState.NOT_DOWNLOADED) {
     val id: String
         get() = fileName
-    var downloadState by mutableStateOf(DownloadState.NOT_DOWNLOADED)
+    var downloadState by mutableStateOf(initialDownloadState)
     abstract val mediaType: MediaType
     abstract val fileName: String
     abstract val uri: Uri
@@ -29,7 +29,8 @@ data class ImageFile(
     override val uri: Uri,
     override val fileName: String,
     override val mediaType: MediaType = MediaType.IMAGE,
-) : MediaFile() {
+    val initialDownloadState: DownloadState = DownloadState.NOT_DOWNLOADED
+) : MediaFile(initialDownloadState) {
     override fun toString(): String {
         return "$fileName $downloadState"
     }
@@ -41,7 +42,8 @@ data class AudioFile(
     override val uri: Uri,
     override val fileName: String,
     override val mediaType: MediaType = MediaType.AUDIO,
-) : MediaFile() {
+    val initialDownloadState: DownloadState = DownloadState.NOT_DOWNLOADED
+) : MediaFile(initialDownloadState) {
     private var mediaItem: MediaItem? = null
 
     fun getMediaItem(context: Context): MediaItem {
@@ -62,7 +64,8 @@ data class VideoFile(
     override val uri: Uri,
     override val fileName: String,
     override val mediaType: MediaType = MediaType.VIDEO,
-) : MediaFile() {
+    val initialDownloadState: DownloadState = DownloadState.NOT_DOWNLOADED
+) : MediaFile(initialDownloadState) {
     private var mediaItem: MediaItem = MediaItem.fromUri(uri)
 
     fun getMediaItem(): MediaItem {
@@ -73,5 +76,7 @@ data class VideoFile(
 
 data class UnknownFile(
     override val uri: Uri,
-    override val mediaType: MediaType = MediaType.UNSPECIFIED, override val fileName: String,
-) : MediaFile()
+    override val mediaType: MediaType = MediaType.UNSPECIFIED, 
+    override val fileName: String,
+    val initialDownloadState: DownloadState = DownloadState.NOT_DOWNLOADED
+) : MediaFile(initialDownloadState)

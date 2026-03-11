@@ -56,8 +56,8 @@ fun NotificationPermissionDialog(
         ) {
             OnBoardingBody(
                 imageRes = R.drawable.ic_notfication_permission,
-                title = "Auto-Save Notifications",
-                bodyText = "We'd like to notify you when a status is auto-saved successfully or fails due to an issue."
+                title = "Quick-Save Notifications",
+                bodyText = "Get a notification that lets you quickly save status media directly to your device without opening the app."
             )
 
             Text(

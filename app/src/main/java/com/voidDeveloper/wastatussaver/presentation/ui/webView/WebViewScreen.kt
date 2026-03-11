@@ -94,7 +94,6 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
                 }
                 AndroidView(modifier = Modifier.fillMaxSize(), factory = {
                     webView.apply {
-                        settings.domStorageEnabled = true
                         webChromeClient = object : WebChromeClient() {
                             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                                 progress = newProgress / 100f

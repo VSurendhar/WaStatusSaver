@@ -45,12 +45,13 @@ object AppModule {
                 cacheMode = WebSettings.LOAD_DEFAULT
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                 setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                allowFileAccess = true
+                allowFileAccess = false
                 useWideViewPort = true
                 loadWithOverviewMode = true
-                setSupportZoom(false)
-                builtInZoomControls = false
+                setSupportZoom(true)
+                builtInZoomControls = true
                 defaultTextEncodingName = "utf-8"
+                blockNetworkLoads = false
             }
 
             webViewClient = object : WebViewClient() {

@@ -142,12 +142,14 @@ class MainViewModel @Inject constructor(
             }
 
             is Event.ChangeSAFAccessPermission -> {
-                _uiState.update {
-                    if (event.hasSafAccessPermission == true) {
-                        val files = getFiles(uiState.value?.title!!)
-                        it?.copy(mediaFiles = files)
+                viewModelScope.launch {
+                    _uiState.update {
+                        if (event.hasSafAccessPermission == true) {
+                            val files = getFiles(uiState.value?.title!!)
+                            it?.copy(mediaFiles = files)
+                        }
+                        it?.copy(hasSafAccessPermission = event.hasSafAccessPermission)
                     }
-                    it?.copy(hasSafAccessPermission = event.hasSafAccessPermission)
                 }
             }
 
@@ -225,13 +227,14 @@ class MainViewModel @Inject constructor(
                     hasSafAccessPermission = hasSafAccessPermission,
                     appInstalled = appInstalled,
                     mediaFiles = if (hasSafAccessPermission && !shouldShowOnBoardingUi && appInstalled && current.title != null) {
-                        getFiles(current.title).toList()
+                        val files = getFiles(current.title).toList()
+                        files
                     } else {
                         current.mediaFiles
                     }
                 )
 
-                updated ?: current
+                updated
             }
         }
     }
@@ -241,7 +244,6 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             mediaFile.downloadState = DownloadState.DOWNLOADING
             statusesManagerUseCase.saveMediaFile(mediaFile, onSaveCompleted = {
-                addDownloadedFileToCache(mediaFile)
                 mediaFile.downloadState = DownloadState.DOWNLOADED
             })
         }
@@ -251,14 +253,10 @@ class MainViewModel @Inject constructor(
         dataStorePreferenceManager.putPreference(KEY_PREFERRED_TITLE, title.packageName)
     }
 
-    private fun getFiles(title: Title): List<MediaFile> {
+    private suspend fun getFiles(title: Title): List<MediaFile> {
         val files = statusesManagerUseCase.getFiles(title.uri)
         return files
     }
 
-    private fun addDownloadedFileToCache(mediaFile: MediaFile) {
-        statusesManagerUseCase.addDownloadedFileToCache(mediaFile)
-    }
 
 }
-

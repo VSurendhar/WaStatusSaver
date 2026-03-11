@@ -8,6 +8,7 @@ plugins {
     kotlin("kapt")
     id("kotlin-parcelize")
     alias(libs.plugins.protobuf)
+    alias(libs.plugins.ksp)
 }
 
 
@@ -53,7 +54,6 @@ android {
         compose = true
     }
     kotlinOptions {
-        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
     }
 }
 

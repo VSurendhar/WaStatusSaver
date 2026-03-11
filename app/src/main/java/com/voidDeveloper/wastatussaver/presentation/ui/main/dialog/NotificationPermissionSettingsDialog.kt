@@ -51,7 +51,7 @@ fun NotificationPermissionSettingsDialog(
                 OnBoardingBody(
                     imageRes = R.drawable.ic_notfication_permission,
                     title = "Enable Notifications",
-                    bodyText = "To receive auto-save notifications, please enable notification permission from app settings. This helps you stay informed about saved statuses."
+                    bodyText = "Permission to see the notification\nQuick save without opening the app"
                 )
                 Row(
                     modifier = Modifier
