@@ -17,11 +17,11 @@ android {
     lint {
         baseline = file("lint-baseline.xml")
     }
-    namespace = "com.voidDeveloper.wastatussaver"
+    namespace = "com.voiddevelopers.wastatussaver"
     compileSdk = 36
     android.buildFeatures.buildConfig = true
     defaultConfig {
-        applicationId = "com.voidDeveloper.wastatussaver"
+        applicationId = "com.voiddevelopers.wastatussaver"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
