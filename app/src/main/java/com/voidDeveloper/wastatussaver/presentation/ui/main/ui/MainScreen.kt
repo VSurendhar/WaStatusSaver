@@ -1,6 +1,8 @@
 package com.voidDeveloper.wastatussaver.presentation.ui.main.ui
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -429,13 +431,15 @@ fun DrawerContent(
             DrawerItem(
                 title = stringResource(R.string.rate_app),
                 painter = painterResource(R.drawable.ic_rating_star),
-                onBtnClick = {},
+                onBtnClick = {
+                    rateApp(context)
+                },
             )
-            DrawerItem(
+/*            DrawerItem(
                 title = stringResource(R.string.more_app),
                 painter = painterResource(R.drawable.ic_more),
                 onBtnClick = {},
-            )
+            )*/
             DrawerItem(
                 title = stringResource(R.string.report_bug),
                 painter = painterResource(R.drawable.ic_bug),
@@ -462,9 +466,44 @@ fun DrawerContent(
             DrawerItem(
                 title = stringResource(R.string.about),
                 painter = painterResource(R.drawable.ic_about),
-                onBtnClick = {},
+                onBtnClick = {
+                    aboutApp(context)
+                },
             )
         }
+    }
+}
+
+fun aboutApp(context: Context){
+    val appPackage = context.packageName
+
+    try {
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            "market://details?id=$appPackage".toUri()
+        )
+        context.startActivity(intent)
+
+    } catch (e: ActivityNotFoundException) {
+
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            "https://play.google.com/store/apps/details?id=$appPackage".toUri()
+        )
+        context.startActivity(intent)
+
+    }
+}
+fun rateApp(context: Context) {
+    val uri = "market://details?id=${context.packageName}".toUri()
+    val intent = Intent(Intent.ACTION_VIEW, uri)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+    try {
+        context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        val webUri = "https://play.google.com/store/apps/details?id=${context.packageName}".toUri()
+        context.startActivity(Intent(Intent.ACTION_VIEW, webUri))
     }
 }
 
