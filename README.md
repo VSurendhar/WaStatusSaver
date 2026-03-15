@@ -4,7 +4,11 @@
 [![Kotlin](https://img.shields.io/badge/Language-Kotlin-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-A high-performance Android utility designed to permanently save **WhatsApp** and **WhatsApp Business** statuses in their original quality. This application eliminates the 24-hour expiration barrier with an advanced background automation engine. 🚀
+A high-performance Android utility designed to permanently save **WhatsApp** and **WhatsApp Business** statuses in their original quality. This application helps you preserve disappearing media with a fast, privacy-focused, and on-device experience. 🚀
+
+### Get From
+> [<img src="https://github.com/vishal2376/snaptick/assets/38159691/f502e2ec-dbf4-4ed6-b23f-a47b74080fea" height="80">](https://github.com/VSurendhar/WaStatusSaver/releases)
+> [<img src="assets/label/indus-app-store.png" height="80">](https://www.indusappstore.com/apps/tools/wastatussaver/com.voidDeveloper.wastatussaver/?page=details&id=com.voidDeveloper.wastatussaver)
 
 ---
 
@@ -12,30 +16,31 @@ A high-performance Android utility designed to permanently save **WhatsApp** and
 
 * 🎼 **Multi-Format Support**: Seamlessly save status updates in **Audio, Video, and Image** formats.
 * 💎 **Zero Compression**: Files are copied directly from the source cache, ensuring **Original Quality** with no pixel loss.
-* ⚡ **Instant Saving**: One-tap manual saving that reflects in your gallery immediately.
+* 🔔 **Quick Save from Notification**: Save status media instantly with a single tap directly from the notification, without opening the app.
 * 🔄 **Dual Source Support**: Easily toggle and save media from both **WhatsApp** and **WhatsApp Business**.
+* 🎯 **Media-Type Filtering**: Filter quick save by **Images, Videos, or Audio** based on your preference.
 
 ---
 
 ## 📸 Screenshots
 
 <div align="center">
-  <img src="screenshots/Frame1.png" width="200" style="border-radius: 10px; margin: 5px" />
-  <img src="screenshots/Frame2.png" width="200" style="border-radius: 10px; margin: 5px" />
-  <img src="screenshots/Frame3.png" width="200" style="border-radius: 10px; margin: 5px" />
-  <img src="screenshots/Frame4.png" width="200" style="border-radius: 10px; margin: 5px" />
+  <img src="assets/screenshots/Frame1.png" width="200" style="border-radius: 10px; margin: 5px" />
+  <img src="assets/screenshots/Frame2.png" width="200" style="border-radius: 10px; margin: 5px" />
+  <img src="assets/screenshots/Frame3.png" width="200" style="border-radius: 10px; margin: 5px" />
+  <img src="assets/screenshots/Frame4.png" width="200" style="border-radius: 10px; margin: 5px" />
 </div>
 
 ---
 
-## 🤖 Advanced Auto-Saving Feature
+## 🔔 Smart Quick Save Experience
 
-The standout feature of this application is the **Automation Suite**, which runs silently in the background without user intervention.
+WaStatusSaver makes status saving faster by bringing actions directly to the notification panel.
 
-* ⏰ **Configurable Intervals**: Set the background sync to run every **1, 6, 12, or 24 hours**.
-* 📲 **Data Source Selection**: Choose between WhatsApp or WhatsApp Business as the primary source.
-* 🎯 **Targeted Saving**: Filter exactly what to auto-save (Images, Videos, or Audio) to optimize storage.
-* ✅ **Set & Forget**: Once the configuration is saved, the app handles all future updates automatically.
+* ⚡ **Single-Tap Saving**: Save media instantly from the notification without launching the application.
+* 📲 **Source Selection**: Choose between **WhatsApp** and **WhatsApp Business** as the source.
+* 🎯 **Filtered Quick Save**: Control what appears for quick save by selecting **Images, Videos, or Audio**.
+* ✅ **Faster Workflow**: Reduce manual steps and save statuses the moment they are detected.
 
 ---
 
@@ -52,7 +57,7 @@ The application maintains a clean and professional directory structure within yo
 
 ## 🛠️ Technical Implementation
 
-* ⚙️ **Background Processing**: Uses modern Android architecture (**WorkManager**) to trigger saves at specific intervals.
+* ⚙️ **Foreground Service Based Flow**: Supports quick interactions through notifications for a faster saving experience.
 * 🛡️ **Scoped Storage Compliant**: Designed to work with the latest Android permission models.
 * 🔒 **Privacy-First**: Operates entirely on-device; no media is ever uploaded or shared externally.
 
