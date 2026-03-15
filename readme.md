@@ -6,6 +6,10 @@
 
 A high-performance Android utility designed to permanently save **WhatsApp** and **WhatsApp Business** statuses in their original quality. This application eliminates the 24-hour expiration barrier with an advanced background automation engine. 🚀
 
+### Get From
+> [<img src="https://github.com/vishal2376/snaptick/assets/38159691/f502e2ec-dbf4-4ed6-b23f-a47b74080fea" height="80">](https://github.com/VSurendhar/WaStatusSaver/releases)
+> [<img src="assets/label/indus-app-store.png" height="80">](https://www.indusappstore.com/apps/tools/wastatussaver/com.voidDeveloper.wastatussaver/?page=details&id=com.voidDeveloper.wastatussaver)
+
 ---
 
 ## ✨ Key Features
@@ -20,10 +24,10 @@ A high-performance Android utility designed to permanently save **WhatsApp** and
 ## 📸 Screenshots
 
 <div align="center">
-  <img src="screenshots/Frame1.png" width="200" style="border-radius: 10px; margin: 5px" />
-  <img src="screenshots/Frame2.png" width="200" style="border-radius: 10px; margin: 5px" />
-  <img src="screenshots/Frame3.png" width="200" style="border-radius: 10px; margin: 5px" />
-  <img src="screenshots/Frame4.png" width="200" style="border-radius: 10px; margin: 5px" />
+  <img src="assets/screenshots/Frame1.png" width="200" style="border-radius: 10px; margin: 5px" />
+  <img src="assets/screenshots/Frame2.png" width="200" style="border-radius: 10px; margin: 5px" />
+  <img src="assets/screenshots/Frame3.png" width="200" style="border-radius: 10px; margin: 5px" />
+  <img src="assets/screenshots/Frame4.png" width="200" style="border-radius: 10px; margin: 5px" />
 </div>
 
 ---
