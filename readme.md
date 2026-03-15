@@ -8,7 +8,7 @@ A high-performance Android utility designed to permanently save **WhatsApp** and
 
 ### Get From
 > [<img src="https://github.com/vishal2376/snaptick/assets/38159691/f502e2ec-dbf4-4ed6-b23f-a47b74080fea" height="80">](https://github.com/VSurendhar/WaStatusSaver/releases)
-> [<img src="assets/label/indus-app-store.png" height="80">](https://www.indusappstore.com/apps/tools/wastatussaver/com.voidDeveloper.wastatussaver/?page=details&id=com.voidDeveloper.wastatussaver)
+> [<img src="assets/label/indus-app-store.png" height="68">](https://www.indusappstore.com/apps/tools/wastatussaver/com.voidDeveloper.wastatussaver/?page=details&id=com.voidDeveloper.wastatussaver)
 
 ---
 
