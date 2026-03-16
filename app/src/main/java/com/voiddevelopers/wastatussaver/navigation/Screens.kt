@@ -6,5 +6,6 @@ sealed class Screens(val route: String) {
     object SavedStatus : Screens("screen.saved.status")
     object WebView : Screens("screen.web.view")
     object QuickSaveSettings : Screens("screen.quicksave.settings")
+    object BackUp : Screens("screen.backup")
 
 }

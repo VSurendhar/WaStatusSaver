@@ -418,6 +418,13 @@ fun DrawerContent(
                 },
             )
             DrawerItem(
+                title = stringResource(R.string.backup),
+                painter = painterResource(R.drawable.ic_backup),
+                onBtnClick = {
+                    navigate(Screens.BackUp.route)
+                },
+            )
+            DrawerItem(
                 title = stringResource(R.string.privacy_policy),
                 painter = painterResource(R.drawable.ic_privacypolicy),
                 onBtnClick = {
@@ -435,11 +442,11 @@ fun DrawerContent(
                     rateApp(context)
                 },
             )
-/*            DrawerItem(
-                title = stringResource(R.string.more_app),
-                painter = painterResource(R.drawable.ic_more),
-                onBtnClick = {},
-            )*/
+            /*            DrawerItem(
+                            title = stringResource(R.string.more_app),
+                            painter = painterResource(R.drawable.ic_more),
+                            onBtnClick = {},
+                        )*/
             DrawerItem(
                 title = stringResource(R.string.report_bug),
                 painter = painterResource(R.drawable.ic_bug),
@@ -474,7 +481,7 @@ fun DrawerContent(
     }
 }
 
-fun aboutApp(context: Context){
+fun aboutApp(context: Context) {
     val appPackage = context.packageName
 
     try {
@@ -494,6 +501,7 @@ fun aboutApp(context: Context){
 
     }
 }
+
 fun rateApp(context: Context) {
     val uri = "market://details?id=${context.packageName}".toUri()
     val intent = Intent(Intent.ACTION_VIEW, uri)
@@ -508,24 +516,34 @@ fun rateApp(context: Context) {
 }
 
 @Composable
-fun DrawerItem(title: String, painter: Painter, onBtnClick: () -> Unit, enable: Boolean = true) {
+fun DrawerItem(
+    title: String,
+    painter: Painter,
+    onBtnClick: () -> Unit,
+    enable: Boolean = true
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = enable, onClick = { onBtnClick() })
-            .padding(vertical = 10.dp)
-            .padding(horizontal = 15.dp),
+            .clickable(enabled = enable) { onBtnClick() }
+            .padding(vertical = 10.dp, horizontal = 15.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+
         Icon(
-            modifier = Modifier.size(24.dp),
             painter = painter,
+            contentDescription = title,
             tint = gray,
-            contentDescription = "Icon"
+            modifier = Modifier
+                .size(24.dp)
         )
-        Spacer(modifier = Modifier.width(10.dp))
+
+        Spacer(modifier = Modifier.width(12.dp))
+
         Text(
-            text = title, style = MaterialTheme.typography.bodyLarge, color = gray
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            color = gray
         )
     }
 }

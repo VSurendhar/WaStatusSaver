@@ -10,6 +10,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.voiddevelopers.wastatussaver.data.utils.LifecycleAwareEventCallBacks
+import com.voiddevelopers.wastatussaver.presentation.ui.backup.BackUpViewModel
+import com.voiddevelopers.wastatussaver.presentation.ui.backup.BackupScreen
 import com.voiddevelopers.wastatussaver.presentation.ui.main.ui.Event
 import com.voiddevelopers.wastatussaver.presentation.ui.main.ui.MainScreen
 import com.voiddevelopers.wastatussaver.presentation.ui.main.ui.MainViewModel
@@ -69,6 +71,11 @@ fun AppNavHost(navController: NavHostController, startDestination: String) {
             QuickSaveSettingsScreen {
                 navController.popBackStack()
             }
+        }
+        composable(
+            route = Screens.BackUp.route,
+        ) {
+            BackupScreen(onBackClick = { navController.popBackStack() })
         }
     }
 
