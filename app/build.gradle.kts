@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -11,7 +12,14 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+val secretsProperties = Properties()
+val secretsFile = rootProject.file("secrets.properties")
 
+if (secretsFile.exists()) {
+    secretsFile.inputStream().use { input ->
+        secretsProperties.load(input)
+    }
+}
 
 android {
     lint {
@@ -24,10 +32,19 @@ android {
         applicationId = "com.voiddevelopers.wastatussaver"
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
+        versionCode = 3
         versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            keyAlias = secretsProperties["SIGNING_KEY_ALIAS"].toString()
+            keyPassword = secretsProperties["SIGNING_KEY_PASS"].toString()
+            storeFile = File("${project.rootDir}/waStatusSaver.jks")
+            storePassword = secretsProperties["SIGNING_STORE_PASS"].toString()
+        }
     }
 
     buildTypes {
@@ -38,7 +55,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {

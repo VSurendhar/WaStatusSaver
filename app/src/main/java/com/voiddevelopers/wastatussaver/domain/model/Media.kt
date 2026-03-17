@@ -2,6 +2,7 @@ package com.voiddevelopers.wastatussaver.domain.model
 
 import android.content.Context
 import android.net.Uri
+import androidx.annotation.Keep
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +14,7 @@ import com.voiddevelopers.wastatussaver.R
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 
 @Stable
+@Keep
 abstract class MediaFile(initialDownloadState: DownloadState = DownloadState.NOT_DOWNLOADED) {
     val id: String
         get() = fileName
@@ -25,6 +27,7 @@ abstract class MediaFile(initialDownloadState: DownloadState = DownloadState.NOT
 }
 
 @Suppress("DEPRECATION")
+@Keep
 data class ImageFile(
     override val uri: Uri,
     override val fileName: String,
@@ -38,6 +41,7 @@ data class ImageFile(
 }
 
 @Suppress("DEPRECATION")
+@Keep
 data class AudioFile(
     override val uri: Uri,
     override val fileName: String,
@@ -60,6 +64,7 @@ data class AudioFile(
 }
 
 
+@Keep
 data class VideoFile(
     override val uri: Uri,
     override val fileName: String,
@@ -74,6 +79,7 @@ data class VideoFile(
 
 }
 
+@Keep
 data class UnknownFile(
     override val uri: Uri,
     override val mediaType: MediaType = MediaType.UNSPECIFIED, 
