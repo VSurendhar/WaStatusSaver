@@ -127,7 +127,7 @@ class QuickSaveSettingsViewModel @Inject constructor(
                 }
             }
 
-            is QuickSaveEvent.RequestPermissionAndSave -> {
+            is QuickSaveEvent.RequestPermission -> {
                 viewModelScope.launch {
                     _effect.send(QuickSaveAction.RequestNotificationPermission)
                 }
@@ -196,7 +196,7 @@ sealed interface QuickSaveEvent {
         val isEnabled: Boolean? = null,
     ) : QuickSaveEvent
 
-    data object RequestPermissionAndSave : QuickSaveEvent
+    data object RequestPermission : QuickSaveEvent
     data object ShowRationale : QuickSaveEvent
     data object SaveIfPossibleAndBack : QuickSaveEvent
     data object ShowNotificationSettingsDialog : QuickSaveEvent
@@ -210,3 +210,4 @@ sealed interface QuickSaveAction {
     data class GoBack(val startForegroundService: Boolean) : QuickSaveAction
     data class ShowToast(val message: String) : QuickSaveAction
 }
+

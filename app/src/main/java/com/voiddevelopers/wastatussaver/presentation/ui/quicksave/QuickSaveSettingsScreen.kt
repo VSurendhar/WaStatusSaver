@@ -115,12 +115,6 @@ fun QuickSaveSettingsScreen(onBack: () -> Unit) {
                     if (action.startForegroundService) {
                         val intent = Intent(context, QuickSaveNotificationService::class.java)
                         ContextCompat.startForegroundService(context, intent)
-                    } else {
-                        val intent =
-                            Intent(context, QuickSaveNotificationService::class.java).apply {
-                                this.action = ACTION_FS_QUICK_SAVE_STOP
-                            }
-                        ContextCompat.startForegroundService(context, intent)
                     }
                     onBack()
                 }
@@ -190,7 +184,7 @@ fun QuickSaveSettingsScreen(onBack: () -> Unit) {
         }) { paddingValues ->
         if (notificationDialogAction == QuickSaveAction.ShowNotificationRationale) {
             NotificationPermissionDialog(onOkPressed = {
-                viewModel.onEvent(QuickSaveEvent.RequestPermissionAndSave)
+                viewModel.onEvent(QuickSaveEvent.RequestPermission)
             }, onDialogDismissed = {
                 notificationDialogAction = null
             })
@@ -286,7 +280,7 @@ fun QuickSaveSettingsScreen(onBack: () -> Unit) {
                             Manifest.permission.POST_NOTIFICATIONS
                         ) == PackageManager.PERMISSION_DENIED
                     ) {
-                        viewModel.onEvent(QuickSaveEvent.RequestPermissionAndSave)
+                        viewModel.onEvent(QuickSaveEvent.RequestPermission)
                     } else {
                         viewModel.onEvent(QuickSaveEvent.SaveIfPossibleAndBack)
                     }
