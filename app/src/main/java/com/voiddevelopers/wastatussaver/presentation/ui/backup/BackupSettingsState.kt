@@ -8,5 +8,10 @@ data class BackupSettingsState(
     val selectedGoogleAccount: String? = null,
     val backupInterval: BackupInterval = BackupInterval.DAILY,
     val canUseCellular: Boolean = false,
-    val selectedMediaTypes: Set<MediaType> = setOf(MediaType.IMAGE, MediaType.VIDEO, MediaType.AUDIO)
+    val selectedMediaTypes: Set<MediaType> = setOf(
+        MediaType.IMAGE,
+        MediaType.VIDEO,
+        MediaType.AUDIO
+    ),
+    val showAccountSwitchWarningDialog: Boolean = false,
 )

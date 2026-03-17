@@ -36,4 +36,8 @@
     <string name="title_activity_player">PlayerActivity</string>
     <string name="backup">Back Up</string>
     <string name="restore">Restore</string>
+    <string name="quick_save_notification_title">Quick-Save Notifications</string>
+    <string name="quick_save_notification_body">Get a notification that lets you quickly save status media directly to your device without opening the app.</string>
+    <string name="backup_notification_title">Backup Notifications</string>
+    <string name="backup_notification_body">Enable notifications to monitor your backup progress</string>
 </resources>

@@ -24,6 +24,8 @@ import com.voiddevelopers.wastatussaver.R
 
 @Composable
 fun NotificationPermissionDialog(
+    title: String,
+    bodyText: String,
     onOkPressed: () -> Unit,
     onDialogDismissed: () -> Unit,
 ) {
@@ -44,8 +46,8 @@ fun NotificationPermissionDialog(
         ) {
             OnBoardingBody(
                 imageRes = R.drawable.ic_notfication_permission,
-                title = "Quick-Save Notifications",
-                bodyText = "Get a notification that lets you quickly save status media directly to your device without opening the app."
+                title = title,
+                bodyText = bodyText
             )
 
             Text(

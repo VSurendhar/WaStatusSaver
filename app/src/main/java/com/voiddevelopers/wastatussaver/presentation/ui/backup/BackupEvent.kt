@@ -25,6 +25,26 @@ sealed interface BackupEvent {
         val mediaType: MediaType,
     ) : BackupEvent
 
-    data object SaveClicked : BackupEvent
+    data class ShowAccountSwitchWarningDialog(val show: Boolean) : BackupEvent
 
+    data object ShowRationale : BackupEvent
+
+    data object ShowNotificationSettingsDialog : BackupEvent
+    data object RequestPermission : BackupEvent
+    data object StartWork : BackupEvent
+    data class SetWorkType(val workType: WorkType) : BackupEvent
+
+}
+
+sealed interface BackupAction {
+    data object GoBack : BackupAction
+
+    data class ShowToast(val message: String) : BackupAction
+    data object ShowSavedMessage : BackupAction
+
+    data object ShowNotificationRationale : BackupAction
+
+    data object ShowNotificationPermissionSettingsDialog : BackupAction
+
+    data object RequestNotificationPermission : BackupAction
 }

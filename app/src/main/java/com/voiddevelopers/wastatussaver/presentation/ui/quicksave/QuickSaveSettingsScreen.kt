@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.voiddevelopers.wastatussaver.R
 import com.voiddevelopers.wastatussaver.data.utils.Constants.ACTION_FS_QUICK_SAVE_STOP
 import com.voiddevelopers.wastatussaver.data.utils.extentions.singleClick
 import com.voiddevelopers.wastatussaver.domain.model.MediaType
@@ -189,11 +190,14 @@ fun QuickSaveSettingsScreen(onBack: () -> Unit) {
             }
         }) { paddingValues ->
         if (notificationDialogAction == QuickSaveAction.ShowNotificationRationale) {
-            NotificationPermissionDialog(onOkPressed = {
-                viewModel.onEvent(QuickSaveEvent.RequestPermissionAndSave)
-            }, onDialogDismissed = {
-                notificationDialogAction = null
-            })
+            NotificationPermissionDialog(
+                title = stringResource(R.string.quick_save_notification_title),
+                bodyText = stringResource(R.string.quick_save_notification_body),
+                onOkPressed = {
+                    viewModel.onEvent(QuickSaveEvent.RequestPermissionAndSave)
+                }, onDialogDismissed = {
+                    notificationDialogAction = null
+                })
         } else if (notificationDialogAction == QuickSaveAction.ShowNotificationPermissionSettingsDialog) {
             NotificationPermissionSettingsDialog(onGoToSettingsPressed = {
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {

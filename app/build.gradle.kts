@@ -25,7 +25,7 @@ android {
         minSdk = 29
         targetSdk = 36
         versionCode = 1
-        versionName = "2.0"
+        versionName = "3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -53,7 +53,10 @@ android {
     buildFeatures {
         compose = true
     }
-    kotlinOptions {
+    packaging {
+        resources {
+            excludes += "/META-INF/DEPENDENCIES"
+        }
     }
 }
 
@@ -129,5 +132,10 @@ dependencies {
     // Compose Navigation
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.animation)
+
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.api-client:google-api-client-android:1.34.1")
+    implementation("com.google.apis:google-api-services-drive:v3-rev20220815-2.0.0")
+//    implementation("com.google.android.gms:play-services-auth:21.0.1")
 
 }
