@@ -1,5 +1,6 @@
 package com.voiddevelopers.wastatussaver.presentation.ui.quicksave
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
@@ -48,15 +49,31 @@ class QuickSaveSettingsViewModel @Inject constructor(
     val effect = _effect.receiveAsFlow()
 
     private suspend fun getQuickSaveMediaType(): List<MediaType> {
-        val json = dataStorePreferenceManager.getPreference(KEY_QUICK_SAVE_USER_PREF, "").first()
-        if (json.isEmpty()) return emptyList()
+        val json = dataStorePreferenceManager
+            .getPreference(KEY_QUICK_SAVE_USER_PREF, "")
+            .first()
+
+        Log.d("QuickSave", "Fetched JSON: $json")
+
+        if (json.isEmpty()) {
+            Log.d("QuickSave", "JSON is empty, returning empty list")
+            return emptyList()
+        }
+
         return try {
-            val gson =
-                GsonBuilder().registerTypeHierarchyAdapter(Title::class.java, TitleTypeAdapter)
-                    .create()
+            val gson = GsonBuilder()
+                .registerTypeHierarchyAdapter(Title::class.java, TitleTypeAdapter)
+                .create()
+
             val pref = gson.fromJson(json, QuickSaveUserPref::class.java)
+
+            Log.d("QuickSave", "Parsed Pref: $pref")
+            Log.d("QuickSave", "Media Types: ${pref.mediaType}")
+
             pref.mediaType ?: emptyList()
+
         } catch (e: Exception) {
+            Log.e("QuickSave", "Error parsing JSON", e)
             emptyList()
         }
     }
@@ -169,13 +186,29 @@ class QuickSaveSettingsViewModel @Inject constructor(
         val title = _uiState.value.selectedTitle
         val mediaFiles = _uiState.value.selectedMediaTypes
         val enabled = _uiState.value.isQuickSaveEnabled
+
+        Log.d("QuickSave", "Saving Settings:")
+        Log.d("QuickSave", "Title: $title")
+        Log.d("QuickSave", "MediaTypes: $mediaFiles")
+        Log.d("QuickSave", "Enabled: $enabled")
+
         val userPref = QuickSaveUserPref(
-            app = title, mediaType = mediaFiles.toList(), enable = enabled
+            app = title,
+            mediaType = mediaFiles.toList(),
+            enable = enabled
         )
-        val gson =
-            GsonBuilder().registerTypeHierarchyAdapter(Title::class.java, TitleTypeAdapter).create()
+
+        val gson = GsonBuilder()
+            .registerTypeHierarchyAdapter(Title::class.java, TitleTypeAdapter)
+            .create()
+
         val json = gson.toJson(userPref)
+
+        Log.d("QuickSave", "Generated JSON: $json")
+
         dataStorePreferenceManager.putPreference(KEY_QUICK_SAVE_USER_PREF, json)
+
+        Log.d("QuickSave", "Saved to DataStore successfully")
     }
 
 }

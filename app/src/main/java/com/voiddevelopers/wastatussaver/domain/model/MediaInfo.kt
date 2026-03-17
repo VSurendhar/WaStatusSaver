@@ -1,11 +1,13 @@
 package com.voiddevelopers.wastatussaver.domain.model
 
 import android.os.Parcelable
+import androidx.annotation.Keep
 import androidx.core.net.toUri
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
+@Keep
 data class MediaInfo(
     val uri: String,
     val lastPlayedMillis: Long,
