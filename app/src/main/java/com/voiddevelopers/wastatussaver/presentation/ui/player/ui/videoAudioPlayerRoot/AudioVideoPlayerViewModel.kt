@@ -230,8 +230,8 @@ class AudioVideoPlayerViewModel @Inject constructor(
         val position = player.currentPosition
 
         val percent = if (duration > 0) {
-            (position * 100 / duration)
-        } else 0L
+            (position * 100.0 / duration)
+        } else 0.0
 
         updateUiState {
             copy(
@@ -281,7 +281,7 @@ data class AudioVideoPlayerUiState(
     val mediaInfo: MediaInfo = emptyMediaInfo,
     var isPlaying: Boolean = false,
     val mediaEnded: Boolean = false,
-    val progressPercent: Long = 0L,
+    val progressPercent: Double = 0.0,
     val durationMs: Long = 0L,
     val showControls: Boolean = true,
     val downloadState: DownloadState = DownloadState.NOT_DOWNLOADED,

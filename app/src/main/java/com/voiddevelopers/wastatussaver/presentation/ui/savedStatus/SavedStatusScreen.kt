@@ -106,7 +106,6 @@ fun SavedStatusScreen(onBack: () -> Boolean) {
                                 })
                         Text(
                             text = "Saved Status Media",
-                            modifier = Modifier.height(30.dp),
                             color = MaterialTheme.colorScheme.onPrimary,
                             style = MaterialTheme.typography.titleLarge
                         )

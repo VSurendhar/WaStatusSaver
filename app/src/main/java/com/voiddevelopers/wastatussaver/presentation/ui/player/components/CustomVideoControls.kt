@@ -27,11 +27,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.voiddevelopers.wastatussaver.R
 import java.util.Locale
+import kotlin.math.ceil
 
 @Composable
 fun CustomVideoControls(
     isPlaying: Boolean,
-    currentPosition: Long,
+    currentPosition: Double,
     duration: Long,
     onPlayPauseClick: () -> Unit,
     onSeek: (Long) -> Unit,
@@ -106,8 +107,8 @@ fun CustomVideoControls(
     }
 }
 
-fun getCurrentTime(fullDuration: Long, currentPosition: Long): String {
-    val calculationDuration = ((currentPosition.toFloat() / 100) * fullDuration).toLong()
+fun getCurrentTime(fullDuration: Long, currentPosition: Double): String {
+    val calculationDuration = ceil((currentPosition / 100.0) * fullDuration).toLong()
     return formatTime(calculationDuration)
 }
 

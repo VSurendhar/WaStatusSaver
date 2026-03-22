@@ -79,7 +79,6 @@ class StatusesManagerUseCase @Inject constructor(
                 c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
             val docIdIndex =
                 c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
-            val flagsIndex = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_FLAGS)
 
             while (c.moveToNext()) {
                 val name = c.getString(nameIndex)
@@ -87,13 +86,6 @@ class StatusesManagerUseCase @Inject constructor(
                 val documentId = c.getString(docIdIndex)
                 val fileUri =
                     DocumentsContract.buildDocumentUriUsingTree(destinationUri, documentId)
-
-                val flags = c.getInt(flagsIndex)
-                val isTrashed = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    flags and DocumentsContract.Document.FLAG_SUPPORTS_DELETE != 0
-                } else {
-                    false
-                }
 
                 if (name == Constants.NO_MEDIA) {
                     continue

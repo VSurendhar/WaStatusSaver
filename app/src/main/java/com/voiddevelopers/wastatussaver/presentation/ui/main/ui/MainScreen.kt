@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -716,8 +717,7 @@ fun PreviewItem(
     val context = LocalContext.current
     Card(
         modifier = Modifier
-            .height(160.dp)
-            .width(130.dp)
+            .aspectRatio(130f / 160f)
             .clickable {
                 onPreviewClick()
             }, shape = RoundedCornerShape(
@@ -749,17 +749,27 @@ fun PreviewItem(
                             }
                             .build()
                     }
-                    AsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(mediaFile.uri)
-                            .build(),
-                        imageLoader = imageLoader,
-                        contentDescription = "Thumbnail",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-                        placeholder = painterResource(R.drawable.img_loading_placeholder),
-                        error = painterResource(R.drawable.ic_failed_document)
-                    )
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(mediaFile.uri)
+                                .build(),
+                            imageLoader = imageLoader,
+                            contentDescription = "Thumbnail",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                            placeholder = painterResource(R.drawable.img_loading_placeholder),
+                            error = painterResource(R.drawable.ic_failed_document)
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_play),
+                            contentDescription = "Play Button",
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(40.dp),
+                            tint = Color.White.copy(alpha = 0.6f)
+                        )
+                    }
                 }
 
                 else -> {

@@ -158,7 +158,6 @@ fun OnBoardingDialog(onDialogDismissed: () -> Unit) {
 fun OnBoardingBody(@DrawableRes imageRes: Int, title: String, bodyText: String) {
     Column(
         modifier = Modifier
-            .height(280.dp)
             .background(Color.White),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally

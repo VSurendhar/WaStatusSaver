@@ -1,6 +1,5 @@
 package com.voiddevelopers.wastatussaver.presentation.ui.quicksave
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
@@ -53,10 +52,7 @@ class QuickSaveSettingsViewModel @Inject constructor(
             .getPreference(KEY_QUICK_SAVE_USER_PREF, "")
             .first()
 
-        Log.d("QuickSave", "Fetched JSON: $json")
-
         if (json.isEmpty()) {
-            Log.d("QuickSave", "JSON is empty, returning empty list")
             return emptyList()
         }
 
@@ -67,13 +63,9 @@ class QuickSaveSettingsViewModel @Inject constructor(
 
             val pref = gson.fromJson(json, QuickSaveUserPref::class.java)
 
-            Log.d("QuickSave", "Parsed Pref: $pref")
-            Log.d("QuickSave", "Media Types: ${pref.mediaType}")
-
             pref.mediaType ?: emptyList()
 
         } catch (e: Exception) {
-            Log.e("QuickSave", "Error parsing JSON", e)
             emptyList()
         }
     }
@@ -187,11 +179,6 @@ class QuickSaveSettingsViewModel @Inject constructor(
         val mediaFiles = _uiState.value.selectedMediaTypes
         val enabled = _uiState.value.isQuickSaveEnabled
 
-        Log.d("QuickSave", "Saving Settings:")
-        Log.d("QuickSave", "Title: $title")
-        Log.d("QuickSave", "MediaTypes: $mediaFiles")
-        Log.d("QuickSave", "Enabled: $enabled")
-
         val userPref = QuickSaveUserPref(
             app = title,
             mediaType = mediaFiles.toList(),
@@ -204,11 +191,8 @@ class QuickSaveSettingsViewModel @Inject constructor(
 
         val json = gson.toJson(userPref)
 
-        Log.d("QuickSave", "Generated JSON: $json")
-
         dataStorePreferenceManager.putPreference(KEY_QUICK_SAVE_USER_PREF, json)
 
-        Log.d("QuickSave", "Saved to DataStore successfully")
     }
 
 }
@@ -243,4 +227,3 @@ sealed interface QuickSaveAction {
     data class GoBack(val startForegroundService: Boolean) : QuickSaveAction
     data class ShowToast(val message: String) : QuickSaveAction
 }
-

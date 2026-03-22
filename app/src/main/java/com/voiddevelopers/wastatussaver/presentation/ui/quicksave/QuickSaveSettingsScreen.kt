@@ -174,7 +174,6 @@ fun QuickSaveSettingsScreen(onBack: () -> Unit) {
                                 })
                         Text(
                             text = "Quick Save Settings",
-                            modifier = Modifier.height(30.dp),
                             color = MaterialTheme.colorScheme.onPrimary,
                             style = MaterialTheme.typography.titleLarge
                         )
@@ -307,8 +306,7 @@ fun SettingsRow(content: @Composable RowScope.() -> Unit) {
 fun CheckboxRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(

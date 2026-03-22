@@ -103,7 +103,7 @@ fun AudioVideoPlayer(intent: Intent) {
         if (state.isPlaying) {
             while (true) {
                 viewModel.updateProgress()
-                delay(500)
+                delay(50)
             }
         }
     }
