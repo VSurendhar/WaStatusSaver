@@ -32,7 +32,7 @@ android {
         applicationId = "com.voiddevelopers.wastatussaver"
         minSdk = 29
         targetSdk = 36
-        versionCode = 3
+        versionCode = 4
         versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
