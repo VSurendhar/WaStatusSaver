@@ -22,6 +22,7 @@ object AnalyticsEvents {
     const val GRANTED_STORAGE_ACCESS = "granted_storage_access"
     const val DENIED_STORAGE_ACCESS = "denied_storage_access"
 
+    const val VIEWED_ONBOARDING = "viewed_onboarding_dialog"
     const val CLICKED_ONBOARDING_NEXT = "clicked_onboarding_next"
     const val CLICKED_ONBOARDING_SKIP = "clicked_onboarding_skip"
 

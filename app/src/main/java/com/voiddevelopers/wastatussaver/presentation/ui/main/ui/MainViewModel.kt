@@ -18,8 +18,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -47,6 +49,7 @@ class MainViewModel @Inject constructor(
 
     init {
         observeSuperProperties()
+        observeOnboardingShown()
         viewModelScope.launch {
             val preferredTitle = getPreferredTitle()
             val shouldShowOnBoardingUi = shouldShowOnBoardingUi()
@@ -285,6 +288,15 @@ class MainViewModel @Inject constructor(
                 .collect { (title, hasSafPermission, isAppInstalled) ->
                     appAnalytics.updateSuperProperties(title, hasSafPermission, isAppInstalled)
                 }
+        }
+    }
+
+    private fun observeOnboardingShown() {
+        viewModelScope.launch {
+            uiState.map { it?.shouldShowOnBoardingUi == true }
+                .distinctUntilChanged()
+                .filter { it }
+                .collect { appAnalytics.trackOnboardingViewed(onboardingSource) }
         }
     }
 

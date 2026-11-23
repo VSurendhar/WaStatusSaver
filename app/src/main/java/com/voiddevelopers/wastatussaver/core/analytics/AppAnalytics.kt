@@ -120,6 +120,13 @@ class AppAnalytics @Inject constructor(
 
     // ---- Onboarding dialog ----
 
+    fun trackOnboardingViewed(source: OnboardingSource) {
+        track(
+            AnalyticsEvents.VIEWED_ONBOARDING,
+            mapOf(AnalyticsProperties.SOURCE to source.analyticsName)
+        )
+    }
+
     /** [page]: 1 | 2 | 3. Next on the last page closes the dialog (onboarding completed). */
     fun trackOnboardingNextClicked(page: Int, source: OnboardingSource) {
         track(AnalyticsEvents.CLICKED_ONBOARDING_NEXT, onboardingProperties(page, source))
