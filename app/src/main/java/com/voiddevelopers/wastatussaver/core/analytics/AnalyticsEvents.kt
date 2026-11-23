@@ -15,6 +15,9 @@ object AnalyticsEvents {
 
     const val COMPLETED_MEDIA_DOWNLOAD = "completed_media_download"
 
+    const val CLICKED_ONBOARDING_NEXT = "clicked_onboarding_next"
+    const val CLICKED_ONBOARDING_SKIP = "clicked_onboarding_skip"
+
     const val VIEWED_MEDIA = "viewed_media"
     const val CLOSED_MEDIA = "closed_media"
     const val CLICKED_SHARE_MEDIA = "clicked_share_media"
@@ -31,6 +34,7 @@ object AnalyticsProperties {
     const val NAV_DRAWER_OPTION = "option"
     const val MEDIA_TYPE = "media_type"
     const val SOURCE = "source"
+    const val PAGE = "page"
     const val ERROR_CODE = "error_code"
     const val ERROR_DESCRIPTION = "error_description"
 }

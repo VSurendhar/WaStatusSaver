@@ -595,13 +595,17 @@ fun FilePreviewPage(
 ) {
     val context = LocalContext.current
     if (uiState.shouldShowOnBoardingUi == true) {
-        OnBoardingDialog(onDialogDismissed = {
-            onEvent(
-                Event.ChangeShowOnBoardingUiStatus(
-                    false
+        OnBoardingDialog(
+            onDialogDismissed = {
+                onEvent(
+                    Event.ChangeShowOnBoardingUiStatus(
+                        false
+                    )
                 )
-            )
-        })
+            },
+            onNextClick = { page -> onEvent(Event.OnOnboardingNextClick(page)) },
+            onSkipClick = { page -> onEvent(Event.OnOnboardingSkipClick(page)) },
+        )
     }
 
     Surface(

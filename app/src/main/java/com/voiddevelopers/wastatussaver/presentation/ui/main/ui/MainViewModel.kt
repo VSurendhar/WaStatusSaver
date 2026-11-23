@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
 import com.voiddevelopers.wastatussaver.core.analytics.DownloadSource
+import com.voiddevelopers.wastatussaver.core.analytics.OnboardingSource
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManager
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_PREFERRED_TITLE
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_SHOULD_SHOW_ONBOARDING_UI
@@ -33,6 +34,8 @@ class MainViewModel @Inject constructor(
     )
 
     val uiState = _uiState.asStateFlow()
+
+    private var onboardingSource = OnboardingSource.FIRST_LAUNCH
 
 
     init {
@@ -155,12 +158,21 @@ class MainViewModel @Inject constructor(
             }
 
             is Event.ChangeShowOnBoardingUiStatus -> {
+                if (event.status) onboardingSource = OnboardingSource.HOW_TO_USE
                 viewModelScope.launch {
                     _uiState.update { it?.copy(shouldShowOnBoardingUi = event.status) }
                     dataStorePreferenceManager.putPreference(
                         KEY_SHOULD_SHOW_ONBOARDING_UI, event.status
                     )
                 }
+            }
+
+            is Event.OnOnboardingNextClick -> {
+                appAnalytics.trackOnboardingNextClicked(event.page, onboardingSource)
+            }
+
+            is Event.OnOnboardingSkipClick -> {
+                appAnalytics.trackOnboardingSkipClicked(event.page, onboardingSource)
             }
 
             is Event.RefreshUiState -> {

@@ -45,7 +45,11 @@ import com.voiddevelopers.wastatussaver.presentation.theme.WaStatusSaverTheme
 import kotlinx.coroutines.launch
 
 @Composable
-fun OnBoardingDialog(onDialogDismissed: () -> Unit) {
+fun OnBoardingDialog(
+    onDialogDismissed: () -> Unit,
+    onNextClick: (page: Int) -> Unit = {},
+    onSkipClick: (page: Int) -> Unit = {},
+) {
     var openDialog by remember { mutableStateOf(true) }
     val pagerState = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
@@ -71,6 +75,7 @@ fun OnBoardingDialog(onDialogDismissed: () -> Unit) {
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
+                            onSkipClick(pagerState.currentPage + 1)
                             openDialog = false
                         },
                     textAlign = TextAlign.End,
@@ -137,6 +142,7 @@ fun OnBoardingDialog(onDialogDismissed: () -> Unit) {
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
+                            onNextClick(pagerState.currentPage + 1)
                             if (pagerState.currentPage < 2) {
                                 scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                             } else {
@@ -196,7 +202,7 @@ fun OnBoardingBody(@DrawableRes imageRes: Int, title: String, bodyText: String) 
 fun OnBoardingScreenPreview() {
     WaStatusSaverTheme {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            OnBoardingDialog {}
+            OnBoardingDialog(onDialogDismissed = {})
         }
     }
 }

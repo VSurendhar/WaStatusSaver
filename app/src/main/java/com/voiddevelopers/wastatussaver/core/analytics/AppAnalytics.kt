@@ -81,6 +81,23 @@ class AppAnalytics @Inject constructor(
         )
     }
 
+    // ---- Onboarding dialog ----
+
+    /** [page]: 1 | 2 | 3. Next on the last page closes the dialog (onboarding completed). */
+    fun trackOnboardingNextClicked(page: Int, source: OnboardingSource) {
+        track(AnalyticsEvents.CLICKED_ONBOARDING_NEXT, onboardingProperties(page, source))
+    }
+
+    /** [page]: 1 | 2 | 3 */
+    fun trackOnboardingSkipClicked(page: Int, source: OnboardingSource) {
+        track(AnalyticsEvents.CLICKED_ONBOARDING_SKIP, onboardingProperties(page, source))
+    }
+
+    private fun onboardingProperties(page: Int, source: OnboardingSource) = mapOf(
+        AnalyticsProperties.PAGE to page,
+        AnalyticsProperties.SOURCE to source.analyticsName,
+    )
+
     // ---- Media player (image viewer, video & audio player) ----
 
     fun trackMediaViewed(mediaType: MediaType, source: PlayerSource) {
@@ -131,6 +148,12 @@ enum class DownloadSource(val analyticsName: String) {
 enum class PlayerSource(val analyticsName: String) {
     HOME("home"),
     SAVED_STATUS("saved_status"),
+}
+
+/** How the onboarding dialog was opened. */
+enum class OnboardingSource(val analyticsName: String) {
+    FIRST_LAUNCH("first_launch"),
+    HOW_TO_USE("how_to_use"),
 }
 
 /** Screen a media tab is on. */
