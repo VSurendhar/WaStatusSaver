@@ -36,6 +36,12 @@ android {
         versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "MIXPANEL_TOKEN",
+            "\"${secretsProperties.getProperty("mixpanel_token", "")}\""
+        )
     }
 
     signingConfigs {
@@ -149,5 +155,8 @@ dependencies {
     // Compose Navigation
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.animation)
+
+    // Analytics
+    implementation(libs.mixpanel.android)
 
 }

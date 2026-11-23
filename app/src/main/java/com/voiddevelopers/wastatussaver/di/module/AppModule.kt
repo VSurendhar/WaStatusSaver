@@ -8,6 +8,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.voiddevelopers.wastatussaver.BuildConfig
+import com.voiddevelopers.wastatussaver.core.analytics.MixpanelAnalytics
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManager
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl
 import dagger.Module
@@ -28,6 +30,12 @@ object AppModule {
         @ApplicationContext context: Context,
     ): DataStorePreferenceManager {
         return DataStorePreferenceManagerImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMixpanelAnalytics(@ApplicationContext context: Context): MixpanelAnalytics {
+        return MixpanelAnalytics(context, BuildConfig.MIXPANEL_TOKEN)
     }
 
     @Provides

@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
 import com.voiddevelopers.wastatussaver.data.utils.helpers.WebViewManager
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -14,9 +15,12 @@ class MyApplication : Application() {
     @Inject
     lateinit var appProcessObserver: AppProcessObserver
 
+    @Inject
+    lateinit var appAnalytics: AppAnalytics
 
     override fun onCreate() {
         super.onCreate()
+        appAnalytics.init()
         ProcessLifecycleOwner.get().lifecycle.addObserver(appProcessObserver)
     }
 

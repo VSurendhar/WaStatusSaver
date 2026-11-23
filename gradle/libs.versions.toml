@@ -31,6 +31,7 @@ protobufPlugin = "0.9.5"
 protobufJavalite = "4.33.2"
 composeAnimation = "1.6.8"
 workRuntimeKtx = "2.11.0"
+mixpanel = "8.2.0"
 
 ksp = "2.2.20-2.0.4"
 
@@ -77,6 +78,7 @@ kotlinx-serialization-proto = { module = "org.jetbrains.kotlinx:kotlinx-serializ
 protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobufJavalite" }
 protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protoc" }
 androidx-compose-animation = { module = "androidx.compose.animation:animation", version.ref = "composeAnimation" }
+mixpanel-android = { module = "com.mixpanel.android:mixpanel-android", version.ref = "mixpanel" }
 
 
 [plugins]
