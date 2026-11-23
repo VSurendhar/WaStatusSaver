@@ -29,7 +29,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,13 +73,6 @@ fun SavedStatusScreen(onBack: () -> Boolean) {
     if (refreshStatus) {
         viewModel.getSavedStatusMedia()
         refreshStatus = false
-    }
-
-    // Analytics: opened when the screen enters the back stack, closed when it leaves it.
-    // The player opening on top, or the app going to the background, doesn't remove it.
-    DisposableEffect(Unit) {
-        viewModel.onScreenOpened()
-        onDispose { viewModel.onScreenClosed() }
     }
 
     LaunchedEffect(pagerState) {

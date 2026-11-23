@@ -18,13 +18,12 @@ class WebViewViewModel @Inject constructor(
 
     private var alreadyLogged = false
 
-    // Call once when the screen opens.
-    fun onScreenViewed() {
+    init {
         appAnalytics.trackPrivacyPolicyViewed()
     }
 
-    // Call once when the screen closes.
-    fun onScreenClosed() {
+    override fun onCleared() {
+        super.onCleared()
         appAnalytics.trackPrivacyPolicyClosed()
     }
 

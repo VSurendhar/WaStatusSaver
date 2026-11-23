@@ -24,11 +24,12 @@ class SavedStatusViewModel @Inject constructor(
     private val _savedStatus = MutableStateFlow<List<MediaFile>>(emptyList())
     val savedStatus = _savedStatus.asStateFlow()
 
-    fun onScreenOpened() {
+    init {
         appAnalytics.trackSavedStatusScreenViewed()
     }
 
-    fun onScreenClosed() {
+    override fun onCleared() {
+        super.onCleared()
         appAnalytics.trackSavedStatusScreenClosed()
     }
 
