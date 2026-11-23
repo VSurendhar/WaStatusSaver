@@ -2,9 +2,8 @@ package com.voiddevelopers.wastatussaver.presentation.ui.savedStatus
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.voiddevelopers.wastatussaver.core.analytics.AnalyticsEvents
-import com.voiddevelopers.wastatussaver.core.analytics.AnalyticsProperties
 import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
+import com.voiddevelopers.wastatussaver.core.analytics.MediaTabSource
 import com.voiddevelopers.wastatussaver.domain.model.MediaFile
 import com.voiddevelopers.wastatussaver.domain.model.MediaType
 import com.voiddevelopers.wastatussaver.domain.model.toMediaFile
@@ -26,21 +25,15 @@ class SavedStatusViewModel @Inject constructor(
     val savedStatus = _savedStatus.asStateFlow()
 
     fun onScreenOpened() {
-        appAnalytics.track(AnalyticsEvents.VIEWED_SAVED_STATUS_SCREEN)
+        appAnalytics.trackSavedStatusScreenViewed()
     }
 
     fun onScreenClosed() {
-        appAnalytics.track(AnalyticsEvents.CLOSED_SAVED_STATUS_SCREEN)
+        appAnalytics.trackSavedStatusScreenClosed()
     }
 
     fun onTabChanged(tab: MediaType) {
-        appAnalytics.track(
-            AnalyticsEvents.VIEWED_MEDIA_TAB,
-            mapOf(
-                AnalyticsProperties.MEDIA_TYPE to tab.name.lowercase(),
-                AnalyticsProperties.SOURCE to "saved_status",
-            )
-        )
+        appAnalytics.trackMediaTabViewed(tab, MediaTabSource.SAVED_STATUS)
     }
 
     fun getSavedStatusMedia() {

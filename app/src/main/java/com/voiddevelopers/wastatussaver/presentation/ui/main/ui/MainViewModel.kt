@@ -2,8 +2,6 @@ package com.voiddevelopers.wastatussaver.presentation.ui.main.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.voiddevelopers.wastatussaver.core.analytics.AnalyticsEvents
-import com.voiddevelopers.wastatussaver.core.analytics.AnalyticsProperties
 import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
 import com.voiddevelopers.wastatussaver.core.analytics.DownloadSource
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManager
@@ -174,17 +172,12 @@ class MainViewModel @Inject constructor(
             }
 
             is Event.OnDrawerOptionClick -> {
-                appAnalytics.track(
-                    AnalyticsEvents.CLICKED_NAV_DRAWER_OPTION,
-                    mapOf(AnalyticsProperties.NAV_DRAWER_OPTION to event.option.analyticsName)
-                )
+                appAnalytics.trackNavDrawerOptionClicked(event.option.analyticsName)
             }
 
             is Event.OnDrawerStateChanged -> {
-                appAnalytics.track(
-                    if (event.isOpen) AnalyticsEvents.OPENED_NAV_DRAWER
-                    else AnalyticsEvents.CLOSED_NAV_DRAWER
-                )
+                if (event.isOpen) appAnalytics.trackNavDrawerOpened()
+                else appAnalytics.trackNavDrawerClosed()
             }
 
         }

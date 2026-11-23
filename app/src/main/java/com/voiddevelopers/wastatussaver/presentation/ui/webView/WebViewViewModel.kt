@@ -1,8 +1,6 @@
 package com.voiddevelopers.wastatussaver.presentation.ui.webView
 
 import androidx.lifecycle.ViewModel
-import com.voiddevelopers.wastatussaver.core.analytics.AnalyticsEvents
-import com.voiddevelopers.wastatussaver.core.analytics.AnalyticsProperties
 import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -22,12 +20,12 @@ class WebViewViewModel @Inject constructor(
 
     // Call once when the screen opens.
     fun onScreenViewed() {
-        appAnalytics.track(AnalyticsEvents.VIEWED_PRIVACY_POLICY)
+        appAnalytics.trackPrivacyPolicyViewed()
     }
 
     // Call once when the screen closes.
     fun onScreenClosed() {
-        appAnalytics.track(AnalyticsEvents.CLOSED_PRIVACY_POLICY)
+        appAnalytics.trackPrivacyPolicyClosed()
     }
 
     // Call before every page load.
@@ -45,17 +43,13 @@ class WebViewViewModel @Inject constructor(
         if (alreadyLogged) return
         alreadyLogged = true
         if (success) {
-            appAnalytics.track(AnalyticsEvents.LOADED_PRIVACY_POLICY)
+            appAnalytics.trackPrivacyPolicyLoaded()
         } else {
-            val errorProperties = mapOf(
-                AnalyticsProperties.ERROR_CODE to errorCode,
-                AnalyticsProperties.ERROR_DESCRIPTION to errorDescription,
-            ).filterValues { it != null }
-            appAnalytics.track(AnalyticsEvents.FAILED_PRIVACY_POLICY, errorProperties)
+            appAnalytics.trackPrivacyPolicyFailed(errorCode, errorDescription)
         }
     }
 
     fun onRefreshClick() {
-        appAnalytics.track(AnalyticsEvents.CLICKED_REFRESH_PRIVACY_POLICY)
+        appAnalytics.trackPrivacyPolicyRefreshClicked()
     }
 }

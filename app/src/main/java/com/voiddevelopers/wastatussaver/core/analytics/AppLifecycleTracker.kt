@@ -15,10 +15,10 @@ class AppLifecycleTracker @Inject constructor(
 ) : DefaultLifecycleObserver {
 
     override fun onStart(owner: LifecycleOwner) {
-        appAnalytics.track(AnalyticsEvents.STARTED_APP)
+        appAnalytics.trackAppStarted()
     }
 
     override fun onStop(owner: LifecycleOwner) {
-        appAnalytics.track(AnalyticsEvents.CLOSED_APP)
+        appAnalytics.trackAppClosed()
     }
 }
