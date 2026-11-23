@@ -21,12 +21,10 @@ import javax.inject.Inject
 
 class StatusesManagerUseCase @Inject constructor(
     val appContext: Application,
-    val statusMediaHandlingUserCase: SavedMediaHandlingUserCase,
+    val statusMediaHandlingUserCase: SavedMediaHandlingUserCase
 ) {
 
-    fun hasPermission(uri: Uri?): Boolean {
-        return appContext.hasReadPermission(uri)
-    }
+    fun hasPermission(uri: Uri?): Boolean = appContext.hasReadPermission(uri)
 
     private lateinit var downloadedFiles: List<String>
 
@@ -44,9 +42,8 @@ class StatusesManagerUseCase @Inject constructor(
 
     fun getFiles(
         destinationUri: Uri?,
-        preferredMediaTypes: List<MediaType>? = null,
+        preferredMediaTypes: List<MediaType>? = null
     ): List<MediaFile> {
-
         if (destinationUri == null) {
             return emptyList()
         }
@@ -92,7 +89,14 @@ class StatusesManagerUseCase @Inject constructor(
                 }
 
                 val downloadState =
-                    if (isStatusDownloaded(name)) DownloadState.DOWNLOADED else DownloadState.NOT_DOWNLOADED
+                    if (isStatusDownloaded(
+                            name
+                        )
+                    ) {
+                        DownloadState.DOWNLOADED
+                    } else {
+                        DownloadState.NOT_DOWNLOADED
+                    }
 
                 val mediaFile: MediaFile = when {
                     mimeType.startsWith(IMAGE_MIME_TYPE_STARTING, ignoreCase = true) -> {
@@ -136,7 +140,6 @@ class StatusesManagerUseCase @Inject constructor(
         }
 
         return filteredList.toList()
-
     }
 
     fun isStatusDownloaded(fileName: String): Boolean {
@@ -150,5 +153,4 @@ class StatusesManagerUseCase @Inject constructor(
             onSaveCompleted = onSaveCompleted
         )
     }
-
 }

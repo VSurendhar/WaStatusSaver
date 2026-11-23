@@ -23,10 +23,9 @@ class PlayerActivity : ComponentActivity() {
     companion object {
         const val EXTRA_SOURCE = "source"
 
-        fun getSource(intent: Intent): PlayerSource =
-            intent.getStringExtra(EXTRA_SOURCE)
-                ?.let { name -> PlayerSource.entries.firstOrNull { it.name == name } }
-                ?: PlayerSource.HOME
+        fun getSource(intent: Intent): PlayerSource = intent.getStringExtra(EXTRA_SOURCE)
+            ?.let { name -> PlayerSource.entries.firstOrNull { it.name == name } }
+            ?: PlayerSource.HOME
     }
 
     private var mediaInfo: MediaInfo? = null
@@ -59,5 +58,4 @@ class PlayerActivity : ComponentActivity() {
         super.onSaveInstanceState(outState)
         mediaInfo?.let { outState.putParcelable("mediaInfo", it) }
     }
-
 }

@@ -15,9 +15,8 @@ data class UiState(
     val currentMediaType: MediaType? = null,
     val shouldShowOnBoardingUi: Boolean? = null,
     val hasSafAccessPermission: Boolean = false,
-    val mediaFiles: List<MediaFile> = emptyList(),
+    val mediaFiles: List<MediaFile> = emptyList()
 )
-
 
 fun MediaType.toFileType() = when (this) {
     MediaType.AUDIO -> MediaType.AUDIO
@@ -26,18 +25,17 @@ fun MediaType.toFileType() = when (this) {
     else -> MediaType.UNSPECIFIED
 }
 
-fun MediaFile.toDomainMediaInfo(): MediaInfo {
-    return MediaInfo(
-        uri = uri.toString(),
-        lastPlayedMillis = 0,
-        fileName = fileName,
-        mediaType = mediaType,
-        downloadStatus = downloadState
-    )
-}
+fun MediaFile.toDomainMediaInfo(): MediaInfo = MediaInfo(
+    uri = uri.toString(),
+    lastPlayedMillis = 0,
+    fileName = fileName,
+    mediaType = mediaType,
+    downloadStatus = downloadState
+)
 
 enum class SelectionMode {
-    MULTI_SELECT, SINGLE_SELECT
+    MULTI_SELECT,
+    SINGLE_SELECT
 }
 
 sealed class Title(@StringRes val resId: Int, val packageName: String, val uri: Uri) {
@@ -46,9 +44,7 @@ sealed class Title(@StringRes val resId: Int, val packageName: String, val uri: 
         packageName = "com.whatsapp",
         uri = "content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia%2Fcom.whatsapp%2FWhatsApp%2FMedia%2F.Statuses".toUri()
     ) {
-        override fun toString(): String {
-            return "Whatsapp(resId=$resId, packageName=$packageName,)"
-        }
+        override fun toString(): String = "Whatsapp(resId=$resId, packageName=$packageName,)"
     }
 
     object WhatsappBusiness : Title(
@@ -56,9 +52,8 @@ sealed class Title(@StringRes val resId: Int, val packageName: String, val uri: 
         packageName = "com.whatsapp.w4b",
         uri = "content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia%2Fcom.whatsapp.w4b%2FWhatsApp%20Business%2FMedia%2F.Statuses".toUri()
     ) {
-        override fun toString(): String {
-            return "WhatsappBusiness(resId=$resId, packageName=$packageName,)"
-        }
+        override fun toString(): String =
+            "WhatsappBusiness(resId=$resId, packageName=$packageName,)"
     }
 }
 

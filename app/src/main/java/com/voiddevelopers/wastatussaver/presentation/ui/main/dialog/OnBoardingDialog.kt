@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
 fun OnBoardingDialog(
     onDialogDismissed: () -> Unit,
     onNextClick: (page: Int) -> Unit = {},
-    onSkipClick: (page: Int) -> Unit = {},
+    onSkipClick: (page: Int) -> Unit = {}
 ) {
     var openDialog by remember { mutableStateOf(true) }
     val pagerState = rememberPagerState(pageCount = { 3 })
@@ -82,7 +82,8 @@ fun OnBoardingDialog(
                     color = MaterialTheme.colorScheme.primary
                 )
                 HorizontalPager(
-                    state = pagerState, modifier = Modifier.wrapContentSize()
+                    state = pagerState,
+                    modifier = Modifier.wrapContentSize()
                 ) { page ->
                     when (page) {
                         0 -> {
@@ -126,8 +127,11 @@ fun OnBoardingDialog(
                                 .size(if (isSelected) 10.dp else 6.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                    if (isSelected) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                    }
                                 )
                         )
                     }
@@ -144,7 +148,9 @@ fun OnBoardingDialog(
                         ) {
                             onNextClick(pagerState.currentPage + 1)
                             if (pagerState.currentPage < 2) {
-                                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                                scope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                }
                             } else {
                                 openDialog = false
                             }
@@ -152,7 +158,6 @@ fun OnBoardingDialog(
                     textAlign = TextAlign.End,
                     color = MaterialTheme.colorScheme.primary
                 )
-
             }
         }
     } else {
@@ -195,7 +200,6 @@ fun OnBoardingBody(@DrawableRes imageRes: Int, title: String, bodyText: String) 
         )
     }
 }
-
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

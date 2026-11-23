@@ -13,9 +13,7 @@ import javax.inject.Singleton
  * Each named function builds its event's properties and calls [track].
  */
 @Singleton
-class AppAnalytics @Inject constructor(
-    private val mixpanelAnalytics: MixpanelAnalytics,
-) {
+class AppAnalytics @Inject constructor(private val mixpanelAnalytics: MixpanelAnalytics) {
 
     private val clients: List<Analytics> = listOf(mixpanelAnalytics)
 
@@ -40,13 +38,13 @@ class AppAnalytics @Inject constructor(
     fun updateSuperProperties(
         selectedTitle: String,
         hasSafPermission: Boolean,
-        isAppInstalled: Boolean,
+        isAppInstalled: Boolean
     ) {
         setSuperProperties(
             mapOf(
                 AnalyticsProperties.SELECTED_TITLE to selectedTitle,
                 AnalyticsProperties.HAS_SAF_PERMISSION to hasSafPermission,
-                AnalyticsProperties.IS_APP_INSTALLED to isAppInstalled,
+                AnalyticsProperties.IS_APP_INSTALLED to isAppInstalled
             )
         )
     }
@@ -81,9 +79,10 @@ class AppAnalytics @Inject constructor(
 
     fun trackMediaTabViewed(mediaType: MediaType, source: MediaTabSource) {
         track(
-            AnalyticsEvents.VIEWED_MEDIA_TAB, mapOf(
+            AnalyticsEvents.VIEWED_MEDIA_TAB,
+            mapOf(
                 AnalyticsProperties.MEDIA_TYPE to mediaType.name.lowercase(),
-                AnalyticsProperties.SOURCE to source.analyticsName,
+                AnalyticsProperties.SOURCE to source.analyticsName
             )
         )
     }
@@ -111,9 +110,10 @@ class AppAnalytics @Inject constructor(
 
     fun trackMediaDownloadCompleted(mediaType: MediaType, source: DownloadSource) {
         track(
-            AnalyticsEvents.COMPLETED_MEDIA_DOWNLOAD, mapOf(
+            AnalyticsEvents.COMPLETED_MEDIA_DOWNLOAD,
+            mapOf(
                 AnalyticsProperties.MEDIA_TYPE to mediaType.name.lowercase(),
-                AnalyticsProperties.SOURCE to source.analyticsName,
+                AnalyticsProperties.SOURCE to source.analyticsName
             )
         )
     }
@@ -139,7 +139,7 @@ class AppAnalytics @Inject constructor(
 
     private fun onboardingProperties(page: Int, source: OnboardingSource) = mapOf(
         AnalyticsProperties.PAGE to page,
-        AnalyticsProperties.SOURCE to source.analyticsName,
+        AnalyticsProperties.SOURCE to source.analyticsName
     )
 
     // ---- Media player (image viewer, video & audio player) ----
@@ -158,7 +158,7 @@ class AppAnalytics @Inject constructor(
 
     private fun playerProperties(mediaType: MediaType, source: PlayerSource) = mapOf(
         AnalyticsProperties.MEDIA_TYPE to mediaType.name.lowercase(),
-        AnalyticsProperties.SOURCE to source.analyticsName,
+        AnalyticsProperties.SOURCE to source.analyticsName
     )
 
     // ---- Privacy Policy ----
@@ -172,35 +172,41 @@ class AppAnalytics @Inject constructor(
     /** Missing values are left out instead of being sent as null. */
     fun trackPrivacyPolicyFailed(errorCode: Int?, errorDescription: String?) {
         track(
-            AnalyticsEvents.FAILED_PRIVACY_POLICY, mapOf(
+            AnalyticsEvents.FAILED_PRIVACY_POLICY,
+            mapOf(
                 AnalyticsProperties.ERROR_CODE to errorCode,
-                AnalyticsProperties.ERROR_DESCRIPTION to errorDescription,
-            ).filterValues { it != null })
+                AnalyticsProperties.ERROR_DESCRIPTION to errorDescription
+            ).filterValues { it != null }
+        )
     }
 
     fun trackPrivacyPolicyRefreshClicked() = track(AnalyticsEvents.CLICKED_REFRESH_PRIVACY_POLICY)
 }
 
 enum class DownloadSource(val analyticsName: String) {
-    HOME("home"), VIEWER("viewer"),
+    HOME("home"),
+    VIEWER("viewer")
 }
 
 /** Screen the media player was opened from. */
 enum class PlayerSource(val analyticsName: String) {
-    HOME("home"), SAVED_STATUS("saved_status"),
+    HOME("home"),
+    SAVED_STATUS("saved_status")
 }
 
 /** How the onboarding dialog was opened. */
 enum class OnboardingSource(val analyticsName: String) {
-    INITIAL_LAUNCH("initial_launch"), HOW_TO_USE("how_to_use"),
+    INITIAL_LAUNCH("initial_launch"),
+    HOW_TO_USE("how_to_use")
 }
 
 enum class StorageAccessDeniedReason(val analyticsName: String) {
     CANCELLED("cancelled"),
-    WRONG_FOLDER("wrong_folder"),
+    WRONG_FOLDER("wrong_folder")
 }
 
 /** Screen a media tab is on. */
 enum class MediaTabSource(val analyticsName: String) {
-    HOME("home"), SAVED_STATUS("saved_status"),
+    HOME("home"),
+    SAVED_STATUS("saved_status")
 }

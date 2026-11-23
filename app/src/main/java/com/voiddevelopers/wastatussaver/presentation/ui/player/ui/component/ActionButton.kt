@@ -23,61 +23,56 @@ import androidx.compose.ui.unit.dp
 import com.voiddevelopers.wastatussaver.R
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 
-
 @Composable
-    fun ActionButton(
-        onSave: () -> Unit,
-        onRepost: () -> Unit,
-        downloadStatus: DownloadState,
+fun ActionButton(onSave: () -> Unit, onRepost: () -> Unit, downloadStatus: DownloadState) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(24.dp))
+            .background(Color.Black.copy(alpha = 0.65f))
+            .animateContentSize()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color.Black.copy(alpha = 0.65f))
-                .animateContentSize()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            when (downloadStatus) {
-
-                DownloadState.NOT_DOWNLOADED -> {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_download),
-                        contentDescription = "Download",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(25.dp)
-                            .padding(bottom = 2.dp)
-                            .clickable { onSave() })
-                }
-
-                DownloadState.DOWNLOADING -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(25.dp), color = Color.White, strokeWidth = 2.dp
-                    )
-                }
-
-                DownloadState.DOWNLOADED -> {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_tick),
-                        contentDescription = "Finished Download",
-                        modifier = Modifier.size(25.dp),
-                        tint = Color.White
-                    )
-                }
-
+        when (downloadStatus) {
+            DownloadState.NOT_DOWNLOADED -> {
+                Icon(
+                    painter = painterResource(R.drawable.ic_download),
+                    contentDescription = "Download",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .size(25.dp)
+                        .padding(bottom = 2.dp)
+                        .clickable { onSave() }
+                )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            DownloadState.DOWNLOADING -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(25.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            }
 
-            Icon(
-                imageVector = Icons.Default.Share,
-                contentDescription = "Share",
-                tint = Color.White,
-                modifier = Modifier
-                    .size(30.dp)
-                    .clickable { onRepost() })
-
+            DownloadState.DOWNLOADED -> {
+                Icon(
+                    painter = painterResource(R.drawable.ic_tick),
+                    contentDescription = "Finished Download",
+                    modifier = Modifier.size(25.dp),
+                    tint = Color.White
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Icon(
+            imageVector = Icons.Default.Share,
+            contentDescription = "Share",
+            tint = Color.White,
+            modifier = Modifier
+                .size(30.dp)
+                .clickable { onRepost() }
+        )
     }
+}

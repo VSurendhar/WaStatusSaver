@@ -21,19 +21,23 @@ import java.net.URLDecoder
 fun AppNavHost(navController: NavHostController, startDestination: String) {
     NavHost(navController = navController, startDestination = startDestination, enterTransition = {
         slideIntoContainer(
-            AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(300)
+            AnimatedContentTransitionScope.SlideDirection.Left,
+            animationSpec = tween(300)
         )
     }, exitTransition = {
         slideOutOfContainer(
-            AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(300)
+            AnimatedContentTransitionScope.SlideDirection.Left,
+            animationSpec = tween(300)
         )
     }, popEnterTransition = {
         slideIntoContainer(
-            AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(300)
+            AnimatedContentTransitionScope.SlideDirection.Right,
+            animationSpec = tween(300)
         )
     }, popExitTransition = {
         slideOutOfContainer(
-            AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(300)
+            AnimatedContentTransitionScope.SlideDirection.Right,
+            animationSpec = tween(300)
         )
     }) {
         composable(Screens.Main.route) {
@@ -46,7 +50,8 @@ fun AppNavHost(navController: NavHostController, startDestination: String) {
                 onEvent = viewModel::onEvent,
                 navigate = { route: String ->
                     navController.navigate(route)
-                })
+                }
+            )
         }
         composable(Screens.SavedStatus.route) {
             SavedStatusScreen(onBack = {
@@ -63,5 +68,4 @@ fun AppNavHost(navController: NavHostController, startDestination: String) {
             })
         }
     }
-
 }

@@ -21,5 +21,4 @@ class MyApplication : Application() {
         appAnalytics.init()
         ProcessLifecycleOwner.get().lifecycle.addObserver(appLifecycleTracker)
     }
-
 }

@@ -4,10 +4,7 @@ import android.content.Context
 import com.mixpanel.android.mpmetrics.MixpanelAPI
 import org.json.JSONObject
 
-class MixpanelAnalytics(
-    private val context: Context,
-    private val token: String,
-) : Analytics {
+class MixpanelAnalytics(private val context: Context, private val token: String) : Analytics {
 
     private var mixpanel: MixpanelAPI? = null
 

@@ -33,10 +33,7 @@ import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.component.Acti
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 
 @Composable
-fun ImageViewer(
-    intent: Intent
-) {
-
+fun ImageViewer(intent: Intent) {
     val viewModel = hiltViewModel<ImageViewerViewModel>()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -114,7 +111,8 @@ fun ImageViewer(
                         }
                         context.startActivity(
                             Intent.createChooser(
-                                intent, "Choose app to share this"
+                                intent,
+                                "Choose app to share this"
                             )
                         )
                     })

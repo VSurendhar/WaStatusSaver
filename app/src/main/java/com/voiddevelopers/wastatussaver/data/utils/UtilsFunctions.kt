@@ -40,7 +40,8 @@ fun openAppInPlayStore(context: Context, packageName: String?) {
     try {
         context.startActivity(
             Intent(
-                Intent.ACTION_VIEW, "market://details?id=$packageName".toUri()
+                Intent.ACTION_VIEW,
+                "market://details?id=$packageName".toUri()
             )
         )
     } catch (e: ActivityNotFoundException) {
@@ -62,7 +63,7 @@ fun Floating(
     amplitudeY: Float = 12f,
     rotationAmplitude: Float = 1.5f,
     scaleAmplitude: Float = 0.03f,
-    content: @Composable () -> Unit,
+    content: @Composable () -> Unit
 ) {
     if (!enabled) {
         Box(modifier = modifier) {
@@ -139,7 +140,7 @@ fun Floating(
 fun LifecycleAwareEventCallBacks(
     onPause: (() -> Unit)? = null,
     onDestroy: (() -> Unit)? = null,
-    onResume: (() -> Unit)? = null,
+    onResume: (() -> Unit)? = null
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -173,7 +174,8 @@ fun LifecycleAwareEventCallBacks(
 
 fun launchSafPicker(newUri: Uri?, launchPermission: (Intent) -> Unit) {
     val newTreeUri = DocumentsContract.buildDocumentUriUsingTree(
-        newUri, DocumentsContract.getTreeDocumentId(newUri)
+        newUri,
+        DocumentsContract.getTreeDocumentId(newUri)
     )
     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
         putExtra(DocumentsContract.EXTRA_INITIAL_URI, newTreeUri)
@@ -181,11 +183,7 @@ fun launchSafPicker(newUri: Uri?, launchPermission: (Intent) -> Unit) {
     launchPermission(intent)
 }
 
-fun createColoredString(
-    baseString: String,
-    color: Color,
-): AnnotatedString {
-
+fun createColoredString(baseString: String, color: Color): AnnotatedString {
     val annotatedText = buildAnnotatedString {
         var currentIndex = 0
         val regex = "\\*\\*(.*?)\\*\\*".toRegex()
@@ -214,25 +212,21 @@ fun createColoredString(
     return annotatedText
 }
 
-fun Bitmap.compressBitmapQuality(quality: Int = 50): Bitmap? {
-    return try {
-        val stream = ByteArrayOutputStream()
-        this.compress(Bitmap.CompressFormat.JPEG, quality, stream)
-        val byteArray = stream.toByteArray()
-        BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
+fun Bitmap.compressBitmapQuality(quality: Int = 50): Bitmap? = try {
+    val stream = ByteArrayOutputStream()
+    this.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+    val byteArray = stream.toByteArray()
+    BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+} catch (e: Exception) {
+    e.printStackTrace()
+    null
 }
 
-fun getMillisFromNow(hour: Int): Long {
-    return System.currentTimeMillis() + TimeUnit.HOURS.toMillis(hour.toLong())
-}
+fun getMillisFromNow(hour: Int): Long =
+    System.currentTimeMillis() + TimeUnit.HOURS.toMillis(hour.toLong())
 
-fun formatTime(millis: Long): String {
-    return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(millis))
-}
+fun formatTime(millis: Long): String =
+    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(millis))
 
 fun escapeForMarkdownV2(text: String): String {
     val charsToEscape = listOf(

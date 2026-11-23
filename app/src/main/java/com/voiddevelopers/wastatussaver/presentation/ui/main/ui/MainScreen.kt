@@ -67,12 +67,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -95,9 +95,9 @@ import coil.compose.AsyncImage
 import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import com.voiddevelopers.wastatussaver.R
-import com.voiddevelopers.wastatussaver.data.utils.Constants
 import com.voiddevelopers.wastatussaver.core.analytics.PlayerSource
 import com.voiddevelopers.wastatussaver.core.analytics.StorageAccessDeniedReason
+import com.voiddevelopers.wastatussaver.data.utils.Constants
 import com.voiddevelopers.wastatussaver.data.utils.createColoredString
 import com.voiddevelopers.wastatussaver.data.utils.extentions.valueOrDefault
 import com.voiddevelopers.wastatussaver.data.utils.extentions.valueOrEmptyString
@@ -115,21 +115,16 @@ import com.voiddevelopers.wastatussaver.presentation.theme.gray
 import com.voiddevelopers.wastatussaver.presentation.ui.main.dialog.OnBoardingDialog
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.PlayerActivity
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 
 @Composable
-fun MainScreen(
-    uiState: StateFlow<UiState?>,
-    onEvent: (Event) -> Unit,
-    navigate: (String) -> Unit,
-) {
-
+fun MainScreen(uiState: StateFlow<UiState?>, onEvent: (Event) -> Unit, navigate: (String) -> Unit) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val titleItems = listOf(Title.Whatsapp, Title.WhatsappBusiness)
@@ -149,18 +144,22 @@ fun MainScreen(
     }
 
     val launcher: ActivityResultLauncher<Intent> =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
             val uri = result.data?.data
             when {
                 // Backed out of the folder picker.
                 uri == null -> onEvent(Event.SafAccessDenied(StorageAccessDeniedReason.CANCELLED))
+
                 // Picked a folder other than this app's .Statuses folder.
                 uri != state?.title?.uri ->
                     onEvent(Event.SafAccessDenied(StorageAccessDeniedReason.WRONG_FOLDER))
 
                 else -> {
                     context.contentResolver.takePersistableUriPermission(
-                        uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
                     )
                     onEvent(Event.SafAccessGranted)
                 }
@@ -184,11 +183,13 @@ fun MainScreen(
                         drawerState.close()
                         navigate(it)
                     }
-                }, closeDrawer = {
+                },
+                closeDrawer = {
                     scope.launch {
                         drawerState.close()
                     }
-                }, showOnBoardingUI = {
+                },
+                showOnBoardingUI = {
                     scope.launch {
                         onEvent(
                             Event.ChangeShowOnBoardingUiStatus(
@@ -197,24 +198,25 @@ fun MainScreen(
                         )
                         drawerState.close()
                     }
-                }, onOptionClick = { onEvent(Event.OnDrawerOptionClick(it)) }
+                },
+                onOptionClick = { onEvent(Event.OnDrawerOptionClick(it)) }
             )
         },
         content = {
-            Scaffold(
-                modifier = Modifier.fillMaxSize(), topBar = {
-                    MainTopBar(
-                        openNavigationDrawer = { scope.launch { drawerState.open() } },
-                        selectedTitle = state?.title,
-                        items = titleItems,
-                        onTitleChanged = { onEvent(Event.ChangeTitle(it)) },
-                        pagerState = pagerState,
-                        scope = scope,
-                        mediaTypeData = mediaTypeData,
-                        onRefreshBtnPressed = {
-                            onEvent(Event.OnRefreshClick)
-                        })
-                }) { innerPadding ->
+            Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+                MainTopBar(
+                    openNavigationDrawer = { scope.launch { drawerState.open() } },
+                    selectedTitle = state?.title,
+                    items = titleItems,
+                    onTitleChanged = { onEvent(Event.ChangeTitle(it)) },
+                    pagerState = pagerState,
+                    scope = scope,
+                    mediaTypeData = mediaTypeData,
+                    onRefreshBtnPressed = {
+                        onEvent(Event.OnRefreshClick)
+                    }
+                )
+            }) { innerPadding ->
                 if (state != null) {
                     MainBody(
                         modifier = Modifier.padding(innerPadding),
@@ -225,7 +227,8 @@ fun MainScreen(
                     )
                 }
             }
-        })
+        }
+    )
 }
 
 @Composable
@@ -237,27 +240,30 @@ fun MainTopBar(
     pagerState: PagerState,
     scope: CoroutineScope,
     mediaTypeData: List<MediaType>,
-    onRefreshBtnPressed: () -> Unit,
+    onRefreshBtnPressed: () -> Unit
 ) {
-
     var expanded by remember { mutableStateOf(false) }
 
     val rotationDegree by animateFloatAsState(
-        if (expanded) 180f else 0f, animationSpec = tween(
+        if (expanded) 180f else 0f,
+        animationSpec = tween(
             durationMillis = 400
         )
     )
 
     val targetSize = when (selectedTitle) {
         Title.Whatsapp -> 30.dp
+
         Title.WhatsappBusiness -> 60.dp
+
         null -> {
             30.dp
         }
     }
 
     val animatedSize by animateDpAsState(
-        targetValue = targetSize, animationSpec = tween(durationMillis = 500)
+        targetValue = targetSize,
+        animationSpec = tween(durationMillis = 500)
     )
 
     Surface(
@@ -265,7 +271,8 @@ fun MainTopBar(
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.primary)
             .statusBarsPadding()
-            .wrapContentHeight(), color = MaterialTheme.colorScheme.primary
+            .wrapContentHeight(),
+        color = MaterialTheme.colorScheme.primary
     ) {
         Column(
             modifier = Modifier.fillMaxWidth()
@@ -275,21 +282,23 @@ fun MainTopBar(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
                     .padding(horizontal = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { openNavigationDrawer() }) {
                     Icon(
                         imageVector = Icons.Filled.Menu,
                         contentDescription = "Dropdown",
-                        tint = MaterialTheme.colorScheme.onPrimary,
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
                 TextButton(
                     modifier = Modifier.padding(horizontal = 10.dp),
-                    onClick = { expanded = !expanded }) {
+                    onClick = { expanded = !expanded }
+                ) {
                     Text(
                         text = stringResource(selectedTitle?.resId.valueOrEmptyString()).replace(
-                            " ", "\n"
+                            " ",
+                            "\n"
                         ),
                         modifier = Modifier.height(animatedSize),
                         color = MaterialTheme.colorScheme.onPrimary,
@@ -303,22 +312,24 @@ fun MainTopBar(
                         modifier = Modifier
                             .padding(top = 5.dp)
                             .graphicsLayer(
-                                rotationZ = rotationDegree, transformOrigin = TransformOrigin(
-                                    0.5f, 0.5f
+                                rotationZ = rotationDegree,
+                                transformOrigin = TransformOrigin(
+                                    0.5f,
+                                    0.5f
                                 )
                             )
-                            .align(Alignment.Top),
+                            .align(Alignment.Top)
                     )
                 }
-                DropdownMenu(
-                    expanded = expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     items.forEach { label ->
                         DropdownMenuItem(
                             text = { Text(stringResource(label.resId.valueOrEmptyString())) },
                             onClick = {
                                 onTitleChanged(label)
                                 expanded = false
-                            })
+                            }
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.weight(1f))
@@ -326,7 +337,7 @@ fun MainTopBar(
                     Icon(
                         tint = Color.White,
                         imageVector = Icons.Filled.Refresh,
-                        contentDescription = "Refresh",
+                        contentDescription = "Refresh"
                     )
                 }
             }
@@ -365,8 +376,11 @@ fun TabsRow(pagerState: PagerState, scope: CoroutineScope, mediaTypeData: List<M
             }, text = {
                 Text(
                     text = tab.name,
-                    color = if (pagerState.currentPage == index) MaterialTheme.colorScheme.onPrimary
-                    else MaterialTheme.colorScheme.surfaceVariant
+                    color = if (pagerState.currentPage == index) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    }
                 )
             })
         }
@@ -379,7 +393,7 @@ fun DrawerContent(
     navigate: (String) -> Unit,
     closeDrawer: () -> Unit,
     showOnBoardingUI: () -> Unit,
-    onOptionClick: (DrawerOption) -> Unit,
+    onOptionClick: (DrawerOption) -> Unit
 ) {
     val context = LocalContext.current
     Column(
@@ -393,7 +407,7 @@ fun DrawerContent(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(vertical = 20.dp, horizontal = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
                 modifier = Modifier.size(60.dp),
@@ -430,7 +444,7 @@ fun DrawerContent(
                 onBtnClick = {
                     onOptionClick(DrawerOption.HOW_TO_USE)
                     showOnBoardingUI()
-                },
+                }
             )
             DrawerItem(
                 title = stringResource(R.string.saved_status),
@@ -438,7 +452,7 @@ fun DrawerContent(
                 onBtnClick = {
                     onOptionClick(DrawerOption.SAVED_STATUS)
                     navigate(Screens.SavedStatus.route)
-                },
+                }
             )
             DrawerItem(
                 title = stringResource(R.string.privacy_policy),
@@ -450,7 +464,7 @@ fun DrawerContent(
                         StandardCharsets.UTF_8.toString()
                     )
                     navigate("${Screens.WebView.route}/$encodedUrl")
-                },
+                }
             )
             DrawerItem(
                 title = stringResource(R.string.rate_app),
@@ -458,7 +472,7 @@ fun DrawerContent(
                 onBtnClick = {
                     onOptionClick(DrawerOption.RATE_APP)
                     rateApp(context)
-                },
+                }
             )
             DrawerItem(
                 title = stringResource(R.string.star_on_github),
@@ -467,7 +481,7 @@ fun DrawerContent(
                     onOptionClick(DrawerOption.STAR_ON_GITHUB)
                     openGithubRepo(context)
                     closeDrawer()
-                },
+                }
             )
             DrawerItem(
                 title = stringResource(R.string.report_bug),
@@ -491,7 +505,7 @@ fun DrawerContent(
                             .show()
                     }
                     closeDrawer()
-                },
+                }
             )
             DrawerItem(
                 title = stringResource(R.string.about),
@@ -499,7 +513,7 @@ fun DrawerContent(
                 onBtnClick = {
                     onOptionClick(DrawerOption.ABOUT)
                     aboutApp(context)
-                },
+                }
             )
         }
     }
@@ -523,15 +537,12 @@ fun aboutApp(context: Context) {
             "market://details?id=$appPackage".toUri()
         )
         context.startActivity(intent)
-
     } catch (e: ActivityNotFoundException) {
-
         val intent = Intent(
             Intent.ACTION_VIEW,
             "https://play.google.com/store/apps/details?id=$appPackage".toUri()
         )
         context.startActivity(intent)
-
     }
 }
 
@@ -566,11 +577,12 @@ fun DrawerItem(title: String, painter: Painter, onBtnClick: () -> Unit, enable: 
         )
         Spacer(modifier = Modifier.width(10.dp))
         Text(
-            text = title, style = MaterialTheme.typography.bodyLarge, color = gray
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            color = gray
         )
     }
 }
-
 
 @Composable
 fun MainBody(
@@ -578,14 +590,15 @@ fun MainBody(
     pagerState: PagerState,
     onEvent: (Event) -> Unit,
     uiState: UiState,
-    launchSafPermission: (Intent) -> Unit,
+    launchSafPermission: (Intent) -> Unit
 ) {
     val mediaFiles = uiState.mediaFiles
     val audioMediaFiles = mediaFiles.filter { it is AudioFile }
     val videoMediaFiles = mediaFiles.filter { it is VideoFile }
     val imageMediaFiles = mediaFiles.filter { it is ImageFile }
     HorizontalPager(
-        state = pagerState, modifier = modifier.fillMaxSize()
+        state = pagerState,
+        modifier = modifier.fillMaxSize()
     ) { page ->
         when (page) {
             0 -> {
@@ -614,7 +627,6 @@ fun MainBody(
                     launchSafPermission = launchSafPermission
                 )
             }
-
         }
     }
 }
@@ -624,7 +636,7 @@ fun FilePreviewPage(
     mediaFiles: List<MediaFile>,
     uiState: UiState,
     onEvent: (Event) -> Unit,
-    launchSafPermission: (Intent) -> Unit,
+    launchSafPermission: (Intent) -> Unit
 ) {
     val context = LocalContext.current
     if (uiState.shouldShowOnBoardingUi == true) {
@@ -637,7 +649,7 @@ fun FilePreviewPage(
                 )
             },
             onNextClick = { page -> onEvent(Event.OnOnboardingNextClick(page)) },
-            onSkipClick = { page -> onEvent(Event.OnOnboardingSkipClick(page)) },
+            onSkipClick = { page -> onEvent(Event.OnOnboardingSkipClick(page)) }
         )
     }
 
@@ -645,7 +657,7 @@ fun FilePreviewPage(
         modifier = Modifier
             .fillMaxSize()
             .padding(12.dp),
-        color = Color.White,
+        color = Color.White
     ) {
         if (!uiState.appInstalled) {
             MissingSetupInfo(
@@ -655,13 +667,15 @@ fun FilePreviewPage(
                     stringResource(
                         R.string.not_installed,
                         stringResource(uiState.title?.resId.valueOrEmptyString())
-                    ), MaterialTheme.colorScheme.primary
+                    ),
+                    MaterialTheme.colorScheme.primary
                 ),
                 description = createColoredString(
                     stringResource(
                         R.string.install_app_request,
                         stringResource(uiState.title?.resId.valueOrEmptyString())
-                    ), MaterialTheme.colorScheme.primary
+                    ),
+                    MaterialTheme.colorScheme.primary
                 ),
                 buttonTxt = stringResource(
                     R.string.download_app_playstore_btn,
@@ -670,7 +684,8 @@ fun FilePreviewPage(
                 onBtnClick = {
                     onEvent(Event.OnDownloadAppClick)
                     openAppInPlayStore(context, uiState.title?.packageName)
-                })
+                }
+            )
         } else if (!uiState.hasSafAccessPermission) {
             MissingSetupInfo(
                 modifier = Modifier.padding(horizontal = 12.dp),
@@ -683,26 +698,32 @@ fun FilePreviewPage(
                     stringResource(
                         R.string.second_accesss_msg,
                         stringResource(uiState.title?.resId.valueOrEmptyString())
-                    ), MaterialTheme.colorScheme.primary
+                    ),
+                    MaterialTheme.colorScheme.primary
                 ),
                 buttonTxt = stringResource(R.string.grand_access),
                 onBtnClick = {
                     onEvent(Event.OnGrantStorageAccessClick)
                     launchSafPicker(
-                        newUri = uiState.title?.uri, launchPermission = launchSafPermission
+                        newUri = uiState.title?.uri,
+                        launchPermission = launchSafPermission
                     )
-                })
+                }
+            )
         } else {
             if (mediaFiles.isEmpty()) {
                 MissingSetupInfo(
-                    imageId = R.drawable.ic_empty_folder, title = createColoredString(
+                    imageId = R.drawable.ic_empty_folder,
+                    title = createColoredString(
                         stringResource(R.string.no_status_files_available),
                         MaterialTheme.colorScheme.primary
-                    ), description = createColoredString(
+                    ),
+                    description = createColoredString(
                         stringResource(
                             R.string.no_status_des,
                             stringResource(uiState.title?.resId.valueOrEmptyString())
-                        ), MaterialTheme.colorScheme.primary
+                        ),
+                        MaterialTheme.colorScheme.primary
                     )
                 )
             } else {
@@ -716,7 +737,8 @@ fun FilePreviewPage(
                 ) {
                     items(
                         items = mediaFiles,
-                        key = { "${it.uri} ${it.downloadState}" }) { mediaFile ->
+                        key = { "${it.uri} ${it.downloadState}" }
+                    ) { mediaFile ->
                         PreviewItem(
                             mediaFile,
                             onDownloadClick = {
@@ -726,10 +748,12 @@ fun FilePreviewPage(
                                 val intent = Intent(context, PlayerActivity::class.java)
                                 intent.putExtra("mediaInfo", mediaFile.toDomainMediaInfo())
                                 intent.putExtra(
-                                    PlayerActivity.EXTRA_SOURCE, PlayerSource.HOME.name
+                                    PlayerActivity.EXTRA_SOURCE,
+                                    PlayerSource.HOME.name
                                 )
                                 context.startActivity(intent)
-                            })
+                            }
+                        )
                     }
                 }
             }
@@ -737,13 +761,12 @@ fun FilePreviewPage(
     }
 }
 
-
 @Composable
 fun PreviewItem(
     mediaFile: MediaFile,
     onDownloadClick: (() -> Unit)? = null,
     onPreviewClick: () -> Unit,
-    showDownloadIcon: Boolean = true,
+    showDownloadIcon: Boolean = true
 ) {
     val context = LocalContext.current
     Card(
@@ -751,9 +774,12 @@ fun PreviewItem(
             .aspectRatio(130f / 160f)
             .clickable {
                 onPreviewClick()
-            }, shape = RoundedCornerShape(
-            corner = CornerSize(20.dp),
-        ), border = BorderStroke(width = 1.dp, color = gray), colors = CardDefaults.cardColors(
+            },
+        shape = RoundedCornerShape(
+            corner = CornerSize(20.dp)
+        ),
+        border = BorderStroke(width = 1.dp, color = gray),
+        colors = CardDefaults.cardColors(
             containerColor = Color.White
         )
     ) {
@@ -824,15 +850,17 @@ fun PreviewItem(
                         .height(26.dp)
                         .width(46.dp)
                         .align(Alignment.BottomEnd),
-                    shape = RoundedCornerShape(topStart = 10.dp),
+                    shape = RoundedCornerShape(topStart = 10.dp)
                 ) {
                     IconButton(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(end = 6.dp)
-                            .align(Alignment.CenterHorizontally), onClick = {
+                            .align(Alignment.CenterHorizontally),
+                        onClick = {
                             onDownloadClick?.invoke()
-                        }, enabled = mediaFile.downloadState == DownloadState.NOT_DOWNLOADED
+                        },
+                        enabled = mediaFile.downloadState == DownloadState.NOT_DOWNLOADED
                     ) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -853,7 +881,7 @@ fun PreviewItem(
                                         painter = painterResource(R.drawable.ic_tick),
                                         contentDescription = "Finished Download",
                                         modifier = Modifier.size(14.dp),
-                                        tint = Color.White,
+                                        tint = Color.White
                                     )
                                 }
 
@@ -880,7 +908,7 @@ fun MissingSetupInfo(
     title: AnnotatedString,
     description: AnnotatedString,
     buttonTxt: String? = null,
-    onBtnClick: (() -> Unit)? = null,
+    onBtnClick: (() -> Unit)? = null
 ) {
     Card(
         modifier = modifier
@@ -895,7 +923,8 @@ fun MissingSetupInfo(
         )
     ) {
         Column(
-            modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
                 painter = painterResource(imageId),
@@ -905,7 +934,8 @@ fun MissingSetupInfo(
             Text(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 12.dp),
-                text = title, style = MaterialTheme.typography.headlineSmall,
+                text = title,
+                style = MaterialTheme.typography.headlineSmall
             )
             Text(
                 modifier = Modifier.padding(top = 8.dp),
@@ -920,7 +950,8 @@ fun MissingSetupInfo(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 10.dp),
-                    onClick = { onBtnClick.invoke() }) {
+                    onClick = { onBtnClick.invoke() }
+                ) {
                     androidx.compose.material.Text(
                         text = buttonTxt.valueOrDefault(),
                         textAlign = TextAlign.Center,
@@ -931,7 +962,6 @@ fun MissingSetupInfo(
         }
     }
 }
-
 
 @Composable
 @Preview(showBackground = true)
@@ -945,10 +975,10 @@ fun TopBarPreview() {
             pagerState = rememberPagerState(pageCount = { 3 }),
             rememberCoroutineScope(),
             mediaTypeData = listOf(MediaType.IMAGE, MediaType.VIDEO, MediaType.AUDIO),
-            onRefreshBtnPressed = {})
+            onRefreshBtnPressed = {}
+        )
     }
 }
-
 
 @Composable
 @Preview(showBackground = true)
@@ -958,18 +988,19 @@ fun NavigationDrawerPreview() {
             navigate = {},
             closeDrawer = {},
             showOnBoardingUI = {},
-            onOptionClick = {},
+            onOptionClick = {}
         )
     }
 }
-
 
 @Composable
 @Preview(showBackground = true)
 fun ImagePagePreview() {
     val imageImageFiles = (1..5).map {
         ImageFile(
-            uri = "".toUri(), mediaType = MediaType.IMAGE, fileName = ""
+            uri = "".toUri(),
+            mediaType = MediaType.IMAGE,
+            fileName = ""
         )
     }
     WaStatusSaverTheme {
@@ -977,7 +1008,8 @@ fun ImagePagePreview() {
             imageImageFiles,
             uiState = UiState(),
             onEvent = { },
-            launchSafPermission = {})
+            launchSafPermission = {}
+        )
     }
 }
 
@@ -988,10 +1020,10 @@ fun FileItemPreview() {
         PreviewItem(
             mediaFile = UnknownFile(uri = "".toUri(), fileName = "void"),
             onDownloadClick = {},
-            onPreviewClick = {})
+            onPreviewClick = {}
+        )
     }
 }
-
 
 @Composable
 @Preview(showBackground = true)
@@ -1000,8 +1032,11 @@ fun MissingSetupInfoPreview() {
         MissingSetupInfo(
             imageId = R.drawable.ic_empty_folder,
             title = AnnotatedString("Storage Access Required"),
-            description = AnnotatedString("We need access to the WhatsApp .Statuses folder to save status media. Only files in the folder you choose are accessed, and nothing leaves your phone."),
+            description = AnnotatedString(
+                "We need access to the WhatsApp .Statuses folder to save status media. Only files in the folder you choose are accessed, and nothing leaves your phone."
+            ),
             buttonTxt = "Grant Access",
-            onBtnClick = {})
+            onBtnClick = {}
+        )
     }
 }

@@ -41,10 +41,7 @@ fun Context.isInternetAvailable(): Boolean {
 
 fun Context.fileNotFoundBitmap(): Bitmap =
     BitmapFactory.decodeResource(resources, R.drawable.img_loading_placeholder)
-fun Modifier.singleClick(
-    enabled: Boolean = true,
-    onClick: () -> Unit
-): Modifier = composed {
+fun Modifier.singleClick(enabled: Boolean = true, onClick: () -> Unit): Modifier = composed {
     var clicked by remember { mutableStateOf(false) }
 
     this.then(

@@ -10,9 +10,8 @@ import javax.inject.Inject
  * - onStop:  the app went to the background (Home button, switching apps)
  * Moving between the app's own screens, or rotating, doesn't trigger either.
  */
-class AppLifecycleTracker @Inject constructor(
-    private val appAnalytics: AppAnalytics,
-) : DefaultLifecycleObserver {
+class AppLifecycleTracker @Inject constructor(private val appAnalytics: AppAnalytics) :
+    DefaultLifecycleObserver {
 
     override fun onStart(owner: LifecycleOwner) {
         appAnalytics.trackAppStarted()

@@ -7,9 +7,7 @@ import android.os.Build
 import com.voiddevelopers.wastatussaver.data.utils.extentions.hasReadPermission
 import javax.inject.Inject
 
-class AppInstallCheckerUseCase @Inject constructor(
-    private val appContext: Application,
-) {
+class AppInstallCheckerUseCase @Inject constructor(private val appContext: Application) {
     fun isInstalled(packageName: String?): Boolean {
         if (packageName == null) {
             return false
@@ -29,8 +27,5 @@ class AppInstallCheckerUseCase @Inject constructor(
         }
     }
 
-    fun hasSafAccessPermission(uri: Uri): Boolean {
-        return appContext.hasReadPermission(uri)
-    }
-
+    fun hasSafAccessPermission(uri: Uri): Boolean = appContext.hasReadPermission(uri)
 }

@@ -34,10 +34,7 @@ data class ImageFile(
     override val mediaType: MediaType = MediaType.IMAGE,
     val initialDownloadState: DownloadState = DownloadState.NOT_DOWNLOADED
 ) : MediaFile(initialDownloadState) {
-    override fun toString(): String {
-        return "$fileName $downloadState"
-    }
-
+    override fun toString(): String = "$fileName $downloadState"
 }
 
 @Suppress("DEPRECATION")
@@ -60,9 +57,7 @@ data class AudioFile(
         }
         return mediaItem!!
     }
-
 }
-
 
 @Keep
 data class VideoFile(
@@ -73,16 +68,13 @@ data class VideoFile(
 ) : MediaFile(initialDownloadState) {
     private var mediaItem: MediaItem = MediaItem.fromUri(uri)
 
-    fun getMediaItem(): MediaItem {
-        return mediaItem
-    }
-
+    fun getMediaItem(): MediaItem = mediaItem
 }
 
 @Keep
 data class UnknownFile(
     override val uri: Uri,
-    override val mediaType: MediaType = MediaType.UNSPECIFIED, 
+    override val mediaType: MediaType = MediaType.UNSPECIFIED,
     override val fileName: String,
     val initialDownloadState: DownloadState = DownloadState.NOT_DOWNLOADED
 ) : MediaFile(initialDownloadState)

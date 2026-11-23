@@ -59,7 +59,6 @@ import com.voiddevelopers.wastatussaver.presentation.theme.WaStatusSaverTheme
 
 @Composable
 fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Unit) {
-
     val context = LocalContext.current
     val viewModel = hiltViewModel<WebViewViewModel>()
     val pageUrl = url ?: "https://www.google.com"
@@ -106,7 +105,7 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
                 override fun onReceivedError(
                     view: WebView?,
                     request: WebResourceRequest?,
-                    error: WebResourceError?,
+                    error: WebResourceError?
                 ) {
                     super.onReceivedError(view, request, error)
                     // Only the page itself counts, not images or scripts inside it.
@@ -114,7 +113,7 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
                         viewModel.logLoadResult(
                             success = false,
                             errorCode = error?.errorCode,
-                            errorDescription = error?.description?.toString(),
+                            errorDescription = error?.description?.toString()
                         )
                     }
                 }
@@ -122,14 +121,14 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
                 override fun onReceivedHttpError(
                     view: WebView?,
                     request: WebResourceRequest?,
-                    errorResponse: WebResourceResponse?,
+                    errorResponse: WebResourceResponse?
                 ) {
                     super.onReceivedHttpError(view, request, errorResponse)
                     if (request?.isForMainFrame == true) {
                         viewModel.logLoadResult(
                             success = false,
                             errorCode = errorResponse?.statusCode,
-                            errorDescription = errorResponse?.reasonPhrase,
+                            errorDescription = errorResponse?.reasonPhrase
                         )
                     }
                 }
@@ -171,7 +170,8 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
                 },
                 onBackClick = onBackClick
             )
-        }) { innerPadding ->
+        }
+    ) { innerPadding ->
         if (internetAvailable) {
             Column(
                 modifier = Modifier
@@ -184,7 +184,7 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
-                        trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                     )
                 }
                 AndroidView(modifier = Modifier.fillMaxSize(), factory = { webView })
@@ -203,8 +203,12 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
                 )
                 Text(
                     style = TextStyle(
-                        fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 22.sp
-                    ), text = "No Internet Connection", modifier = Modifier.padding(vertical = 5.dp)
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        fontSize = 22.sp
+                    ),
+                    text = "No Internet Connection",
+                    modifier = Modifier.padding(vertical = 5.dp)
                 )
                 Text(
                     text = "Please turn on your Wifi or Mobile Data to see the content.Tap the refresh icon above to try again later.",
@@ -216,7 +220,6 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
         }
     }
 }
-
 
 @Composable
 fun PrivacyPolicyTopBar(onRefreshPressed: () -> Unit, onBackClick: () -> Unit) {
@@ -235,7 +238,7 @@ fun PrivacyPolicyTopBar(onRefreshPressed: () -> Unit, onBackClick: () -> Unit) {
                 .padding(vertical = 12.dp)
                 .padding(horizontal = 18.dp)
                 .padding(bottom = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -245,7 +248,8 @@ fun PrivacyPolicyTopBar(onRefreshPressed: () -> Unit, onBackClick: () -> Unit) {
                     .padding(end = 12.dp)
                     .singleClick {
                         onBackClick()
-                    })
+                    }
+            )
             Text(
                 modifier = Modifier,
                 text = "Privacy Policy",
@@ -257,13 +261,11 @@ fun PrivacyPolicyTopBar(onRefreshPressed: () -> Unit, onBackClick: () -> Unit) {
                 Icon(
                     tint = Color.White,
                     imageVector = Icons.Filled.Refresh,
-                    contentDescription = "Refresh",
+                    contentDescription = "Refresh"
                 )
             }
         }
     }
-
-
 }
 
 @Composable

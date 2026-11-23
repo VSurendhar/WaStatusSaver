@@ -18,17 +18,16 @@ import com.voiddevelopers.wastatussaver.domain.model.MediaType
 import com.voiddevelopers.wastatussaver.domain.model.VideoFile
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 import java.io.FileDescriptor
 import java.io.IOException
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context: Context) {
 
     private var resolver: ContentResolver = context.contentResolver
-
 
     suspend fun saveMediaFile(mediaFile: MediaFile, onSaveCompleted: suspend () -> Unit) {
         when (mediaFile) {
@@ -43,7 +42,6 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
         val result = getAllSavedMedia()
         return result
     }
-
 
     private fun getAllSavedMedia(): List<MediaInfo> {
         val result = mutableListOf<MediaInfo>()
@@ -75,7 +73,7 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
     private fun queryMedia(
         mediaStoreUri: Uri,
         relativePath: String,
-        mediaType: MediaType,
+        mediaType: MediaType
     ): List<MediaInfo> {
         val list = mutableListOf<MediaInfo>()
 
@@ -92,7 +90,10 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
             android.os.Bundle().apply {
                 putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
                 putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
-                putString(ContentResolver.QUERY_ARG_SQL_SORT_ORDER, "${MediaStore.MediaColumns.DATE_ADDED} DESC")
+                putString(
+                    ContentResolver.QUERY_ARG_SQL_SORT_ORDER,
+                    "${MediaStore.MediaColumns.DATE_ADDED} DESC"
+                )
                 putInt(MediaStore.QUERY_ARG_MATCH_PENDING, MediaStore.MATCH_INCLUDE)
                 putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE)
             }
@@ -143,55 +144,48 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
         return list
     }
 
-    suspend fun saveAudioFile(
-        mediaFile: AudioFile,
-        onSaveCompleted:suspend () -> Unit,
-    ) = withContext(Dispatchers.IO) {
+    suspend fun saveAudioFile(mediaFile: AudioFile, onSaveCompleted: suspend () -> Unit) =
+        withContext(Dispatchers.IO) {
+            val timeInSeconds = System.currentTimeMillis() / 1000
 
-        val timeInSeconds = System.currentTimeMillis() / 1000
+            val values = ContentValues().apply {
+                put(
+                    MediaStore.MediaColumns.RELATIVE_PATH,
+                    "${Environment.DIRECTORY_DOWNLOADS}/WaStatusSaver/Audio"
+                )
+                put(MediaStore.MediaColumns.DISPLAY_NAME, mediaFile.fileName)
+                put(MediaStore.MediaColumns.MIME_TYPE, "audio/opus")
+                put(MediaStore.MediaColumns.DATE_ADDED, timeInSeconds)
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
 
-        val values = ContentValues().apply {
-            put(
-                MediaStore.MediaColumns.RELATIVE_PATH,
-                "${Environment.DIRECTORY_DOWNLOADS}/WaStatusSaver/Audio"
-            )
-            put(MediaStore.MediaColumns.DISPLAY_NAME, mediaFile.fileName)
-            put(MediaStore.MediaColumns.MIME_TYPE, "audio/opus")
-            put(MediaStore.MediaColumns.DATE_ADDED, timeInSeconds)
-            put(MediaStore.MediaColumns.IS_PENDING, 1)
+                put(MediaStore.MediaColumns.IS_DOWNLOAD, 1)
+            }
 
-            put(MediaStore.MediaColumns.IS_DOWNLOAD, 1)
+            val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+            if (uri == null) {
+                return@withContext
+            }
+
+            try {
+                resolver.openOutputStream(uri)?.use { outputStream ->
+                    resolver.openInputStream(mediaFile.uri)?.use { inputStream ->
+                        inputStream.copyTo(outputStream)
+                    } ?: throw IOException("InputStream is null")
+                } ?: throw IOException("OutputStream is null")
+
+                values.clear()
+                values.put(MediaStore.MediaColumns.IS_PENDING, 0)
+                resolver.update(uri, values, null, null)
+
+                delay(400)
+                onSaveCompleted()
+            } catch (e: Exception) {
+                resolver.delete(uri, null, null)
+                throw e
+            }
         }
 
-        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
-        if (uri == null) {
-            return@withContext
-        }
-
-        try {
-            resolver.openOutputStream(uri)?.use { outputStream ->
-                resolver.openInputStream(mediaFile.uri)?.use { inputStream ->
-                    inputStream.copyTo(outputStream)
-                } ?: throw IOException("InputStream is null")
-            } ?: throw IOException("OutputStream is null")
-
-            values.clear()
-            values.put(MediaStore.MediaColumns.IS_PENDING, 0)
-            resolver.update(uri, values, null, null)
-
-            delay(400)
-            onSaveCompleted()
-
-        } catch (e: Exception) {
-            resolver.delete(uri, null, null)
-            throw e
-        }
-    }
-
-    suspend fun saveImageFile(
-        mediaFile: ImageFile,
-        onSaveCompleted: suspend () -> Unit,
-    ) {
+    suspend fun saveImageFile(mediaFile: ImageFile, onSaveCompleted: suspend () -> Unit) {
         withContext(Dispatchers.IO) {
             val bitmap = uriToBitmap(mediaFile.uri) ?: return@withContext
 
@@ -211,7 +205,8 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
             }
 
             val uri = resolver.insert(
-                MediaStore.Downloads.EXTERNAL_CONTENT_URI, values
+                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                values
             )
             if (uri == null) {
                 return@withContext
@@ -227,7 +222,6 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
                 values.clear()
                 values.put(MediaStore.MediaColumns.IS_PENDING, 0)
                 resolver.update(uri, values, null, null)
-
             } catch (e: Exception) {
                 resolver.delete(uri, null, null)
             }
@@ -237,12 +231,8 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
         }
     }
 
-    suspend fun saveVideoFile(
-        mediaFile: VideoFile,
-        onSaveCompleted: suspend () -> Unit,
-    ) {
+    suspend fun saveVideoFile(mediaFile: VideoFile, onSaveCompleted: suspend () -> Unit) {
         withContext(Dispatchers.IO) {
-
             val timeInSeconds = System.currentTimeMillis() / 1000
 
             val videoContentValues = ContentValues().apply {
@@ -276,7 +266,6 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
                 videoContentValues.clear()
                 videoContentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
                 resolver.update(videoUri, videoContentValues, null, null)
-
             } catch (e: Exception) {
                 resolver.delete(videoUri, null, null)
                 throw e
@@ -300,12 +289,7 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
         return null
     }
 
-
-    fun getMediaUriFromDownloads(
-        fileName: String,
-        mediaFolder: String,
-    ): Uri? {
-
+    fun getMediaUriFromDownloads(fileName: String, mediaFolder: String): Uri? {
         val collection =
             MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
 
@@ -315,12 +299,12 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
         )
 
         val selection = "${MediaStore.Downloads.DISPLAY_NAME} = ? AND " +
-                        "${MediaStore.Downloads.RELATIVE_PATH} LIKE ?"
+            "${MediaStore.Downloads.RELATIVE_PATH} LIKE ?"
 
         val selectionArgs = arrayOf(
-                fileName,
-                "%Download/WaStatusSaver/$mediaFolder/%"
-            )
+            fileName,
+            "%Download/WaStatusSaver/$mediaFolder/%"
+        )
 
         return try {
             val cursor = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -349,6 +333,4 @@ class SavedMediaHandlingUserCase @Inject constructor(@ApplicationContext context
             null
         }
     }
-
-
 }

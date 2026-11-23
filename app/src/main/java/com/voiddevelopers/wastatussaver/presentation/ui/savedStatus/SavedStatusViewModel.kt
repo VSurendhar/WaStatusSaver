@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class SavedStatusViewModel @Inject constructor(
     private val savedMediaHandlingUserCase: SavedMediaHandlingUserCase,
-    private val appAnalytics: AppAnalytics,
+    private val appAnalytics: AppAnalytics
 ) : ViewModel() {
 
     private val _savedStatus = MutableStateFlow<List<MediaFile>>(emptyList())
@@ -45,5 +45,4 @@ class SavedStatusViewModel @Inject constructor(
             _savedStatus.value = mediaFiles
         }
     }
-
 }

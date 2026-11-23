@@ -8,7 +8,7 @@ import javax.inject.Inject
 @ViewModelScoped
 class PlayerManager @Inject constructor(
     val player: Player,
-    private val audioFocusManager: AudioFocusManager,
+    private val audioFocusManager: AudioFocusManager
 ) {
 
     fun play() {
@@ -58,5 +58,4 @@ class PlayerManager @Inject constructor(
         audioFocusManager.abandonFocus()
         player.release()
     }
-
 }

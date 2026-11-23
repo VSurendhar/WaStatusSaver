@@ -10,30 +10,30 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
-import com.voiddevelopers.wastatussaver.core.analytics.PlayerSource
-import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.PlayerActivity
 import com.voiddevelopers.wastatussaver.core.analytics.DownloadSource
+import com.voiddevelopers.wastatussaver.core.analytics.PlayerSource
 import com.voiddevelopers.wastatussaver.domain.model.MediaFile
 import com.voiddevelopers.wastatussaver.domain.model.MediaInfo
 import com.voiddevelopers.wastatussaver.domain.model.MediaType
 import com.voiddevelopers.wastatussaver.domain.model.emptyMediaInfo
 import com.voiddevelopers.wastatussaver.domain.usecases.SavedMediaHandlingUserCase
+import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.PlayerActivity
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.File
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
-import javax.inject.Inject
 
 @Suppress("DEPRECATION")
 @HiltViewModel
 class ImageViewerViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val savedMediaHandlingUserCase: SavedMediaHandlingUserCase,
-    private val statusMediaDownloadHandler : SavedMediaHandlingUserCase,
-    private val appAnalytics: AppAnalytics,
+    private val statusMediaDownloadHandler: SavedMediaHandlingUserCase,
+    private val appAnalytics: AppAnalytics
 ) : ViewModel() {
 
     companion object {
@@ -50,7 +50,6 @@ class ImageViewerViewModel @Inject constructor(
     init {
         restoreMediaInfo()
     }
-
 
     private fun restoreMediaInfo() {
         val mediaInfo = savedStateHandle.get<MediaInfo>(KEY_MEDIA_INFO) ?: return
@@ -73,7 +72,8 @@ class ImageViewerViewModel @Inject constructor(
 
         updateUiState {
             copy(
-                mediaInfo = mediaInfo, downloadState = mediaInfo.downloadStatus
+                mediaInfo = mediaInfo,
+                downloadState = mediaInfo.downloadStatus
             )
         }
 
@@ -90,13 +90,8 @@ class ImageViewerViewModel @Inject constructor(
         if (mediaViewedLogged) appAnalytics.trackMediaClosed(MediaType.IMAGE, source)
     }
 
-    fun saveCache(
-        uri: String,
-        mediaType: MediaType,
-        context: Context,
-    ): Uri? {
+    fun saveCache(uri: String, mediaType: MediaType, context: Context): Uri? {
         return try {
-
             val suffix = when (mediaType) {
                 MediaType.AUDIO -> ".opus"
                 MediaType.IMAGE -> ".jpg"
@@ -105,7 +100,9 @@ class ImageViewerViewModel @Inject constructor(
             }
 
             val file = File.createTempFile(
-                "file_${System.currentTimeMillis()}", suffix, context.cacheDir
+                "file_${System.currentTimeMillis()}",
+                suffix,
+                context.cacheDir
             )
 
             context.contentResolver.openInputStream(uri.toUri())?.use { input ->
@@ -115,24 +112,21 @@ class ImageViewerViewModel @Inject constructor(
             } ?: return null
 
             FileProvider.getUriForFile(
-                context, "${context.packageName}.fileprovider", file
+                context,
+                "${context.packageName}.fileprovider",
+                file
             )
-
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
     }
 
-
-    fun getMediaUriFromDownloads(
-        fileName: String,
-        mediaFolder: String,
-    ): Uri? {
-        return savedMediaHandlingUserCase.getMediaUriFromDownloads(
-            fileName = fileName, mediaFolder = mediaFolder
+    fun getMediaUriFromDownloads(fileName: String, mediaFolder: String): Uri? =
+        savedMediaHandlingUserCase.getMediaUriFromDownloads(
+            fileName = fileName,
+            mediaFolder = mediaFolder
         )
-    }
 
     fun onDownloadClick(mediaFile: MediaFile) {
         viewModelScope.launch {
@@ -144,7 +138,6 @@ class ImageViewerViewModel @Inject constructor(
         }
     }
 
-
     fun onShareClick() {
         appAnalytics.trackMediaShareClicked(MediaType.IMAGE, source)
     }
@@ -152,11 +145,10 @@ class ImageViewerViewModel @Inject constructor(
     private fun updateUiState(block: ImagePlayerUiState.() -> ImagePlayerUiState) {
         _uiState.update { it.block() }
     }
-
 }
 
 data class ImagePlayerUiState(
     val mediaInfo: MediaInfo = emptyMediaInfo,
     val showControls: Boolean = true,
-    val downloadState: DownloadState = DownloadState.NOT_DOWNLOADED,
+    val downloadState: DownloadState = DownloadState.NOT_DOWNLOADED
 )

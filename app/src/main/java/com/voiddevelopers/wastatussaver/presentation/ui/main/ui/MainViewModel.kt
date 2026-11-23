@@ -15,6 +15,7 @@ import com.voiddevelopers.wastatussaver.domain.usecases.AppInstallCheckerUseCase
 import com.voiddevelopers.wastatussaver.domain.usecases.StatusesManagerUseCase
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -25,14 +26,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val dataStorePreferenceManager: DataStorePreferenceManager,
     private val statusesManagerUseCase: StatusesManagerUseCase,
     private val appInstallChecker: AppInstallCheckerUseCase,
-    private val appAnalytics: AppAnalytics,
+    private val appAnalytics: AppAnalytics
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<UiState?> = MutableStateFlow(
@@ -45,7 +45,6 @@ class MainViewModel @Inject constructor(
 
     // Tab currently in view on Home, for tab analytics. Null until the first tab.
     private var currentTab: MediaType? = null
-
 
     init {
         observeSuperProperties()
@@ -62,7 +61,9 @@ class MainViewModel @Inject constructor(
                 hasSafAccessPermission = hasSafAccessPermission,
                 selectionMode = SelectionMode.SINGLE_SELECT,
                 currentMediaType = MediaType.IMAGE,
-                mediaFiles = if (!shouldShowOnBoardingUi && appInstalled && hasSafAccessPermission) {
+                mediaFiles = if (!shouldShowOnBoardingUi && appInstalled &&
+                    hasSafAccessPermission
+                ) {
                     getFiles(preferredTitle)
                 } else {
                     emptyList()
@@ -71,26 +72,24 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private fun hasSafAccessPermission(appInstalled: Boolean, preferredTitle: Title): Boolean =
+        (if (appInstalled) statusesManagerUseCase.hasPermission(preferredTitle.uri) else null) ==
+            true
 
-    private fun hasSafAccessPermission(appInstalled: Boolean, preferredTitle: Title): Boolean {
-        return (if (appInstalled) statusesManagerUseCase.hasPermission(preferredTitle.uri) else null) == true
-    }
+    private fun getAppInstalledStatus(preferredTitle: Title): Boolean =
+        appInstallChecker.isInstalled(preferredTitle.packageName)
 
-    private fun getAppInstalledStatus(preferredTitle: Title): Boolean {
-        return appInstallChecker.isInstalled(preferredTitle.packageName)
-    }
-
-    private suspend fun shouldShowOnBoardingUi(): Boolean {
-        return dataStorePreferenceManager.getPreference(
-            KEY_SHOULD_SHOW_ONBOARDING_UI, defaultValue = true
+    private suspend fun shouldShowOnBoardingUi(): Boolean =
+        dataStorePreferenceManager.getPreference(
+            KEY_SHOULD_SHOW_ONBOARDING_UI,
+            defaultValue = true
         ).first()
-    }
 
     suspend fun getPreferredTitle(): Title {
-
         val preferredId = try {
             dataStorePreferenceManager.getPreference(
-                KEY_PREFERRED_TITLE, defaultValue = Title.Whatsapp.packageName
+                KEY_PREFERRED_TITLE,
+                defaultValue = Title.Whatsapp.packageName
             ).first()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -122,8 +121,12 @@ class MainViewModel @Inject constructor(
             is Event.ChangeTitle -> {
                 val previousTitle = uiState.value?.title
                 viewModelScope.launch {
-                    val appInstalled by lazy { appInstallChecker.isInstalled(event.title.packageName) }
-                    val hasSafPermission by lazy { statusesManagerUseCase.hasPermission(event.title.uri) }
+                    val appInstalled by lazy {
+                        appInstallChecker.isInstalled(event.title.packageName)
+                    }
+                    val hasSafPermission by lazy {
+                        statusesManagerUseCase.hasPermission(event.title.uri)
+                    }
                     setPreferredTitle(event.title)
                     if (appInstalled && hasSafPermission) {
                         val files = getFiles(event.title)
@@ -193,7 +196,8 @@ class MainViewModel @Inject constructor(
                 viewModelScope.launch {
                     _uiState.update { it?.copy(shouldShowOnBoardingUi = event.status) }
                     dataStorePreferenceManager.putPreference(
-                        KEY_SHOULD_SHOW_ONBOARDING_UI, event.status
+                        KEY_SHOULD_SHOW_ONBOARDING_UI,
+                        event.status
                     )
                 }
             }
@@ -224,14 +228,14 @@ class MainViewModel @Inject constructor(
             }
 
             is Event.OnDrawerStateChanged -> {
-                if (event.isOpen) appAnalytics.trackNavDrawerOpened()
-                else appAnalytics.trackNavDrawerClosed()
+                if (event.isOpen) {
+                    appAnalytics.trackNavDrawerOpened()
+                } else {
+                    appAnalytics.trackNavDrawerClosed()
+                }
             }
-
         }
-
     }
-
 
     private fun refreshUiState() {
         viewModelScope.launch {
@@ -244,7 +248,10 @@ class MainViewModel @Inject constructor(
                     shouldShowOnBoardingUi = shouldShowOnBoardingUi,
                     hasSafAccessPermission = hasSafAccessPermission,
                     appInstalled = appInstalled,
-                    mediaFiles = if (hasSafAccessPermission && !shouldShowOnBoardingUi && appInstalled && current.title != null) {
+                    mediaFiles = if (hasSafAccessPermission && !shouldShowOnBoardingUi &&
+                        appInstalled &&
+                        current.title != null
+                    ) {
                         val files = getFiles(current.title).toList()
                         files
                     } else {
@@ -256,7 +263,6 @@ class MainViewModel @Inject constructor(
             }
         }
     }
-
 
     fun saveMediaFile(mediaFile: MediaFile) {
         viewModelScope.launch {
@@ -303,7 +309,9 @@ class MainViewModel @Inject constructor(
     private fun updateSuperProperties(state: UiState) {
         val title = state.title ?: return
         appAnalytics.updateSuperProperties(
-            title.analyticsName, state.hasSafAccessPermission, state.appInstalled
+            title.analyticsName,
+            state.hasSafAccessPermission,
+            state.appInstalled
         )
     }
 }

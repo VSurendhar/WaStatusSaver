@@ -19,11 +19,10 @@ class DataStorePreferenceManagerImpl(private val context: Context) : DataStorePr
     private val preferenceName = "WhatsappAppStatusSaver"
     private val Context.dataStore by preferencesDataStore(name = preferenceName)
 
-    override fun <T> getPreference(key: Preferences.Key<T>, defaultValue: T): Flow<T> {
-        return context.dataStore.data.map { preferences ->
+    override fun <T> getPreference(key: Preferences.Key<T>, defaultValue: T): Flow<T> =
+        context.dataStore.data.map { preferences ->
             preferences[key] ?: defaultValue
         }
-    }
 
     override suspend fun <T> putPreference(key: Preferences.Key<T>, value: T) {
         context.dataStore.edit { preferences ->

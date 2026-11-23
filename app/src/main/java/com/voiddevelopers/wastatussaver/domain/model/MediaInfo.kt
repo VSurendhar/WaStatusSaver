@@ -13,30 +13,31 @@ data class MediaInfo(
     val lastPlayedMillis: Long,
     val fileName: String,
     val mediaType: MediaType,
-    var downloadStatus: DownloadState,
+    var downloadStatus: DownloadState
 ) : Parcelable
 
-fun MediaInfo.toMediaFile(): MediaFile {
-    return when (mediaType) {
-        MediaType.AUDIO -> {
-            AudioFile(uri.toUri(), fileName)
-        }
+fun MediaInfo.toMediaFile(): MediaFile = when (mediaType) {
+    MediaType.AUDIO -> {
+        AudioFile(uri.toUri(), fileName)
+    }
 
-        MediaType.IMAGE -> {
-            ImageFile(uri.toUri(), fileName)
-        }
+    MediaType.IMAGE -> {
+        ImageFile(uri.toUri(), fileName)
+    }
 
-        MediaType.VIDEO -> {
-            VideoFile(uri.toUri(), fileName)
-        }
+    MediaType.VIDEO -> {
+        VideoFile(uri.toUri(), fileName)
+    }
 
-        MediaType.UNSPECIFIED -> {
-            UnknownFile(uri.toUri(), fileName = fileName)
-        }
+    MediaType.UNSPECIFIED -> {
+        UnknownFile(uri.toUri(), fileName = fileName)
     }
 }
 
 val emptyMediaInfo = MediaInfo(
-    "", 0, "", downloadStatus = DownloadState.NOT_DOWNLOADED,
+    "",
+    0,
+    "",
+    downloadStatus = DownloadState.NOT_DOWNLOADED,
     mediaType = MediaType.UNSPECIFIED
 )

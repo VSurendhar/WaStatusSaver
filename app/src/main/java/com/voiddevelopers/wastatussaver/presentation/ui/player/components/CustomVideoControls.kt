@@ -36,7 +36,7 @@ fun CustomVideoControls(
     duration: Long,
     onPlayPauseClick: () -> Unit,
     onSeek: (Long) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     var sliderPosition by remember { mutableStateOf<Float?>(null) }
 
@@ -48,7 +48,8 @@ fun CustomVideoControls(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
         ) {
             IconButton(
                 onClick = onPlayPauseClick,
@@ -72,18 +73,23 @@ fun CustomVideoControls(
 
         // Seekbar
         Slider(
-            value = sliderPosition ?: currentPosition.toFloat(), onValueChange = { value ->
+            value = sliderPosition ?: currentPosition.toFloat(),
+            onValueChange = { value ->
                 sliderPosition = value
-            }, onValueChangeFinished = {
+            },
+            onValueChangeFinished = {
                 sliderPosition?.let { position ->
                     onSeek(position.toLong())
                 }
                 sliderPosition = null
-            }, valueRange = 0f..100.toFloat().coerceAtLeast(1f), colors = SliderDefaults.colors(
+            },
+            valueRange = 0f..100.toFloat().coerceAtLeast(1f),
+            colors = SliderDefaults.colors(
                 thumbColor = Color.White,
                 activeTrackColor = MaterialTheme.colorScheme.primary,
                 inactiveTrackColor = Color.Gray
-            ), modifier = Modifier.fillMaxWidth()
+            ),
+            modifier = Modifier.fillMaxWidth()
         )
 
         Row(

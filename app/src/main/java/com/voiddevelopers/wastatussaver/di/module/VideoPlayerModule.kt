@@ -15,8 +15,5 @@ object VideoPlayerModule {
 
     @Provides
     @ViewModelScoped
-    fun provideVideoPlayer(app: Application): Player {
-        return ExoPlayer.Builder(app).build()
-    }
-
+    fun provideVideoPlayer(app: Application): Player = ExoPlayer.Builder(app).build()
 }

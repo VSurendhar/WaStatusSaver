@@ -62,7 +62,6 @@ import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.videoAudioPlay
 
 @Composable
 fun SavedStatusScreen(onBack: () -> Boolean) {
-
     val pagerState = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
     val mediaTypeData = listOf(MediaType.IMAGE, MediaType.VIDEO, MediaType.AUDIO)
@@ -101,7 +100,7 @@ fun SavedStatusScreen(onBack: () -> Boolean) {
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
                             .padding(horizontal = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -111,7 +110,8 @@ fun SavedStatusScreen(onBack: () -> Boolean) {
                                 .height(30.dp)
                                 .singleClick {
                                     onBack()
-                                })
+                                }
+                        )
                         Text(
                             text = "Saved Status Media",
                             color = MaterialTheme.colorScheme.onPrimary,
@@ -124,44 +124,47 @@ fun SavedStatusScreen(onBack: () -> Boolean) {
                             Icon(
                                 tint = Color.White,
                                 imageVector = Icons.Filled.Refresh,
-                                contentDescription = "Refresh",
+                                contentDescription = "Refresh"
                             )
                         }
                     }
                     TabsRow(pagerState, scope = scope, mediaTypeData = mediaTypeData)
                 }
             }
-        }) { innerPadding ->
+        }
+    ) { innerPadding ->
         MainBody(
             modifier = Modifier.padding(innerPadding),
             pagerState = pagerState,
-            mediaFiles = savedStatus,
+            mediaFiles = savedStatus
         )
     }
-
 }
 
 @Composable
 private fun MainBody(
     modifier: Modifier = Modifier,
     pagerState: PagerState,
-    mediaFiles: List<MediaFile>,
+    mediaFiles: List<MediaFile>
 ) {
     val context = LocalContext.current
     val audioMediaFiles = mediaFiles.filter { it is AudioFile }
     val videoMediaFiles = mediaFiles.filter { it is VideoFile }
     val imageMediaFiles = mediaFiles.filter { it is ImageFile }
     HorizontalPager(
-        state = pagerState, modifier = modifier.fillMaxSize()
+        state = pagerState,
+        modifier = modifier.fillMaxSize()
     ) { page ->
         when (page) {
             0 -> {
                 FilePreviewPage(imageFiles = imageMediaFiles, onPreviewClick = { mediaFile ->
                     val intent = Intent(context, PlayerActivity::class.java)
                     intent.putExtra(
-                        "mediaInfo", mediaFile.toDomainMediaInfo().apply {
+                        "mediaInfo",
+                        mediaFile.toDomainMediaInfo().apply {
                             downloadStatus = DownloadState.DOWNLOADED
-                        })
+                        }
+                    )
                     intent.putExtra(PlayerActivity.EXTRA_SOURCE, PlayerSource.SAVED_STATUS.name)
                     context.startActivity(intent)
                 }, mediaType = MediaType.IMAGE)
@@ -173,9 +176,11 @@ private fun MainBody(
                     onPreviewClick = { mediaFile ->
                         val intent = Intent(context, PlayerActivity::class.java)
                         intent.putExtra(
-                            "mediaInfo", mediaFile.toDomainMediaInfo().apply {
+                            "mediaInfo",
+                            mediaFile.toDomainMediaInfo().apply {
                                 downloadStatus = DownloadState.DOWNLOADED
-                            })
+                            }
+                        )
                         intent.putExtra(PlayerActivity.EXTRA_SOURCE, PlayerSource.SAVED_STATUS.name)
                         context.startActivity(intent)
                     },
@@ -189,16 +194,17 @@ private fun MainBody(
                     onPreviewClick = { mediaFile ->
                         val intent = Intent(context, PlayerActivity::class.java)
                         intent.putExtra(
-                            "mediaInfo", mediaFile.toDomainMediaInfo().apply {
+                            "mediaInfo",
+                            mediaFile.toDomainMediaInfo().apply {
                                 downloadStatus = DownloadState.DOWNLOADED
-                            })
+                            }
+                        )
                         intent.putExtra(PlayerActivity.EXTRA_SOURCE, PlayerSource.SAVED_STATUS.name)
                         context.startActivity(intent)
                     },
                     mediaType = MediaType.AUDIO
                 )
             }
-
         }
     }
 }
@@ -207,23 +213,25 @@ private fun MainBody(
 private fun FilePreviewPage(
     imageFiles: List<MediaFile>,
     onPreviewClick: (MediaFile) -> Unit,
-    mediaType: MediaType,
+    mediaType: MediaType
 ) {
     Surface(
         modifier = Modifier
             .fillMaxSize()
             .padding(12.dp),
-        color = Color.White,
+        color = Color.White
     ) {
         if (imageFiles.isEmpty()) {
             val displayName = mediaType.name
                 .lowercase()
                 .replaceFirstChar { it.uppercase() }
             MissingSetupInfo(
-                imageId = R.drawable.ic_empty_folder, title = createColoredString(
+                imageId = R.drawable.ic_empty_folder,
+                title = createColoredString(
                     stringResource(R.string.no_status_files_available),
                     MaterialTheme.colorScheme.primary
-                ), description = createColoredString(
+                ),
+                description = createColoredString(
                     "No **$displayName** statuses have been saved. Please save a status from the Home screen, then return here to view it.",
                     MaterialTheme.colorScheme.primary
                 )

@@ -9,16 +9,14 @@ import dagger.hilt.android.scopes.ViewModelScoped
 import javax.inject.Inject
 
 @ViewModelScoped
-class AudioFocusManager @Inject constructor(
-    appContext: Application,
-) {
+class AudioFocusManager @Inject constructor(appContext: Application) {
 
     private val audioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private var focusListener: ((AudioFocusAction) -> Unit)? = null
     private val focusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
         when (focusChange) {
             AudioManager.AUDIOFOCUS_LOSS,
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT, -> {
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
                 focusListener?.invoke(AudioFocusAction.Pause)
             }
 
@@ -51,5 +49,4 @@ class AudioFocusManager @Inject constructor(
     fun setFocusListener(listener: (AudioFocusAction) -> Unit) {
         focusListener = listener
     }
-
 }

@@ -55,7 +55,6 @@ import kotlinx.coroutines.delay
 @OptIn(UnstableApi::class)
 @Composable
 fun AudioVideoPlayer(intent: Intent) {
-
     val viewModel = hiltViewModel<AudioVideoPlayerViewModel>()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -85,7 +84,6 @@ fun AudioVideoPlayer(intent: Intent) {
         val observer = LifecycleEventObserver { _, event ->
             lifecycle = event
             when (event) {
-
                 Lifecycle.Event.ON_PAUSE -> {
                     viewModel.persistPlaybackPosition()
                 }
@@ -133,7 +131,8 @@ fun AudioVideoPlayer(intent: Intent) {
                         .zIndex(1f)
                         .fillMaxWidth()
                         .background(Color.Black.copy(0.7f))
-                        .padding(12.dp), verticalAlignment = Alignment.CenterVertically
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = state.mediaInfo.fileName,
@@ -183,29 +182,29 @@ fun AudioVideoPlayer(intent: Intent) {
                         }
                         context.startActivity(
                             Intent.createChooser(
-                                intent, "Choose app to share this"
+                                intent,
+                                "Choose app to share this"
                             )
                         )
                     })
                 }
             }
             if (state.mediaInfo.mediaType == MediaType.AUDIO) {
-
                 AudioViewer(
                     modifier = Modifier
                         .fillMaxSize()
                         .clickable(
                             indication = null,
-                            interactionSource = remember { MutableInteractionSource() }) {
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) {
                             viewModel.toggleControls()
                         },
                     onPause = {
                         viewModel.pause()
                         viewModel.persistPlaybackPosition()
-                    },
+                    }
                 )
             } else {
-
                 AndroidView(
                     factory = { context ->
 
@@ -215,9 +214,9 @@ fun AudioVideoPlayer(intent: Intent) {
                             it.keepScreenOn = true
                             it.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
                         }
-                    }, update = { playerView ->
+                    },
+                    update = { playerView ->
                         when (lifecycle) {
-
                             Lifecycle.Event.ON_PAUSE -> {
                                 playerView.onPause()
                                 playerView.player?.pause()
@@ -230,14 +229,17 @@ fun AudioVideoPlayer(intent: Intent) {
 
                             else -> Unit
                         }
-                    }, modifier = Modifier
+                    },
+                    modifier = Modifier
                         .fillMaxSize()
                         .clickable(
                             indication = null,
-                            interactionSource = remember { MutableInteractionSource() }) {
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) {
                             viewModel.toggleControls()
                         }
-                        .padding(top = 12.dp))
+                        .padding(top = 12.dp)
+                )
             }
             if (state.showControls && (state.mediaInfo.mediaType != MediaType.IMAGE)) {
                 CustomVideoControls(
@@ -264,14 +266,10 @@ fun AudioVideoPlayer(intent: Intent) {
             }
         }
     }
-
 }
 
 @Composable
-fun AudioViewer(
-    modifier: Modifier = Modifier,
-    onPause: () -> Unit,
-) {
+fun AudioViewer(modifier: Modifier = Modifier, onPause: () -> Unit) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
@@ -290,12 +288,13 @@ fun AudioViewer(
         }
     }
     Box(
-        modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
         Image(
             painter = painterResource(R.drawable.ic_audio_preview),
             contentDescription = "Audio Preview",
-            modifier = Modifier.size(200.dp),
+            modifier = Modifier.size(200.dp)
         )
     }
 }

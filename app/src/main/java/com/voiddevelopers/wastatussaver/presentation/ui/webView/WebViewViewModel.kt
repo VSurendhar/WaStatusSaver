@@ -12,9 +12,7 @@ import javax.inject.Inject
  *   "finished" after an error, so only the first result of each load is logged.
  */
 @HiltViewModel
-class WebViewViewModel @Inject constructor(
-    private val appAnalytics: AppAnalytics,
-) : ViewModel() {
+class WebViewViewModel @Inject constructor(private val appAnalytics: AppAnalytics) : ViewModel() {
 
     private var alreadyLogged = false
 
@@ -34,11 +32,7 @@ class WebViewViewModel @Inject constructor(
 
     // Call when the page loaded (true) or failed (false, with the error code and description
     // when there is one). Only the first call per load counts.
-    fun logLoadResult(
-        success: Boolean,
-        errorCode: Int? = null,
-        errorDescription: String? = null,
-    ) {
+    fun logLoadResult(success: Boolean, errorCode: Int? = null, errorDescription: String? = null) {
         if (alreadyLogged) return
         alreadyLogged = true
         if (success) {

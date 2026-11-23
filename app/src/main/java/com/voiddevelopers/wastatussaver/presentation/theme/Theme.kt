@@ -22,7 +22,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun WaStatusSaverTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit,
+    content: @Composable () -> Unit
 ) {
     val colorScheme = when {
         darkTheme -> LightColorScheme

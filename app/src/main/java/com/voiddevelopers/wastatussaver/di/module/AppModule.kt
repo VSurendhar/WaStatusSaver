@@ -12,23 +12,17 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import jakarta.inject.Singleton
 
-
 @InstallIn(SingletonComponent::class)
 @Module
 object AppModule {
 
     @Provides
     @Singleton
-    fun provideDataStoreManager(
-        @ApplicationContext context: Context,
-    ): DataStorePreferenceManager {
-        return DataStorePreferenceManagerImpl(context)
-    }
+    fun provideDataStoreManager(@ApplicationContext context: Context): DataStorePreferenceManager =
+        DataStorePreferenceManagerImpl(context)
 
     @Provides
     @Singleton
-    fun provideMixpanelAnalytics(@ApplicationContext context: Context): MixpanelAnalytics {
-        return MixpanelAnalytics(context, BuildConfig.MIXPANEL_TOKEN)
-    }
-
+    fun provideMixpanelAnalytics(@ApplicationContext context: Context): MixpanelAnalytics =
+        MixpanelAnalytics(context, BuildConfig.MIXPANEL_TOKEN)
 }
