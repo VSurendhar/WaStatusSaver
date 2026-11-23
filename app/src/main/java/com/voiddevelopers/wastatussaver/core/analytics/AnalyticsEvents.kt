@@ -6,7 +6,9 @@ object AnalyticsEvents {
     const val CLOSED_NAV_DRAWER = "closed_nav_drawer"
 
     const val VIEWED_PRIVACY_POLICY = "viewed_privacy_policy"
-    const val FAILED_PRIVACY_POLICY_LOAD = "failed_privacy_policy_load"
+    const val CLOSED_PRIVACY_POLICY = "closed_privacy_policy"
+    const val LOADED_PRIVACY_POLICY = "loaded_privacy_policy"
+    const val FAILED_PRIVACY_POLICY = "failed_privacy_policy"
     const val CLICKED_REFRESH_PRIVACY_POLICY = "clicked_refresh_privacy_policy"
 
     fun getDrawerOptionEventName(eventName: String) = "clicked_nav_drawer_$eventName"

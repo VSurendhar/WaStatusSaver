@@ -8,9 +8,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 /**
- * Analytics for the Privacy Policy screen: every page load logs one result, viewed or failed.
- * WebView can report "finished" twice, or "finished" after an error, so only the first result
- * of each load is logged.
+ * Analytics for the Privacy Policy screen.
+ * - viewed: the screen was opened
+ * - loaded / failed: the result of each page load. WebView can report "finished" twice, or
+ *   "finished" after an error, so only the first result of each load is logged.
  */
 @HiltViewModel
 class WebViewViewModel @Inject constructor(
@@ -18,6 +19,16 @@ class WebViewViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var alreadyLogged = false
+
+    // Call once when the screen opens.
+    fun onScreenViewed() {
+        appAnalytics.track(AnalyticsEvents.VIEWED_PRIVACY_POLICY)
+    }
+
+    // Call once when the screen closes.
+    fun onScreenClosed() {
+        appAnalytics.track(AnalyticsEvents.CLOSED_PRIVACY_POLICY)
+    }
 
     // Call before every page load.
     fun startNewLoad() {
@@ -34,13 +45,13 @@ class WebViewViewModel @Inject constructor(
         if (alreadyLogged) return
         alreadyLogged = true
         if (success) {
-            appAnalytics.track(AnalyticsEvents.VIEWED_PRIVACY_POLICY)
+            appAnalytics.track(AnalyticsEvents.LOADED_PRIVACY_POLICY)
         } else {
             val errorProperties = mapOf(
                 AnalyticsProperties.ERROR_CODE to errorCode,
                 AnalyticsProperties.ERROR_DESCRIPTION to errorDescription,
             ).filterValues { it != null }
-            appAnalytics.track(AnalyticsEvents.FAILED_PRIVACY_POLICY_LOAD, errorProperties)
+            appAnalytics.track(AnalyticsEvents.FAILED_PRIVACY_POLICY, errorProperties)
         }
     }
 

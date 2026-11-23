@@ -77,7 +77,7 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
             settings.apply {
                 javaScriptEnabled = true
                 domStorageEnabled = true
-                cacheMode = WebSettings.LOAD_DEFAULT
+                cacheMode = WebSettings.LOAD_NO_CACHE
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                 allowFileAccess = false
                 useWideViewPort = true
@@ -145,12 +145,14 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
     }
 
     LaunchedEffect(Unit) {
+        viewModel.onScreenViewed()
         internetAvailable = context.isInternetAvailable() // decides which UI is shown
         loadPage()
     }
 
     DisposableEffect(Unit) {
         onDispose {
+            viewModel.onScreenClosed()
             // Stops any load in progress (so nothing is logged after the user has left)
             // and frees the WebView.
             webView.stopLoading()
