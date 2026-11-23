@@ -95,6 +95,7 @@ import coil.compose.AsyncImage
 import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import com.voiddevelopers.wastatussaver.R
+import com.voiddevelopers.wastatussaver.core.analytics.PlayerOpenedFrom
 import com.voiddevelopers.wastatussaver.data.utils.createColoredString
 import com.voiddevelopers.wastatussaver.data.utils.extentions.valueOrDefault
 import com.voiddevelopers.wastatussaver.data.utils.extentions.valueOrEmptyString
@@ -685,6 +686,9 @@ fun FilePreviewPage(
                             onPreviewClick = {
                                 val intent = Intent(context, PlayerActivity::class.java)
                                 intent.putExtra("mediaInfo", mediaFile.toDomainMediaInfo())
+                                intent.putExtra(
+                                    PlayerActivity.EXTRA_OPENED_FROM, PlayerOpenedFrom.HOME.name
+                                )
                                 context.startActivity(intent)
                             })
                     }

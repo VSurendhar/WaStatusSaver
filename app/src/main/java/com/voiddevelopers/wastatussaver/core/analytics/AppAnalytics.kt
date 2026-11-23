@@ -81,6 +81,25 @@ class AppAnalytics @Inject constructor(
         )
     }
 
+    // ---- Media player (image viewer, video & audio player) ----
+
+    fun trackMediaViewed(mediaType: MediaType, openedFrom: PlayerOpenedFrom) {
+        track(AnalyticsEvents.VIEWED_MEDIA, playerProperties(mediaType, openedFrom))
+    }
+
+    fun trackMediaClosed(mediaType: MediaType, openedFrom: PlayerOpenedFrom) {
+        track(AnalyticsEvents.CLOSED_MEDIA, playerProperties(mediaType, openedFrom))
+    }
+
+    fun trackMediaShareClicked(mediaType: MediaType, openedFrom: PlayerOpenedFrom) {
+        track(AnalyticsEvents.CLICKED_SHARE_MEDIA, playerProperties(mediaType, openedFrom))
+    }
+
+    private fun playerProperties(mediaType: MediaType, openedFrom: PlayerOpenedFrom) = mapOf(
+        AnalyticsProperties.MEDIA_TYPE to mediaType.name.lowercase(),
+        AnalyticsProperties.OPENED_FROM to openedFrom.analyticsName,
+    )
+
     // ---- Privacy Policy ----
 
     fun trackPrivacyPolicyViewed() = track(AnalyticsEvents.VIEWED_PRIVACY_POLICY)
@@ -106,6 +125,12 @@ class AppAnalytics @Inject constructor(
 enum class DownloadSource(val analyticsName: String) {
     HOME("home"),
     VIEWER("viewer"),
+}
+
+/** Screen the media player was opened from. */
+enum class PlayerOpenedFrom(val analyticsName: String) {
+    HOME("home"),
+    SAVED_STATUS("saved_status"),
 }
 
 /** Screen a media tab is on. */

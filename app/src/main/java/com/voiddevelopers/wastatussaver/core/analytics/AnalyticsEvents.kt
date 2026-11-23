@@ -15,6 +15,10 @@ object AnalyticsEvents {
 
     const val COMPLETED_MEDIA_DOWNLOAD = "completed_media_download"
 
+    const val VIEWED_MEDIA = "viewed_media"
+    const val CLOSED_MEDIA = "closed_media"
+    const val CLICKED_SHARE_MEDIA = "clicked_share_media"
+
     const val VIEWED_PRIVACY_POLICY = "viewed_privacy_policy"
     const val CLOSED_PRIVACY_POLICY = "closed_privacy_policy"
     const val LOADED_PRIVACY_POLICY = "loaded_privacy_policy"
@@ -28,6 +32,7 @@ object AnalyticsProperties {
     const val MEDIA_TYPE = "media_type"
     const val SOURCE = "source"
     const val DOWNLOAD_SOURCE = "download_source"
+    const val OPENED_FROM = "opened_from"
     const val ERROR_CODE = "error_code"
     const val ERROR_DESCRIPTION = "error_description"
 }

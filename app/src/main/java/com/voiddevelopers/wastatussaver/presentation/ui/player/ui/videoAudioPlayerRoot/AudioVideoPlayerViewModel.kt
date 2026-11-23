@@ -12,6 +12,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
+import com.voiddevelopers.wastatussaver.core.analytics.PlayerOpenedFrom
+import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.PlayerActivity
 import com.voiddevelopers.wastatussaver.core.analytics.DownloadSource
 import com.voiddevelopers.wastatussaver.domain.model.AudioFocusAction
 import com.voiddevelopers.wastatussaver.domain.model.MediaFile
@@ -46,6 +48,9 @@ class AudioVideoPlayerViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(AudioVideoPlayerUiState())
     val uiState = _uiState.asStateFlow()
+
+    private var openedFrom = PlayerOpenedFrom.HOME
+    private var mediaViewedLogged = false // viewed_media is logged once per open (not on rotation)
 
     init {
         observeAudioFocus()
@@ -117,8 +122,12 @@ class AudioVideoPlayerViewModel @Inject constructor(
         playerManager.prepare()
     }
 
+    // Runs once when the player is closed (back), not on rotation or backgrounding.
     override fun onCleared() {
         super.onCleared()
+        if (mediaViewedLogged) {
+            appAnalytics.trackMediaClosed(uiState.value.mediaInfo.mediaType, openedFrom)
+        }
         playerManager.release()
     }
 
@@ -145,6 +154,7 @@ class AudioVideoPlayerViewModel @Inject constructor(
     }
 
     fun handleIntent(intent: Intent) {
+        openedFrom = PlayerActivity.getOpenedFrom(intent)
 
         val mediaInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("mediaInfo", MediaInfo::class.java)
@@ -164,6 +174,12 @@ class AudioVideoPlayerViewModel @Inject constructor(
             copy(
                 mediaInfo = updated, downloadState = updated.downloadStatus
             )
+        }
+
+        // The screen is on screen. Rotation calls handleIntent again, so log only once.
+        if (!mediaViewedLogged) {
+            mediaViewedLogged = true
+            appAnalytics.trackMediaViewed(updated.mediaType, openedFrom)
         }
     }
 
@@ -258,6 +274,10 @@ class AudioVideoPlayerViewModel @Inject constructor(
                 appAnalytics.trackMediaDownloadCompleted(mediaFile.mediaType, DownloadSource.VIEWER)
             }
         }
+    }
+
+    fun onShareClick() {
+        appAnalytics.trackMediaShareClicked(uiState.value.mediaInfo.mediaType, openedFrom)
     }
 
     fun onPlaybackStateChanged(

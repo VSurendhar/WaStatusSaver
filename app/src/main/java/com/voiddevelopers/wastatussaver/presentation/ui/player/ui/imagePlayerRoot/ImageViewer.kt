@@ -82,6 +82,7 @@ fun ImageViewer(
                     ActionButton(downloadStatus = state.downloadState, onSave = {
                         viewModel.onDownloadClick(state.mediaInfo.toMediaFile())
                     }, onRepost = {
+                        viewModel.onShareClick()
                         val mediaFolder = when (state.mediaInfo.mediaType) {
                             MediaType.AUDIO -> "Audio"
                             MediaType.IMAGE -> "Image"

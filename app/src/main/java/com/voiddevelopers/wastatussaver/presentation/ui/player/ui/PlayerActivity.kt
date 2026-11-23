@@ -1,5 +1,6 @@
 package com.voiddevelopers.wastatussaver.presentation.ui.player.ui
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
+import com.voiddevelopers.wastatussaver.core.analytics.PlayerOpenedFrom
 import com.voiddevelopers.wastatussaver.domain.model.MediaInfo
 import com.voiddevelopers.wastatussaver.domain.model.MediaType
 import com.voiddevelopers.wastatussaver.presentation.theme.WaStatusSaverTheme
@@ -17,6 +19,15 @@ import dagger.hilt.android.AndroidEntryPoint
 @Suppress("COMPOSE_APPLIER_CALL_MISMATCH", "DEPRECATION")
 @AndroidEntryPoint
 class PlayerActivity : ComponentActivity() {
+
+    companion object {
+        const val EXTRA_OPENED_FROM = "openedFrom"
+
+        fun getOpenedFrom(intent: Intent): PlayerOpenedFrom =
+            intent.getStringExtra(EXTRA_OPENED_FROM)
+                ?.let { name -> PlayerOpenedFrom.entries.firstOrNull { it.name == name } }
+                ?: PlayerOpenedFrom.HOME
+    }
 
     private var mediaInfo: MediaInfo? = null
 

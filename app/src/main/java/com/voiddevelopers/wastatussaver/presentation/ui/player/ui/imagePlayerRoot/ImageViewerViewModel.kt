@@ -10,6 +10,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
+import com.voiddevelopers.wastatussaver.core.analytics.PlayerOpenedFrom
+import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.PlayerActivity
 import com.voiddevelopers.wastatussaver.core.analytics.DownloadSource
 import com.voiddevelopers.wastatussaver.domain.model.MediaFile
 import com.voiddevelopers.wastatussaver.domain.model.MediaInfo
@@ -41,6 +43,10 @@ class ImageViewerViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ImagePlayerUiState())
     val uiState = _uiState.asStateFlow()
 
+    // Analytics
+    private var openedFrom = PlayerOpenedFrom.HOME
+    private var mediaViewedLogged = false // viewed_media is logged once per open (not on rotation)
+
     init {
         restoreMediaInfo()
     }
@@ -52,6 +58,7 @@ class ImageViewerViewModel @Inject constructor(
     }
 
     fun handleIntent(intent: Intent) {
+        openedFrom = PlayerActivity.getOpenedFrom(intent)
         var mediaInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("mediaInfo", MediaInfo::class.java)
         } else {
@@ -69,6 +76,18 @@ class ImageViewerViewModel @Inject constructor(
                 mediaInfo = mediaInfo, downloadState = mediaInfo.downloadStatus
             )
         }
+
+        // The screen is on screen. Rotation calls handleIntent again, so log only once.
+        if (!mediaViewedLogged) {
+            mediaViewedLogged = true
+            appAnalytics.trackMediaViewed(MediaType.IMAGE, openedFrom)
+        }
+    }
+
+    // Runs once when the viewer is closed (back), not on rotation or backgrounding.
+    override fun onCleared() {
+        super.onCleared()
+        if (mediaViewedLogged) appAnalytics.trackMediaClosed(MediaType.IMAGE, openedFrom)
     }
 
     fun saveCache(
@@ -125,6 +144,10 @@ class ImageViewerViewModel @Inject constructor(
         }
     }
 
+
+    fun onShareClick() {
+        appAnalytics.trackMediaShareClicked(MediaType.IMAGE, openedFrom)
+    }
 
     private fun updateUiState(block: ImagePlayerUiState.() -> ImagePlayerUiState) {
         _uiState.update { it.block() }
