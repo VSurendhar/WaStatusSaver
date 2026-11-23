@@ -11,6 +11,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
+import com.voiddevelopers.wastatussaver.core.analytics.DownloadSource
 import com.voiddevelopers.wastatussaver.domain.model.AudioFocusAction
 import com.voiddevelopers.wastatussaver.domain.model.MediaFile
 import com.voiddevelopers.wastatussaver.domain.model.MediaInfo
@@ -34,7 +36,8 @@ class AudioVideoPlayerViewModel @Inject constructor(
     private val audioFocusManager: AudioFocusManager,
     private val savedStateHandle: SavedStateHandle,
     private val savedMediaHandlingUserCase: SavedMediaHandlingUserCase,
-    private val statusMediaDownloadHandler : SavedMediaHandlingUserCase
+    private val statusMediaDownloadHandler : SavedMediaHandlingUserCase,
+    private val appAnalytics: AppAnalytics,
 ) : ViewModel() {
 
     companion object {
@@ -252,6 +255,7 @@ class AudioVideoPlayerViewModel @Inject constructor(
 
             statusMediaDownloadHandler.saveMediaFile(mediaFile) {
                 updateUiState { copy(downloadState = DownloadState.DOWNLOADED) }
+                appAnalytics.trackMediaDownloadCompleted(mediaFile.mediaType, DownloadSource.VIEWER)
             }
         }
     }

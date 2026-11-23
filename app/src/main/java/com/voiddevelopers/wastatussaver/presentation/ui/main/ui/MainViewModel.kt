@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.voiddevelopers.wastatussaver.core.analytics.AnalyticsEvents
 import com.voiddevelopers.wastatussaver.core.analytics.AnalyticsProperties
 import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
+import com.voiddevelopers.wastatussaver.core.analytics.DownloadSource
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManager
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_PREFERRED_TITLE
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_SHOULD_SHOW_ONBOARDING_UI
@@ -221,6 +222,7 @@ class MainViewModel @Inject constructor(
             mediaFile.downloadState = DownloadState.DOWNLOADING
             statusesManagerUseCase.saveMediaFile(mediaFile, onSaveCompleted = {
                 mediaFile.downloadState = DownloadState.DOWNLOADED
+                appAnalytics.trackMediaDownloadCompleted(mediaFile.mediaType, DownloadSource.HOME)
             })
         }
     }

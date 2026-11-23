@@ -13,6 +13,8 @@ object AnalyticsEvents {
     const val CLOSED_SAVED_STATUS_SCREEN = "closed_saved_status_screen"
     const val VIEWED_MEDIA_TAB = "viewed_media_tab"
 
+    const val COMPLETED_MEDIA_DOWNLOAD = "completed_media_download"
+
     const val VIEWED_PRIVACY_POLICY = "viewed_privacy_policy"
     const val CLOSED_PRIVACY_POLICY = "closed_privacy_policy"
     const val LOADED_PRIVACY_POLICY = "loaded_privacy_policy"
@@ -25,6 +27,7 @@ object AnalyticsProperties {
     const val NAV_DRAWER_OPTION = "option"
     const val MEDIA_TYPE = "media_type"
     const val SOURCE = "source"
+    const val DOWNLOAD_SOURCE = "download_source"
     const val ERROR_CODE = "error_code"
     const val ERROR_DESCRIPTION = "error_description"
 }

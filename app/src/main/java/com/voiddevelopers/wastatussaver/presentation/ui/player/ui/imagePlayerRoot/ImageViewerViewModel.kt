@@ -9,6 +9,8 @@ import androidx.core.net.toUri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
+import com.voiddevelopers.wastatussaver.core.analytics.DownloadSource
 import com.voiddevelopers.wastatussaver.domain.model.MediaFile
 import com.voiddevelopers.wastatussaver.domain.model.MediaInfo
 import com.voiddevelopers.wastatussaver.domain.model.MediaType
@@ -28,7 +30,8 @@ import javax.inject.Inject
 class ImageViewerViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val savedMediaHandlingUserCase: SavedMediaHandlingUserCase,
-    private val statusMediaDownloadHandler : SavedMediaHandlingUserCase
+    private val statusMediaDownloadHandler : SavedMediaHandlingUserCase,
+    private val appAnalytics: AppAnalytics,
 ) : ViewModel() {
 
     companion object {
@@ -117,6 +120,7 @@ class ImageViewerViewModel @Inject constructor(
             updateUiState { copy(downloadState = DownloadState.DOWNLOADING) }
             statusMediaDownloadHandler.saveMediaFile(mediaFile) {
                 updateUiState { copy(downloadState = DownloadState.DOWNLOADED) }
+                appAnalytics.trackMediaDownloadCompleted(mediaFile.mediaType, DownloadSource.VIEWER)
             }
         }
     }
