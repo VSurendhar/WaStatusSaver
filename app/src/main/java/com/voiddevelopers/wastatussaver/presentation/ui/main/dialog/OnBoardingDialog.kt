@@ -90,7 +90,9 @@ fun OnBoardingDialog(
                             OnBoardingBody(
                                 imageRes = R.drawable.ic_onboardingimage2,
                                 title = "View in WhatsApp",
-                                bodyText = "Watch photo or video statuses directly in WhatsApp. Once you view them, our app will detect them automatically."
+                                bodyText =
+                                    "Watch photo or video statuses directly in WhatsApp. " +
+                                        "Once you view them, our app will detect them automatically."
                             )
                         }
 
@@ -98,7 +100,9 @@ fun OnBoardingDialog(
                             OnBoardingBody(
                                 imageRes = R.drawable.ic_onboardingimage1,
                                 title = "Find Them in the App",
-                                bodyText = "Every status you’ve viewed will instantly appear here. All photos and videos are listed in one place for quick access."
+                                bodyText =
+                                    "Every status you’ve viewed will instantly appear here. " +
+                                        "All photos and videos are listed in one place for quick access."
                             )
                         }
 
@@ -106,7 +110,9 @@ fun OnBoardingDialog(
                             OnBoardingBody(
                                 imageRes = R.drawable.ic_onboardingimage3,
                                 title = "Save What You Like",
-                                bodyText = "Tap the save button to download any status to your gallery. Keep it forever, even after it disappears from WhatsApp."
+                                bodyText =
+                                    "Tap the save button to download any status to your gallery. " +
+                                        "Keep it forever, even after it disappears from WhatsApp."
                             )
                         }
                     }

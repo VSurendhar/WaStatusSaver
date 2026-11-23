@@ -1,6 +1,6 @@
 package com.voiddevelopers.wastatussaver
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**

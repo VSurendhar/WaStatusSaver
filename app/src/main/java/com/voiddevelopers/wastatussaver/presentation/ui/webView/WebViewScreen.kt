@@ -211,7 +211,9 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
                     modifier = Modifier.padding(vertical = 5.dp)
                 )
                 Text(
-                    text = "Please turn on your Wifi or Mobile Data to see the content.Tap the refresh icon above to try again later.",
+                    text =
+                        "Please turn on your Wifi or Mobile Data to see the content." +
+                            "Tap the refresh icon above to try again later.",
                     fontSize = 15.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 30.dp)

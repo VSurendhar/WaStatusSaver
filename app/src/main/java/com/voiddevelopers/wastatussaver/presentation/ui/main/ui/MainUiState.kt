@@ -42,7 +42,11 @@ sealed class Title(@StringRes val resId: Int, val packageName: String, val uri: 
     object Whatsapp : Title(
         resId = R.string.title_whatsapp,
         packageName = "com.whatsapp",
-        uri = "content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia%2Fcom.whatsapp%2FWhatsApp%2FMedia%2F.Statuses".toUri()
+        uri = (
+            "content://com.android.externalstorage.documents/tree/" +
+                "primary%3AAndroid%2Fmedia%2F" +
+                "com.whatsapp%2FWhatsApp%2FMedia%2F.Statuses"
+            ).toUri()
     ) {
         override fun toString(): String = "Whatsapp(resId=$resId, packageName=$packageName,)"
     }
@@ -50,7 +54,11 @@ sealed class Title(@StringRes val resId: Int, val packageName: String, val uri: 
     object WhatsappBusiness : Title(
         resId = R.string.title_whatsapp_business,
         packageName = "com.whatsapp.w4b",
-        uri = "content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia%2Fcom.whatsapp.w4b%2FWhatsApp%20Business%2FMedia%2F.Statuses".toUri()
+        uri = (
+            "content://com.android.externalstorage.documents/tree/" +
+                "primary%3AAndroid%2Fmedia%2F" +
+                "com.whatsapp.w4b%2FWhatsApp%20Business%2FMedia%2F.Statuses"
+            ).toUri()
     ) {
         override fun toString(): String =
             "WhatsappBusiness(resId=$resId, packageName=$packageName,)"
