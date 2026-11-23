@@ -29,11 +29,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -70,6 +73,18 @@ fun SavedStatusScreen(onBack: () -> Boolean) {
     if (refreshStatus) {
         viewModel.getSavedStatusMedia()
         refreshStatus = false
+    }
+
+    // Analytics: opened when the screen enters the back stack, closed when it leaves it.
+    // The player opening on top, or the app going to the background, doesn't remove it.
+    DisposableEffect(Unit) {
+        viewModel.onScreenOpened()
+        onDispose { viewModel.onScreenClosed() }
+    }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }
+            .collect { viewModel.onTabChanged(mediaTypeData[it]) }
     }
 
     Scaffold(
