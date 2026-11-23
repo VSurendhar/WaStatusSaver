@@ -17,7 +17,7 @@ import java.lang.reflect.Type
 
 data class UiState(
     val title: Title? = null,
-    val appInstalled: Boolean? = null,
+    val appInstalled: Boolean = false,
     val selectionMode: SelectionMode? = null,
     val currentMediaType: MediaType? = null,
     val shouldShowOnBoardingUi: Boolean? = null,

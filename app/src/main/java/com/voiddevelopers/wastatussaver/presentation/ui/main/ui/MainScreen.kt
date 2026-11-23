@@ -109,7 +109,6 @@ import com.voiddevelopers.wastatussaver.domain.model.VideoFile
 import com.voiddevelopers.wastatussaver.navigation.Screens
 import com.voiddevelopers.wastatussaver.presentation.theme.WaStatusSaverTheme
 import com.voiddevelopers.wastatussaver.presentation.theme.gray
-import com.voiddevelopers.wastatussaver.presentation.ui.main.dialog.AppNotInstalledDialog
 import com.voiddevelopers.wastatussaver.presentation.ui.main.dialog.OnBoardingDialog
 import com.voiddevelopers.wastatussaver.presentation.ui.main.dialog.SAFAccessPermissionDialog
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.PlayerActivity
@@ -611,15 +610,6 @@ fun FilePreviewPage(
                 )
             )
         })
-    } else if (uiState.appInstalled == false && uiState.title != null) {
-        AppNotInstalledDialog(title = uiState.title, onDownloadApp = {
-            openAppInPlayStore(
-                context = context, packageName = uiState.title.packageName
-            )
-        }, onNotNowPressed = {
-            onEvent(Event.ChangeAppInstalledStatus(null))
-        })
-        return
     } else if (uiState.hasSafAccessPermission == false) {
         SAFAccessPermissionDialog(onGrantAccess = {
             launchSafPicker(
@@ -637,7 +627,7 @@ fun FilePreviewPage(
             .padding(12.dp),
         color = Color.White,
     ) {
-        if (uiState.appInstalled == null) {
+        if (!uiState.appInstalled) {
             MissingSetupInfo(
                 modifier = Modifier.padding(horizontal = 12.dp),
                 imageId = R.drawable.ic_app_download,

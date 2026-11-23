@@ -13,17 +13,6 @@
     <string name="safPermission_text2">We need access to .Statuses folder so you can save the status media.\n\nWe only access files in the folder
         you select.No files leave you phone.This Permission lets the app copy statuses to your preferred Storage Location ones you choose.</string>
     <string name="safPermission_text1">Allow access to WhatsApp Statuses</string>
-    <string name="app_not_installed_title">Application Not Found</string>
-    <string name="app_not_installed_whatsapp_body">
-        This feature requires **WhatsApp** to function, but we could\'t find it installed on your device.
-        \n\nPlease install **WhatsApp** to use this feature. You can return here to view and save statuses once the installation is complete.
-    </string>
-    <string name="app_not_installed_whatsapp_business_body">
-        This feature requires **WhatsApp Business** to function, but we could\'t find it installed on your device.
-        \n\nPlease install **WhatsApp Business** to use this feature. You can return here to view and save statuses once the installation is complete.
-    </string>
-    <string name="not_now">Not now</string>
-    <string name="download">Download %1$s</string>
     <string name="empty_string" />
     <string name="second_accesss_msg">We need access to the **%1$s** .Statuses folder to save status media. Only files in the folder you choose are accessed, and nothing leaves your phone.</string>
     <string name="storage_access_required">Storage Access Required</string>

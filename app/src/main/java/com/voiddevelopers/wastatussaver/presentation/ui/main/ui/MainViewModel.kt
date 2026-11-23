@@ -45,7 +45,7 @@ class MainViewModel @Inject constructor(
                 title = preferredTitle,
                 appInstalled = appInstalled,
                 shouldShowOnBoardingUi = shouldShowOnBoardingUi,
-                hasSafAccessPermission = hasSafAccessPermission,
+                hasSafAccessPermission = if (appInstalled) hasSafAccessPermission else null,
                 selectionMode = SelectionMode.SINGLE_SELECT,
                 currentMediaType = MediaType.IMAGE,
                 mediaFiles = if (!shouldShowOnBoardingUi && appInstalled && hasSafAccessPermission) {
@@ -165,14 +165,6 @@ class MainViewModel @Inject constructor(
                 }
             }
 
-            is Event.ChangeAppInstalledStatus -> {
-                _uiState.update {
-                    it?.copy(
-                        appInstalled = event.status, hasSafAccessPermission = null
-                    )
-                }
-            }
-
             is Event.RefreshUiState -> {
                 refreshUiState()
             }
@@ -240,7 +232,7 @@ class MainViewModel @Inject constructor(
             _uiState.update { current ->
                 val updated = current?.copy(
                     shouldShowOnBoardingUi = shouldShowOnBoardingUi,
-                    hasSafAccessPermission = hasSafAccessPermission,
+                    hasSafAccessPermission = if (appInstalled) hasSafAccessPermission else null,
                     appInstalled = appInstalled,
                     mediaFiles = if (hasSafAccessPermission && !shouldShowOnBoardingUi && appInstalled && current.title != null) {
                         val files = getFiles(current.title).toList()
