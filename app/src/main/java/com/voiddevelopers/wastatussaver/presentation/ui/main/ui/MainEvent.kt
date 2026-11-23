@@ -8,7 +8,7 @@ sealed interface Event {
     data class ChangeTab(val mediaType: MediaType) : Event
     data class ChangeSelectionMode(val mode: SelectionMode) : Event
     data class ChangeShowOnBoardingUiStatus(val status: Boolean) : Event
-    data class ChangeSAFAccessPermission(val hasSafAccessPermission: Boolean?) : Event
+    data object SafAccessGranted : Event
     object RefreshUiState : Event
     data class OnDownloadClick(val mediaFile: MediaFile) : Event
     data object ShowNotificationPermissionDialog : Event

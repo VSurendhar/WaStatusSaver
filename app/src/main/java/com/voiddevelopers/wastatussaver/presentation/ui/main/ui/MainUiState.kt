@@ -21,7 +21,7 @@ data class UiState(
     val selectionMode: SelectionMode? = null,
     val currentMediaType: MediaType? = null,
     val shouldShowOnBoardingUi: Boolean? = null,
-    val hasSafAccessPermission: Boolean? = null,
+    val hasSafAccessPermission: Boolean = false,
     val mediaFiles: List<MediaFile> = emptyList(),
     val showNotificationPermissionDialog: Boolean = false,
     val showNotificationPermissionSettingsDialog: Boolean = false

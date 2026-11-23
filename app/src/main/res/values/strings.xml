@@ -10,9 +10,6 @@
     <string name="title_whatsapp">Whatsapp</string>
     <string name="title_whatsapp_business">Whatsapp Business</string>
     <string name="about">About</string>
-    <string name="safPermission_text2">We need access to .Statuses folder so you can save the status media.\n\nWe only access files in the folder
-        you select.No files leave you phone.This Permission lets the app copy statuses to your preferred Storage Location ones you choose.</string>
-    <string name="safPermission_text1">Allow access to WhatsApp Statuses</string>
     <string name="empty_string" />
     <string name="second_accesss_msg">We need access to the **%1$s** .Statuses folder to save status media. Only files in the folder you choose are accessed, and nothing leaves your phone.</string>
     <string name="storage_access_required">Storage Access Required</string>

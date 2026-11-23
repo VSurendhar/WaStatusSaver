@@ -45,7 +45,7 @@ class MainViewModel @Inject constructor(
                 title = preferredTitle,
                 appInstalled = appInstalled,
                 shouldShowOnBoardingUi = shouldShowOnBoardingUi,
-                hasSafAccessPermission = if (appInstalled) hasSafAccessPermission else null,
+                hasSafAccessPermission = hasSafAccessPermission,
                 selectionMode = SelectionMode.SINGLE_SELECT,
                 currentMediaType = MediaType.IMAGE,
                 mediaFiles = if (!shouldShowOnBoardingUi && appInstalled && hasSafAccessPermission) {
@@ -122,7 +122,7 @@ class MainViewModel @Inject constructor(
                         _uiState.update {
                             it?.copy(
                                 title = event.title,
-                                hasSafAccessPermission = null,
+                                hasSafAccessPermission = false,
                                 mediaFiles = emptyList(),
                                 appInstalled = false
                             )
@@ -144,14 +144,12 @@ class MainViewModel @Inject constructor(
                 _uiState.update { it?.copy(selectionMode = event.mode) }
             }
 
-            is Event.ChangeSAFAccessPermission -> {
+            is Event.SafAccessGranted -> {
                 viewModelScope.launch {
+                    val title = uiState.value?.title ?: return@launch
+                    val files = getFiles(title)
                     _uiState.update {
-                        if (event.hasSafAccessPermission == true) {
-                            val files = getFiles(uiState.value?.title!!)
-                            it?.copy(mediaFiles = files)
-                        }
-                        it?.copy(hasSafAccessPermission = event.hasSafAccessPermission)
+                        it?.copy(hasSafAccessPermission = true, mediaFiles = files)
                     }
                 }
             }
@@ -232,7 +230,7 @@ class MainViewModel @Inject constructor(
             _uiState.update { current ->
                 val updated = current?.copy(
                     shouldShowOnBoardingUi = shouldShowOnBoardingUi,
-                    hasSafAccessPermission = if (appInstalled) hasSafAccessPermission else null,
+                    hasSafAccessPermission = hasSafAccessPermission,
                     appInstalled = appInstalled,
                     mediaFiles = if (hasSafAccessPermission && !shouldShowOnBoardingUi && appInstalled && current.title != null) {
                         val files = getFiles(current.title).toList()

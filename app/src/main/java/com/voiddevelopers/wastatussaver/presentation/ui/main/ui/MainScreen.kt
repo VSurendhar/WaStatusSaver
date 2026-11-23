@@ -110,7 +110,6 @@ import com.voiddevelopers.wastatussaver.navigation.Screens
 import com.voiddevelopers.wastatussaver.presentation.theme.WaStatusSaverTheme
 import com.voiddevelopers.wastatussaver.presentation.theme.gray
 import com.voiddevelopers.wastatussaver.presentation.ui.main.dialog.OnBoardingDialog
-import com.voiddevelopers.wastatussaver.presentation.ui.main.dialog.SAFAccessPermissionDialog
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.PlayerActivity
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import kotlinx.coroutines.CoroutineScope
@@ -153,7 +152,7 @@ fun MainScreen(
                 context.contentResolver.takePersistableUriPermission(
                     uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
-                onEvent(Event.ChangeSAFAccessPermission(true))
+                onEvent(Event.SafAccessGranted)
             }
         }
 
@@ -610,15 +609,6 @@ fun FilePreviewPage(
                 )
             )
         })
-    } else if (uiState.hasSafAccessPermission == false) {
-        SAFAccessPermissionDialog(onGrantAccess = {
-            launchSafPicker(
-                newUri = uiState.title?.uri, launchPermission = launchSafPermission
-            )
-        }, onNotNowPressed = {
-            onEvent(Event.ChangeSAFAccessPermission(null))
-        })
-        return
     }
 
     Surface(
@@ -650,7 +640,7 @@ fun FilePreviewPage(
                 onBtnClick = {
                     openAppInPlayStore(context, uiState.title?.packageName)
                 })
-        } else if (uiState.hasSafAccessPermission == null) {
+        } else if (!uiState.hasSafAccessPermission) {
             MissingSetupInfo(
                 modifier = Modifier.padding(horizontal = 12.dp),
                 imageId = R.drawable.ic_no_permission,
