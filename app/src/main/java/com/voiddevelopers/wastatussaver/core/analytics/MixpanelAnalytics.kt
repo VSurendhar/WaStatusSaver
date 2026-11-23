@@ -24,6 +24,12 @@ class MixpanelAnalytics(
         mixpanel?.registerSuperProperties(properties.toJson())
     }
 
+    /**
+     * Mixpanel's SDK-generated device UUID (its anonymous ID). Stays the same across app restarts
+     * and updates; changes on reinstall, clear data, or reset(). Null until [init] has been called.
+     */
+    fun getDeviceId(): String? = mixpanel?.anonymousId
+
     private fun Map<String, Any?>.toJson(): JSONObject = JSONObject().also { json ->
         forEach { (key, value) -> json.put(key, value ?: JSONObject.NULL) }
     }
