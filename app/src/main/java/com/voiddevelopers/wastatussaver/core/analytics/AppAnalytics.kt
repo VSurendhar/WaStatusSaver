@@ -81,11 +81,29 @@ class AppAnalytics @Inject constructor(
 
     fun trackMediaTabViewed(mediaType: MediaType, source: MediaTabSource) {
         track(
-            AnalyticsEvents.VIEWED_MEDIA_TAB,
-            mapOf(
+            AnalyticsEvents.VIEWED_MEDIA_TAB, mapOf(
                 AnalyticsProperties.MEDIA_TYPE to mediaType.name.lowercase(),
                 AnalyticsProperties.SOURCE to source.analyticsName,
             )
+        )
+    }
+
+    // ---- Home screen ----
+
+    fun trackTitleChanged() = track(AnalyticsEvents.CHANGED_TITLE)
+
+    fun trackStatusMediaRefreshClicked() = track(AnalyticsEvents.CLICKED_REFRESH_STATUS_MEDIA)
+
+    fun trackDownloadAppClicked() = track(AnalyticsEvents.CLICKED_DOWNLOAD_APP)
+
+    fun trackGrantStorageAccessClicked() = track(AnalyticsEvents.CLICKED_GRANT_STORAGE_ACCESS)
+
+    fun trackStorageAccessGranted() = track(AnalyticsEvents.GRANTED_STORAGE_ACCESS)
+
+    fun trackStorageAccessDenied(reason: StorageAccessDeniedReason) {
+        track(
+            AnalyticsEvents.DENIED_STORAGE_ACCESS,
+            mapOf(AnalyticsProperties.REASON to reason.analyticsName)
         )
     }
 
@@ -93,8 +111,7 @@ class AppAnalytics @Inject constructor(
 
     fun trackMediaDownloadCompleted(mediaType: MediaType, source: DownloadSource) {
         track(
-            AnalyticsEvents.COMPLETED_MEDIA_DOWNLOAD,
-            mapOf(
+            AnalyticsEvents.COMPLETED_MEDIA_DOWNLOAD, mapOf(
                 AnalyticsProperties.MEDIA_TYPE to mediaType.name.lowercase(),
                 AnalyticsProperties.SOURCE to source.analyticsName,
             )
@@ -148,36 +165,35 @@ class AppAnalytics @Inject constructor(
     /** Missing values are left out instead of being sent as null. */
     fun trackPrivacyPolicyFailed(errorCode: Int?, errorDescription: String?) {
         track(
-            AnalyticsEvents.FAILED_PRIVACY_POLICY,
-            mapOf(
+            AnalyticsEvents.FAILED_PRIVACY_POLICY, mapOf(
                 AnalyticsProperties.ERROR_CODE to errorCode,
                 AnalyticsProperties.ERROR_DESCRIPTION to errorDescription,
-            ).filterValues { it != null }
-        )
+            ).filterValues { it != null })
     }
 
     fun trackPrivacyPolicyRefreshClicked() = track(AnalyticsEvents.CLICKED_REFRESH_PRIVACY_POLICY)
 }
 
 enum class DownloadSource(val analyticsName: String) {
-    HOME("home"),
-    VIEWER("viewer"),
+    HOME("home"), VIEWER("viewer"),
 }
 
 /** Screen the media player was opened from. */
 enum class PlayerSource(val analyticsName: String) {
-    HOME("home"),
-    SAVED_STATUS("saved_status"),
+    HOME("home"), SAVED_STATUS("saved_status"),
 }
 
 /** How the onboarding dialog was opened. */
 enum class OnboardingSource(val analyticsName: String) {
-    FIRST_LAUNCH("first_launch"),
-    HOW_TO_USE("how_to_use"),
+    FIRST_LAUNCH("first_launch"), HOW_TO_USE("how_to_use"),
+}
+
+enum class StorageAccessDeniedReason(val analyticsName: String) {
+    CANCELLED("cancelled"),
+    WRONG_FOLDER("wrong_folder"),
 }
 
 /** Screen a media tab is on. */
 enum class MediaTabSource(val analyticsName: String) {
-    HOME("home"),
-    SAVED_STATUS("saved_status"),
+    HOME("home"), SAVED_STATUS("saved_status"),
 }

@@ -15,6 +15,13 @@ object AnalyticsEvents {
 
     const val COMPLETED_MEDIA_DOWNLOAD = "completed_media_download"
 
+    const val CHANGED_TITLE = "changed_title"
+    const val CLICKED_REFRESH_STATUS_MEDIA = "clicked_refresh_status_media"
+    const val CLICKED_DOWNLOAD_APP = "clicked_download_app"
+    const val CLICKED_GRANT_STORAGE_ACCESS = "clicked_grant_storage_access"
+    const val GRANTED_STORAGE_ACCESS = "granted_storage_access"
+    const val DENIED_STORAGE_ACCESS = "denied_storage_access"
+
     const val CLICKED_ONBOARDING_NEXT = "clicked_onboarding_next"
     const val CLICKED_ONBOARDING_SKIP = "clicked_onboarding_skip"
 
@@ -35,6 +42,7 @@ object AnalyticsProperties {
     const val MEDIA_TYPE = "media_type"
     const val SOURCE = "source"
     const val PAGE = "page"
+    const val REASON = "reason"
 
     // Super properties (sent with every event)
     const val SELECTED_TITLE = "selected_title"

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
 import com.voiddevelopers.wastatussaver.core.analytics.DownloadSource
+import com.voiddevelopers.wastatussaver.core.analytics.MediaTabSource
 import com.voiddevelopers.wastatussaver.core.analytics.OnboardingSource
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManager
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_PREFERRED_TITLE
@@ -39,6 +40,9 @@ class MainViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     private var onboardingSource = OnboardingSource.FIRST_LAUNCH
+
+    // Tab currently in view on Home, for tab analytics. Null until the first tab.
+    private var currentTab: MediaType? = null
 
 
     init {
@@ -107,9 +111,13 @@ class MainViewModel @Inject constructor(
         when (event) {
             is Event.ChangeTab -> {
                 _uiState.update { it?.copy(currentMediaType = event.mediaType) }
+                if (currentTab == event.mediaType) return
+                currentTab = event.mediaType
+                appAnalytics.trackMediaTabViewed(event.mediaType, MediaTabSource.HOME)
             }
 
             is Event.ChangeTitle -> {
+                val previousTitle = uiState.value?.title
                 viewModelScope.launch {
                     val appInstalled by lazy { appInstallChecker.isInstalled(event.title.packageName) }
                     val hasSafPermission by lazy { statusesManagerUseCase.hasPermission(event.title.uri) }
@@ -143,6 +151,10 @@ class MainViewModel @Inject constructor(
                             )
                         }
                     }
+                    if (event.title != previousTitle) {
+                        uiState.value?.let { updateSuperProperties(it) }
+                        appAnalytics.trackTitleChanged()
+                    }
                 }
             }
 
@@ -150,7 +162,20 @@ class MainViewModel @Inject constructor(
                 _uiState.update { it?.copy(selectionMode = event.mode) }
             }
 
+            is Event.OnGrantStorageAccessClick -> {
+                appAnalytics.trackGrantStorageAccessClicked()
+            }
+
+            is Event.SafAccessDenied -> {
+                appAnalytics.trackStorageAccessDenied(event.reason)
+            }
+
+            is Event.OnDownloadAppClick -> {
+                appAnalytics.trackDownloadAppClicked()
+            }
+
             is Event.SafAccessGranted -> {
+                appAnalytics.trackStorageAccessGranted()
                 viewModelScope.launch {
                     val title = uiState.value?.title ?: return@launch
                     val files = getFiles(title)
@@ -179,6 +204,11 @@ class MainViewModel @Inject constructor(
             }
 
             is Event.RefreshUiState -> {
+                refreshUiState()
+            }
+
+            is Event.OnRefreshClick -> {
+                appAnalytics.trackStatusMediaRefreshClicked()
                 refreshUiState()
             }
 
@@ -258,4 +288,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private fun updateSuperProperties(state: UiState) {
+        val title = state.title ?: return
+        appAnalytics.updateSuperProperties(
+            title.analyticsName, state.hasSafAccessPermission, state.appInstalled
+        )
+    }
 }

@@ -96,6 +96,7 @@ import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import com.voiddevelopers.wastatussaver.R
 import com.voiddevelopers.wastatussaver.core.analytics.PlayerSource
+import com.voiddevelopers.wastatussaver.core.analytics.StorageAccessDeniedReason
 import com.voiddevelopers.wastatussaver.data.utils.createColoredString
 import com.voiddevelopers.wastatussaver.data.utils.extentions.valueOrDefault
 import com.voiddevelopers.wastatussaver.data.utils.extentions.valueOrEmptyString
@@ -149,13 +150,26 @@ fun MainScreen(
     val launcher: ActivityResultLauncher<Intent> =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val uri = result.data?.data
-            if (uri != null && uri == state?.title?.uri) {
-                context.contentResolver.takePersistableUriPermission(
-                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
-                )
-                onEvent(Event.SafAccessGranted)
+            when {
+                // Backed out of the folder picker.
+                uri == null -> onEvent(Event.SafAccessDenied(StorageAccessDeniedReason.CANCELLED))
+                // Picked a folder other than this app's .Statuses folder.
+                uri != state?.title?.uri ->
+                    onEvent(Event.SafAccessDenied(StorageAccessDeniedReason.WRONG_FOLDER))
+
+                else -> {
+                    context.contentResolver.takePersistableUriPermission(
+                        uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                    onEvent(Event.SafAccessGranted)
+                }
             }
         }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }
+            .collect { onEvent(Event.ChangeTab(mediaTypeData[it])) }
+    }
 
     ModalNavigationDrawer(
         modifier = Modifier
@@ -197,7 +211,7 @@ fun MainScreen(
                         scope = scope,
                         mediaTypeData = mediaTypeData,
                         onRefreshBtnPressed = {
-                            onEvent(Event.RefreshUiState)
+                            onEvent(Event.OnRefreshClick)
                         })
                 }) { innerPadding ->
                 if (state != null) {
@@ -635,6 +649,7 @@ fun FilePreviewPage(
                     stringResource(id = uiState.title?.resId.valueOrEmptyString())
                 ),
                 onBtnClick = {
+                    onEvent(Event.OnDownloadAppClick)
                     openAppInPlayStore(context, uiState.title?.packageName)
                 })
         } else if (!uiState.hasSafAccessPermission) {
@@ -653,6 +668,7 @@ fun FilePreviewPage(
                 ),
                 buttonTxt = stringResource(R.string.grand_access),
                 onBtnClick = {
+                    onEvent(Event.OnGrantStorageAccessClick)
                     launchSafPicker(
                         newUri = uiState.title?.uri, launchPermission = launchSafPermission
                     )
