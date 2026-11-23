@@ -2,6 +2,7 @@ package com.voiddevelopers.wastatussaver.data.utils
 
 object Constants {
     const val TAG = "Whatsapp Status Saver TAG"
+    const val GITHUB_REPO_URL = "https://github.com/VSurendhar/Whatsapp-Status-Saver"
     const val NO_MEDIA = ".nomedia"
     const val IMAGE_MIME_TYPE_STARTING = "Image"
     const val VIDEO_MIME_TYPE_STARTING = "Video"

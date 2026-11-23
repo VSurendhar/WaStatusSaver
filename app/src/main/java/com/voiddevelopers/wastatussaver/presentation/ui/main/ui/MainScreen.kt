@@ -95,6 +95,7 @@ import coil.compose.AsyncImage
 import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import com.voiddevelopers.wastatussaver.R
+import com.voiddevelopers.wastatussaver.data.utils.Constants
 import com.voiddevelopers.wastatussaver.core.analytics.PlayerSource
 import com.voiddevelopers.wastatussaver.core.analytics.StorageAccessDeniedReason
 import com.voiddevelopers.wastatussaver.data.utils.createColoredString
@@ -460,6 +461,15 @@ fun DrawerContent(
                 },
             )
             DrawerItem(
+                title = stringResource(R.string.star_on_github),
+                painter = painterResource(R.drawable.ic_github),
+                onBtnClick = {
+                    onOptionClick(DrawerOption.STAR_ON_GITHUB)
+                    openGithubRepo(context)
+                    closeDrawer()
+                },
+            )
+            DrawerItem(
                 title = stringResource(R.string.report_bug),
                 painter = painterResource(R.drawable.ic_bug),
                 onBtnClick = {
@@ -492,6 +502,15 @@ fun DrawerContent(
                 },
             )
         }
+    }
+}
+
+fun openGithubRepo(context: Context) {
+    val intent = Intent(Intent.ACTION_VIEW, Constants.GITHUB_REPO_URL.toUri())
+    try {
+        context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        Toast.makeText(context, "No browser found to open the link.", Toast.LENGTH_SHORT).show()
     }
 }
 

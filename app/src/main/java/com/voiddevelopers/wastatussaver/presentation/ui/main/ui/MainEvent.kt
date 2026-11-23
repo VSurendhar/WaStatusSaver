@@ -28,6 +28,7 @@ enum class DrawerOption(val analyticsName: String) {
     SAVED_STATUS("saved_status"),
     PRIVACY_POLICY("privacy_policy"),
     RATE_APP("rate_app"),
+    STAR_ON_GITHUB("star_on_github"),
     REPORT_BUG("report_bug"),
     ABOUT("about"),
 }

@@ -63,7 +63,7 @@ class AppAnalytics @Inject constructor(
 
     fun trackNavDrawerClosed() = track(AnalyticsEvents.CLOSED_NAV_DRAWER)
 
-    /** [option]: how_to_use | saved_status | privacy_policy | rate_app | report_bug | about */
+    /** [option]: how_to_use | saved_status | privacy_policy | rate_app | star_on_github | report_bug | about */
     fun trackNavDrawerOptionClicked(option: String) {
         track(
             AnalyticsEvents.CLICKED_NAV_DRAWER_OPTION,
