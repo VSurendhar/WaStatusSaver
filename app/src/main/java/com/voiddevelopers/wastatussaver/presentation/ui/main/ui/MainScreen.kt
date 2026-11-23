@@ -982,7 +982,7 @@ fun MissingSetupInfoPreview() {
             imageId = R.drawable.ic_empty_folder,
             title = AnnotatedString("Storage Access Required"),
             description = AnnotatedString("We need access to the WhatsApp .Statuses folder to save status media. Only files in the folder you choose are accessed, and nothing leaves your phone."),
-            buttonTxt = "Grand Access",
+            buttonTxt = "Grant Access",
             onBtnClick = {})
     }
 }

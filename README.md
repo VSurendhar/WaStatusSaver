@@ -3,6 +3,7 @@
 [![Android](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
 [![Kotlin](https://img.shields.io/badge/Language-Kotlin-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+![Views](https://komarev.com/ghpvc/?username=VSurendhar-Whatsapp-Status-Saver&label=Views&color=blue)
 
 A high-performance Android utility designed to permanently save **WhatsApp** and **WhatsApp Business** statuses in high quality. This application helps you preserve disappearing media with a fast, privacy-focused experience that keeps your media on your device. 🚀
 
@@ -87,11 +88,24 @@ WaStatusSaver/
 │       │           └── webView/          # Privacy Policy screen
 │       └── res/                          # Drawables, strings and themes
 ├── assets/                               # README images
+├── documents/                            # Project documentation
 ├── fastlane/                             # Store listing metadata
 ├── gradle/                               # Version catalog and wrapper
 ├── build.gradle.kts
 └── settings.gradle.kts
 ```
+
+---
+
+## 📚 Documentation
+
+* [How to Set Up the Project](documents/how-to-set-up-the-project.md)
+* [Analytics](documents/analytics.md)
+
+---
+
+## ⭐ Support
+If you find this project useful, please consider giving the repository a star. It helps others discover it!
 
 ---
 
