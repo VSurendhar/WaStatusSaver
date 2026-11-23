@@ -192,7 +192,7 @@ enum class PlayerSource(val analyticsName: String) {
 
 /** How the onboarding dialog was opened. */
 enum class OnboardingSource(val analyticsName: String) {
-    FIRST_LAUNCH("first_launch"), HOW_TO_USE("how_to_use"),
+    INITIAL_LAUNCH("initial_launch"), HOW_TO_USE("how_to_use"),
 }
 
 enum class StorageAccessDeniedReason(val analyticsName: String) {

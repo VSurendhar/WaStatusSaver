@@ -41,7 +41,7 @@ class MainViewModel @Inject constructor(
 
     val uiState = _uiState.asStateFlow()
 
-    private var onboardingSource = OnboardingSource.FIRST_LAUNCH
+    private var onboardingSource = OnboardingSource.INITIAL_LAUNCH
 
     // Tab currently in view on Home, for tab analytics. Null until the first tab.
     private var currentTab: MediaType? = null
