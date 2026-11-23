@@ -11,10 +11,6 @@ sealed interface Event {
     data object SafAccessGranted : Event
     object RefreshUiState : Event
     data class OnDownloadClick(val mediaFile: MediaFile) : Event
-    data object ShowNotificationPermissionDialog : Event
-    data object ShowNotificationPermissionSettingsDialog : Event
-    data object NotificationPermissionDialogDismiss : Event
-    data object NotificationSettingsDialogDismiss : Event
     data class OnDrawerOptionClick(val option: DrawerOption) : Event
     data class OnDrawerStateChanged(val isOpen: Boolean) : Event
 }
@@ -23,7 +19,6 @@ sealed interface Event {
 enum class DrawerOption(val analyticsName: String) {
     HOW_TO_USE("how_to_use"),
     SAVED_STATUS("saved_status"),
-    QUICK_SAVE("quick_save"),
     PRIVACY_POLICY("privacy_policy"),
     RATE_APP("rate_app"),
     REPORT_BUG("report_bug"),

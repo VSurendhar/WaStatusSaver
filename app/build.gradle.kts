@@ -129,9 +129,6 @@ dependencies {
     //  Data Store
     implementation(libs.androidx.datastore.preferences)
 
-    // Gson
-    implementation(libs.gson)
-
     // Media3
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.exoplayer.dash)

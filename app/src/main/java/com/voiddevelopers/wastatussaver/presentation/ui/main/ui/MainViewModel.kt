@@ -171,38 +171,6 @@ class MainViewModel @Inject constructor(
                 saveMediaFile(event.mediaFile)
             }
 
-            is Event.ShowNotificationPermissionDialog -> {
-                _uiState.update {
-                    it?.copy(
-                        showNotificationPermissionDialog = true,
-                    )
-                }
-            }
-
-            is Event.ShowNotificationPermissionSettingsDialog -> {
-                _uiState.update {
-                    it?.copy(
-                        showNotificationPermissionSettingsDialog = true,
-                    )
-                }
-            }
-
-            is Event.NotificationPermissionDialogDismiss -> {
-                _uiState.update {
-                    it?.copy(
-                        showNotificationPermissionDialog = false,
-                    )
-                }
-            }
-
-            is Event.NotificationSettingsDialogDismiss -> {
-                _uiState.update {
-                    it?.copy(
-                        showNotificationPermissionSettingsDialog = false
-                    )
-                }
-            }
-
             is Event.OnDrawerOptionClick -> {
                 appAnalytics.track(
                     AnalyticsEvents.getDrawerOptionEventName(event.option.analyticsName),

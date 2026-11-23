@@ -425,14 +425,6 @@ fun DrawerContent(
                 },
             )
             DrawerItem(
-                title = stringResource(R.string.quick_save),
-                painter = painterResource(R.drawable.ic_quick_save),
-                onBtnClick = {
-                    onOptionClick(DrawerOption.QUICK_SAVE)
-                    navigate(Screens.QuickSaveSettings.route)
-                },
-            )
-            DrawerItem(
                 title = stringResource(R.string.privacy_policy),
                 painter = painterResource(R.drawable.ic_privacypolicy),
                 onBtnClick = {

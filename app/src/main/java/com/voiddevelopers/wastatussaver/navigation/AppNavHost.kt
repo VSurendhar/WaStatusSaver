@@ -13,7 +13,6 @@ import com.voiddevelopers.wastatussaver.data.utils.LifecycleAwareEventCallBacks
 import com.voiddevelopers.wastatussaver.presentation.ui.main.ui.Event
 import com.voiddevelopers.wastatussaver.presentation.ui.main.ui.MainScreen
 import com.voiddevelopers.wastatussaver.presentation.ui.main.ui.MainViewModel
-import com.voiddevelopers.wastatussaver.presentation.ui.quicksave.QuickSaveSettingsScreen
 import com.voiddevelopers.wastatussaver.presentation.ui.savedStatus.SavedStatusScreen
 import com.voiddevelopers.wastatussaver.presentation.ui.webView.WebViewScreen
 import java.net.URLDecoder
@@ -62,13 +61,6 @@ fun AppNavHost(navController: NavHostController, startDestination: String) {
             WebViewScreen(url = url, onBackClick = {
                 navController.popBackStack()
             })
-        }
-        composable(
-            route = Screens.QuickSaveSettings.route,
-        ) { backStackEntry ->
-            QuickSaveSettingsScreen {
-                navController.popBackStack()
-            }
         }
     }
 
