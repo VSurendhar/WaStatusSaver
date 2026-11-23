@@ -1,13 +1,6 @@
 package com.voiddevelopers.wastatussaver.di.module
 
 import android.content.Context
-import android.view.View
-import android.view.ViewGroup
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import com.voiddevelopers.wastatussaver.BuildConfig
 import com.voiddevelopers.wastatussaver.core.analytics.MixpanelAnalytics
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManager
@@ -36,46 +29,6 @@ object AppModule {
     @Singleton
     fun provideMixpanelAnalytics(@ApplicationContext context: Context): MixpanelAnalytics {
         return MixpanelAnalytics(context, BuildConfig.MIXPANEL_TOKEN)
-    }
-
-    @Provides
-    @Singleton
-    fun provideWebView(@ApplicationContext context: Context): WebView {
-        return WebView(context).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-
-            settings.apply {
-                javaScriptEnabled = true
-                domStorageEnabled = true
-                cacheMode = WebSettings.LOAD_DEFAULT
-                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                allowFileAccess = false
-                useWideViewPort = true
-                loadWithOverviewMode = true
-                setSupportZoom(true)
-                builtInZoomControls = true
-                defaultTextEncodingName = "utf-8"
-                blockNetworkLoads = false
-            }
-
-            webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    super.onPageFinished(view, url)
-                }
-
-                override fun onReceivedError(
-                    view: WebView?,
-                    request: WebResourceRequest?,
-                    error: WebResourceError?,
-                ) {
-                    super.onReceivedError(view, request, error)
-                }
-            }
-        }
     }
 
 }

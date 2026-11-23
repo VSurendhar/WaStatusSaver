@@ -1,7 +1,14 @@
 package com.voiddevelopers.wastatussaver.presentation.ui.webView
 
+import android.view.View
+import android.view.ViewGroup
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -43,26 +51,111 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.voiddevelopers.wastatussaver.R
-import com.voiddevelopers.wastatussaver.data.utils.extentions.findActivity
 import com.voiddevelopers.wastatussaver.data.utils.extentions.isInternetAvailable
 import com.voiddevelopers.wastatussaver.data.utils.extentions.singleClick
 import com.voiddevelopers.wastatussaver.presentation.theme.WaStatusSaverTheme
-import com.voiddevelopers.wastatussaver.presentation.ui.main.MainActivity
 
 @Composable
 fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Unit) {
 
-    val webView =
-        (LocalContext.current.findActivity() as MainActivity).webViewManager.getWebViewInstance()
-
     val context = LocalContext.current
+    val viewModel = hiltViewModel<WebViewViewModel>()
+    val pageUrl = url ?: "https://www.google.com"
     var internetAvailable by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
     var isLoading by remember { mutableStateOf(true) }
 
+    // Created when the screen opens and destroyed when it closes (see onDispose below).
+    val webView = remember {
+        WebView(context).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            settings.apply {
+                javaScriptEnabled = true
+                domStorageEnabled = true
+                cacheMode = WebSettings.LOAD_DEFAULT
+                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                allowFileAccess = false
+                useWideViewPort = true
+                loadWithOverviewMode = true
+                setSupportZoom(true)
+                builtInZoomControls = true
+                defaultTextEncodingName = "utf-8"
+                blockNetworkLoads = false
+            }
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+
+            webChromeClient = object : WebChromeClient() {
+                override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                    progress = newProgress / 100f
+                    isLoading = newProgress < 100
+                }
+            }
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    super.onPageFinished(view, url)
+                    // Also called after an error; the ViewModel ignores it then,
+                    // because the failure was already logged for this load.
+                    viewModel.logLoadResult(success = true)
+                }
+
+                override fun onReceivedError(
+                    view: WebView?,
+                    request: WebResourceRequest?,
+                    error: WebResourceError?,
+                ) {
+                    super.onReceivedError(view, request, error)
+                    // Only the page itself counts, not images or scripts inside it.
+                    if (request?.isForMainFrame == true) {
+                        viewModel.logLoadResult(
+                            success = false,
+                            errorCode = error?.errorCode,
+                            errorDescription = error?.description?.toString(),
+                        )
+                    }
+                }
+
+                override fun onReceivedHttpError(
+                    view: WebView?,
+                    request: WebResourceRequest?,
+                    errorResponse: WebResourceResponse?,
+                ) {
+                    super.onReceivedHttpError(view, request, errorResponse)
+                    if (request?.isForMainFrame == true) {
+                        viewModel.logLoadResult(
+                            success = false,
+                            errorCode = errorResponse?.statusCode,
+                            errorDescription = errorResponse?.reasonPhrase,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // The only place the page is loaded. Success / failure is reported by the WebView callbacks.
+    fun loadPage() {
+        viewModel.startNewLoad()
+        isLoading = true
+        webView.loadUrl(pageUrl)
+    }
+
     LaunchedEffect(Unit) {
-        internetAvailable = context.isInternetAvailable()
+        internetAvailable = context.isInternetAvailable() // decides which UI is shown
+        loadPage()
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            // Stops any load in progress (so nothing is logged after the user has left)
+            // and frees the WebView.
+            webView.stopLoading()
+            webView.destroy()
+        }
     }
 
     Scaffold(
@@ -72,7 +165,9 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
         topBar = {
             PrivacyPolicyTopBar(
                 onRefreshPressed = {
-                    internetAvailable = context.isInternetAvailable()
+                    viewModel.onRefreshClick()
+                    internetAvailable = context.isInternetAvailable() // decides which UI is shown
+                    loadPage()
                 },
                 onBackClick = onBackClick
             )
@@ -92,17 +187,7 @@ fun WebViewScreen(url: String? = "https://www.google.com", onBackClick: () -> Un
                         trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                     )
                 }
-                AndroidView(modifier = Modifier.fillMaxSize(), factory = {
-                    webView.apply {
-                        webChromeClient = object : WebChromeClient() {
-                            override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                                progress = newProgress / 100f
-                                isLoading = newProgress < 100
-                            }
-                        }
-                        loadUrl(url ?: "https://www.google.com")
-                    }
-                })
+                AndroidView(modifier = Modifier.fillMaxSize(), factory = { webView })
             }
         } else {
             Column(
