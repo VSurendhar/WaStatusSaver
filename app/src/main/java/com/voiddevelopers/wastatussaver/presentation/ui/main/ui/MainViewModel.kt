@@ -2,6 +2,8 @@ package com.voiddevelopers.wastatussaver.presentation.ui.main.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.voiddevelopers.wastatussaver.core.analytics.AnalyticsEvents
+import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManager
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_PREFERRED_TITLE
 import com.voiddevelopers.wastatussaver.data.prefdatastoremanager.DataStorePreferenceManagerImpl.DataStoreKeys.KEY_SHOULD_SHOW_ONBOARDING_UI
@@ -23,6 +25,7 @@ class MainViewModel @Inject constructor(
     private val dataStorePreferenceManager: DataStorePreferenceManager,
     private val statusesManagerUseCase: StatusesManagerUseCase,
     private val appInstallChecker: AppInstallCheckerUseCase,
+    private val appAnalytics: AppAnalytics,
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<UiState?> = MutableStateFlow(
@@ -208,6 +211,19 @@ class MainViewModel @Inject constructor(
                         showNotificationPermissionSettingsDialog = false
                     )
                 }
+            }
+
+            is Event.OnDrawerOptionClick -> {
+                appAnalytics.track(
+                    AnalyticsEvents.getDrawerOptionEventName(event.option.analyticsName),
+                )
+            }
+
+            is Event.OnDrawerStateChanged -> {
+                appAnalytics.track(
+                    if (event.isOpen) AnalyticsEvents.OPENED_NAV_DRAWER
+                    else AnalyticsEvents.CLOSED_NAV_DRAWER
+                )
             }
 
         }

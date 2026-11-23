@@ -66,6 +66,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -114,6 +116,8 @@ import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.PlayerActivity
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.videoAudioPlayerRoot.DownloadState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -123,8 +127,7 @@ fun MainScreen(
     uiState: StateFlow<UiState?>,
     onEvent: (Event) -> Unit,
     navigate: (String) -> Unit,
-
-    ) {
+) {
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -134,6 +137,15 @@ fun MainScreen(
     val context = LocalContext.current
 
     val state by uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(drawerState) {
+        snapshotFlow { drawerState.currentValue }
+            .distinctUntilChanged()
+            .drop(1) // Drop 1 to avoid the initial Closed State
+            .collect {
+                onEvent(Event.OnDrawerStateChanged(isOpen = it == DrawerValue.Open))
+            }
+    }
 
     val launcher: ActivityResultLauncher<Intent> =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -171,7 +183,7 @@ fun MainScreen(
                         )
                         drawerState.close()
                     }
-                }
+                }, onOptionClick = { onEvent(Event.OnDrawerOptionClick(it)) }
             )
         },
         content = {
@@ -353,6 +365,7 @@ fun DrawerContent(
     navigate: (String) -> Unit,
     closeDrawer: () -> Unit,
     showOnBoardingUI: () -> Unit,
+    onOptionClick: (DrawerOption) -> Unit,
 ) {
     val context = LocalContext.current
     Column(
@@ -401,6 +414,7 @@ fun DrawerContent(
                 title = stringResource(R.string.how_to_use),
                 painter = painterResource(R.drawable.ic_howtouse),
                 onBtnClick = {
+                    onOptionClick(DrawerOption.HOW_TO_USE)
                     showOnBoardingUI()
                 },
             )
@@ -408,6 +422,7 @@ fun DrawerContent(
                 title = stringResource(R.string.saved_status),
                 painter = painterResource(R.drawable.ic_saved),
                 onBtnClick = {
+                    onOptionClick(DrawerOption.SAVED_STATUS)
                     navigate(Screens.SavedStatus.route)
                 },
             )
@@ -415,6 +430,7 @@ fun DrawerContent(
                 title = stringResource(R.string.quick_save),
                 painter = painterResource(R.drawable.ic_quick_save),
                 onBtnClick = {
+                    onOptionClick(DrawerOption.QUICK_SAVE)
                     navigate(Screens.QuickSaveSettings.route)
                 },
             )
@@ -422,6 +438,7 @@ fun DrawerContent(
                 title = stringResource(R.string.privacy_policy),
                 painter = painterResource(R.drawable.ic_privacypolicy),
                 onBtnClick = {
+                    onOptionClick(DrawerOption.PRIVACY_POLICY)
                     val encodedUrl = URLEncoder.encode(
                         "https://vsurendhar.github.io/WaStatusSaver_PrivacyPolicy/",
                         StandardCharsets.UTF_8.toString()
@@ -433,18 +450,15 @@ fun DrawerContent(
                 title = stringResource(R.string.rate_app),
                 painter = painterResource(R.drawable.ic_rating_star),
                 onBtnClick = {
+                    onOptionClick(DrawerOption.RATE_APP)
                     rateApp(context)
                 },
             )
-/*            DrawerItem(
-                title = stringResource(R.string.more_app),
-                painter = painterResource(R.drawable.ic_more),
-                onBtnClick = {},
-            )*/
             DrawerItem(
                 title = stringResource(R.string.report_bug),
                 painter = painterResource(R.drawable.ic_bug),
                 onBtnClick = {
+                    onOptionClick(DrawerOption.REPORT_BUG)
                     val intent = Intent(Intent.ACTION_SENDTO).apply {
                         data = Uri.parse("mailto:")
                         putExtra(Intent.EXTRA_EMAIL, arrayOf("thevoiddevelopers@gmail.com"))
@@ -468,6 +482,7 @@ fun DrawerContent(
                 title = stringResource(R.string.about),
                 painter = painterResource(R.drawable.ic_about),
                 onBtnClick = {
+                    onOptionClick(DrawerOption.ABOUT)
                     aboutApp(context)
                 },
             )
@@ -475,7 +490,7 @@ fun DrawerContent(
     }
 }
 
-fun aboutApp(context: Context){
+fun aboutApp(context: Context) {
     val appPackage = context.packageName
 
     try {
@@ -495,6 +510,7 @@ fun aboutApp(context: Context){
 
     }
 }
+
 fun rateApp(context: Context) {
     val uri = "market://details?id=${context.packageName}".toUri()
     val intent = Intent(Intent.ACTION_VIEW, uri)
@@ -927,6 +943,7 @@ fun NavigationDrawerPreview() {
             navigate = {},
             closeDrawer = {},
             showOnBoardingUI = {},
+            onOptionClick = {},
         )
     }
 }

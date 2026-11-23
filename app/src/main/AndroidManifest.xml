@@ -62,6 +62,9 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
+        <meta-data android:name="com.mixpanel.android.MPConfig.EnableDebugLogging"
+            android:value="true" />
+
     </application>
 
 </manifest>

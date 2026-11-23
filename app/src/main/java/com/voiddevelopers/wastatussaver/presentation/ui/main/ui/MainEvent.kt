@@ -16,4 +16,17 @@ sealed interface Event {
     data object ShowNotificationPermissionSettingsDialog : Event
     data object NotificationPermissionDialogDismiss : Event
     data object NotificationSettingsDialogDismiss : Event
+    data class OnDrawerOptionClick(val option: DrawerOption) : Event
+    data class OnDrawerStateChanged(val isOpen: Boolean) : Event
+}
+
+/** Options shown in the navigation drawer. [analyticsName] is the value sent to analytics. */
+enum class DrawerOption(val analyticsName: String) {
+    HOW_TO_USE("how_to_use"),
+    SAVED_STATUS("saved_status"),
+    QUICK_SAVE("quick_save"),
+    PRIVACY_POLICY("privacy_policy"),
+    RATE_APP("rate_app"),
+    REPORT_BUG("report_bug"),
+    ABOUT("about"),
 }
