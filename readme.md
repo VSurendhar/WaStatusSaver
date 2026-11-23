@@ -16,9 +16,7 @@ A high-performance Android utility designed to permanently save **WhatsApp** and
 
 * 🎼 **Multi-Format Support**: Seamlessly save status updates in **Audio, Video, and Image** formats.
 * 💎 **Zero Compression**: Files are copied directly from the source cache, ensuring **Original Quality** with no pixel loss.
-* 🔔 **Quick Save from Notification**: Save status media instantly with a single tap directly from the notification, without opening the app.
 * 🔄 **Dual Source Support**: Easily toggle and save media from both **WhatsApp** and **WhatsApp Business**.
-* 🎯 **Media-Type Filtering**: Filter quick save by **Images, Videos, or Audio** based on your preference.
 
 ---
 
@@ -27,20 +25,8 @@ A high-performance Android utility designed to permanently save **WhatsApp** and
 <div align="center">
   <img src="assets/screenshots/Frame1.png" width="200" style="border-radius: 10px; margin: 5px" />
   <img src="assets/screenshots/Frame2.png" width="200" style="border-radius: 10px; margin: 5px" />
-  <img src="assets/screenshots/Frame3.png" width="200" style="border-radius: 10px; margin: 5px" />
   <img src="assets/screenshots/Frame4.png" width="200" style="border-radius: 10px; margin: 5px" />
 </div>
-
----
-
-## 🔔 Smart Quick Save Experience
-
-WaStatusSaver makes status saving faster by bringing actions directly to the notification panel.
-
-* ⚡ **Single-Tap Saving**: Save media instantly from the notification without launching the application.
-* 📲 **Source Selection**: Choose between **WhatsApp** and **WhatsApp Business** as the source.
-* 🎯 **Filtered Quick Save**: Control what appears for quick save by selecting **Images, Videos, or Audio**.
-* ✅ **Faster Workflow**: Reduce manual steps and save statuses the moment they are detected.
 
 ---
 
@@ -57,7 +43,6 @@ The application maintains a clean and professional directory structure within yo
 
 ## 🛠️ Technical Implementation
 
-* ⚙️ **Foreground Service Based Flow**: Supports quick interactions through notifications for a faster saving experience.
 * 🛡️ **Scoped Storage Compliant**: Designed to work with the latest Android permission models.
 * 🔒 **Privacy-First**: Operates entirely on-device; no media is ever uploaded or shared externally.
 
