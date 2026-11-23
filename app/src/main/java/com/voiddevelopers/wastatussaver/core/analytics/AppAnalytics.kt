@@ -76,28 +76,28 @@ class AppAnalytics @Inject constructor(
             AnalyticsEvents.COMPLETED_MEDIA_DOWNLOAD,
             mapOf(
                 AnalyticsProperties.MEDIA_TYPE to mediaType.name.lowercase(),
-                AnalyticsProperties.DOWNLOAD_SOURCE to source.analyticsName,
+                AnalyticsProperties.SOURCE to source.analyticsName,
             )
         )
     }
 
     // ---- Media player (image viewer, video & audio player) ----
 
-    fun trackMediaViewed(mediaType: MediaType, openedFrom: PlayerOpenedFrom) {
-        track(AnalyticsEvents.VIEWED_MEDIA, playerProperties(mediaType, openedFrom))
+    fun trackMediaViewed(mediaType: MediaType, source: PlayerSource) {
+        track(AnalyticsEvents.VIEWED_MEDIA, playerProperties(mediaType, source))
     }
 
-    fun trackMediaClosed(mediaType: MediaType, openedFrom: PlayerOpenedFrom) {
-        track(AnalyticsEvents.CLOSED_MEDIA, playerProperties(mediaType, openedFrom))
+    fun trackMediaClosed(mediaType: MediaType, source: PlayerSource) {
+        track(AnalyticsEvents.CLOSED_MEDIA, playerProperties(mediaType, source))
     }
 
-    fun trackMediaShareClicked(mediaType: MediaType, openedFrom: PlayerOpenedFrom) {
-        track(AnalyticsEvents.CLICKED_SHARE_MEDIA, playerProperties(mediaType, openedFrom))
+    fun trackMediaShareClicked(mediaType: MediaType, source: PlayerSource) {
+        track(AnalyticsEvents.CLICKED_SHARE_MEDIA, playerProperties(mediaType, source))
     }
 
-    private fun playerProperties(mediaType: MediaType, openedFrom: PlayerOpenedFrom) = mapOf(
+    private fun playerProperties(mediaType: MediaType, source: PlayerSource) = mapOf(
         AnalyticsProperties.MEDIA_TYPE to mediaType.name.lowercase(),
-        AnalyticsProperties.OPENED_FROM to openedFrom.analyticsName,
+        AnalyticsProperties.SOURCE to source.analyticsName,
     )
 
     // ---- Privacy Policy ----
@@ -128,7 +128,7 @@ enum class DownloadSource(val analyticsName: String) {
 }
 
 /** Screen the media player was opened from. */
-enum class PlayerOpenedFrom(val analyticsName: String) {
+enum class PlayerSource(val analyticsName: String) {
     HOME("home"),
     SAVED_STATUS("saved_status"),
 }

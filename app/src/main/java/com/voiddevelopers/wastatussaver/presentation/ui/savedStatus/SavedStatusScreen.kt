@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.voiddevelopers.wastatussaver.R
-import com.voiddevelopers.wastatussaver.core.analytics.PlayerOpenedFrom
+import com.voiddevelopers.wastatussaver.core.analytics.PlayerSource
 import com.voiddevelopers.wastatussaver.data.utils.createColoredString
 import com.voiddevelopers.wastatussaver.data.utils.extentions.singleClick
 import com.voiddevelopers.wastatussaver.domain.model.AudioFile
@@ -162,7 +162,7 @@ private fun MainBody(
                         "mediaInfo", mediaFile.toDomainMediaInfo().apply {
                             downloadStatus = DownloadState.DOWNLOADED
                         })
-                    intent.putExtra(PlayerActivity.EXTRA_OPENED_FROM, PlayerOpenedFrom.SAVED_STATUS.name)
+                    intent.putExtra(PlayerActivity.EXTRA_SOURCE, PlayerSource.SAVED_STATUS.name)
                     context.startActivity(intent)
                 }, mediaType = MediaType.IMAGE)
             }
@@ -176,7 +176,7 @@ private fun MainBody(
                             "mediaInfo", mediaFile.toDomainMediaInfo().apply {
                                 downloadStatus = DownloadState.DOWNLOADED
                             })
-                        intent.putExtra(PlayerActivity.EXTRA_OPENED_FROM, PlayerOpenedFrom.SAVED_STATUS.name)
+                        intent.putExtra(PlayerActivity.EXTRA_SOURCE, PlayerSource.SAVED_STATUS.name)
                         context.startActivity(intent)
                     },
                     mediaType = MediaType.VIDEO
@@ -192,7 +192,7 @@ private fun MainBody(
                             "mediaInfo", mediaFile.toDomainMediaInfo().apply {
                                 downloadStatus = DownloadState.DOWNLOADED
                             })
-                        intent.putExtra(PlayerActivity.EXTRA_OPENED_FROM, PlayerOpenedFrom.SAVED_STATUS.name)
+                        intent.putExtra(PlayerActivity.EXTRA_SOURCE, PlayerSource.SAVED_STATUS.name)
                         context.startActivity(intent)
                     },
                     mediaType = MediaType.AUDIO

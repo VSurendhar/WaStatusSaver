@@ -31,8 +31,6 @@ object AnalyticsProperties {
     const val NAV_DRAWER_OPTION = "option"
     const val MEDIA_TYPE = "media_type"
     const val SOURCE = "source"
-    const val DOWNLOAD_SOURCE = "download_source"
-    const val OPENED_FROM = "opened_from"
     const val ERROR_CODE = "error_code"
     const val ERROR_DESCRIPTION = "error_description"
 }

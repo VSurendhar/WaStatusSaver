@@ -12,7 +12,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.voiddevelopers.wastatussaver.core.analytics.AppAnalytics
-import com.voiddevelopers.wastatussaver.core.analytics.PlayerOpenedFrom
+import com.voiddevelopers.wastatussaver.core.analytics.PlayerSource
 import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.PlayerActivity
 import com.voiddevelopers.wastatussaver.core.analytics.DownloadSource
 import com.voiddevelopers.wastatussaver.domain.model.AudioFocusAction
@@ -49,7 +49,7 @@ class AudioVideoPlayerViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AudioVideoPlayerUiState())
     val uiState = _uiState.asStateFlow()
 
-    private var openedFrom = PlayerOpenedFrom.HOME
+    private var source = PlayerSource.HOME
     private var mediaViewedLogged = false // viewed_media is logged once per open (not on rotation)
 
     init {
@@ -126,7 +126,7 @@ class AudioVideoPlayerViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         if (mediaViewedLogged) {
-            appAnalytics.trackMediaClosed(uiState.value.mediaInfo.mediaType, openedFrom)
+            appAnalytics.trackMediaClosed(uiState.value.mediaInfo.mediaType, source)
         }
         playerManager.release()
     }
@@ -154,7 +154,7 @@ class AudioVideoPlayerViewModel @Inject constructor(
     }
 
     fun handleIntent(intent: Intent) {
-        openedFrom = PlayerActivity.getOpenedFrom(intent)
+        source = PlayerActivity.getSource(intent)
 
         val mediaInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("mediaInfo", MediaInfo::class.java)
@@ -179,7 +179,7 @@ class AudioVideoPlayerViewModel @Inject constructor(
         // The screen is on screen. Rotation calls handleIntent again, so log only once.
         if (!mediaViewedLogged) {
             mediaViewedLogged = true
-            appAnalytics.trackMediaViewed(updated.mediaType, openedFrom)
+            appAnalytics.trackMediaViewed(updated.mediaType, source)
         }
     }
 
@@ -277,7 +277,7 @@ class AudioVideoPlayerViewModel @Inject constructor(
     }
 
     fun onShareClick() {
-        appAnalytics.trackMediaShareClicked(uiState.value.mediaInfo.mediaType, openedFrom)
+        appAnalytics.trackMediaShareClicked(uiState.value.mediaInfo.mediaType, source)
     }
 
     fun onPlaybackStateChanged(

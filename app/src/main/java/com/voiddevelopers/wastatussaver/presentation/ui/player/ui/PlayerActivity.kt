@@ -8,7 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import com.voiddevelopers.wastatussaver.core.analytics.PlayerOpenedFrom
+import com.voiddevelopers.wastatussaver.core.analytics.PlayerSource
 import com.voiddevelopers.wastatussaver.domain.model.MediaInfo
 import com.voiddevelopers.wastatussaver.domain.model.MediaType
 import com.voiddevelopers.wastatussaver.presentation.theme.WaStatusSaverTheme
@@ -21,12 +21,12 @@ import dagger.hilt.android.AndroidEntryPoint
 class PlayerActivity : ComponentActivity() {
 
     companion object {
-        const val EXTRA_OPENED_FROM = "openedFrom"
+        const val EXTRA_SOURCE = "source"
 
-        fun getOpenedFrom(intent: Intent): PlayerOpenedFrom =
-            intent.getStringExtra(EXTRA_OPENED_FROM)
-                ?.let { name -> PlayerOpenedFrom.entries.firstOrNull { it.name == name } }
-                ?: PlayerOpenedFrom.HOME
+        fun getSource(intent: Intent): PlayerSource =
+            intent.getStringExtra(EXTRA_SOURCE)
+                ?.let { name -> PlayerSource.entries.firstOrNull { it.name == name } }
+                ?: PlayerSource.HOME
     }
 
     private var mediaInfo: MediaInfo? = null
