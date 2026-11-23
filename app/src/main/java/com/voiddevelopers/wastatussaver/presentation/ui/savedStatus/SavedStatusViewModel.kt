@@ -34,13 +34,12 @@ class SavedStatusViewModel @Inject constructor(
     }
 
     fun onTabChanged(tab: MediaType) {
-        trackTab(AnalyticsEvents.VIEWED_MEDIA_TAB_SAVED_STATUS, tab)
-    }
-
-    private fun trackTab(eventName: String, tab: MediaType) {
         appAnalytics.track(
-            eventName,
-            mapOf(AnalyticsProperties.MEDIA_TYPE to tab.name.lowercase())
+            AnalyticsEvents.VIEWED_MEDIA_TAB,
+            mapOf(
+                AnalyticsProperties.MEDIA_TYPE to tab.name.lowercase(),
+                AnalyticsProperties.SOURCE to "saved_status",
+            )
         )
     }
 
