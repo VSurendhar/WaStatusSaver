@@ -35,6 +35,11 @@ object AnalyticsProperties {
     const val MEDIA_TYPE = "media_type"
     const val SOURCE = "source"
     const val PAGE = "page"
+
+    // Super properties (sent with every event)
+    const val SELECTED_TITLE = "selected_title"
+    const val HAS_SAF_PERMISSION = "has_saf_permission"
+    const val IS_APP_INSTALLED = "is_app_installed"
     const val ERROR_CODE = "error_code"
     const val ERROR_DESCRIPTION = "error_description"
 }

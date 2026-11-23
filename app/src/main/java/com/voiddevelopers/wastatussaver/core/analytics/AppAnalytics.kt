@@ -27,8 +27,28 @@ class AppAnalytics @Inject constructor(
         clients.forEach { it.track(eventName, properties) }
     }
 
-    fun setSuperProperties(properties: Map<String, Any?>) {
+    private fun setSuperProperties(properties: Map<String, Any?>) {
         clients.forEach { it.setSuperProperties(properties) }
+    }
+
+    // ---- Super properties (sent with every event) ----
+
+    /**
+     * [selectedTitle]: whatsapp | whatsapp_business.
+     * [hasSafPermission] and [isAppInstalled] are for the selected title.
+     */
+    fun updateSuperProperties(
+        selectedTitle: String,
+        hasSafPermission: Boolean,
+        isAppInstalled: Boolean,
+    ) {
+        setSuperProperties(
+            mapOf(
+                AnalyticsProperties.SELECTED_TITLE to selectedTitle,
+                AnalyticsProperties.HAS_SAF_PERMISSION to hasSafPermission,
+                AnalyticsProperties.IS_APP_INSTALLED to isAppInstalled,
+            )
+        )
     }
 
     // ---- App ----

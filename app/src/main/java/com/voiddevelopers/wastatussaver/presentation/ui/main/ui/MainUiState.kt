@@ -61,3 +61,10 @@ sealed class Title(@StringRes val resId: Int, val packageName: String, val uri: 
         }
     }
 }
+
+/** Value sent to analytics for this title. */
+val Title.analyticsName: String
+    get() = when (this) {
+        Title.Whatsapp -> "whatsapp"
+        Title.WhatsappBusiness -> "whatsapp_business"
+    }

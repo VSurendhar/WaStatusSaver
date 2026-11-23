@@ -16,7 +16,10 @@ import com.voiddevelopers.wastatussaver.presentation.ui.player.ui.videoAudioPlay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -39,6 +42,7 @@ class MainViewModel @Inject constructor(
 
 
     init {
+        observeSuperProperties()
         viewModelScope.launch {
             val preferredTitle = getPreferredTitle()
             val shouldShowOnBoardingUi = shouldShowOnBoardingUi()
@@ -58,7 +62,6 @@ class MainViewModel @Inject constructor(
                 }
             )
         }
-
     }
 
 
@@ -241,5 +244,18 @@ class MainViewModel @Inject constructor(
         return files
     }
 
+    private fun observeSuperProperties() {
+        viewModelScope.launch {
+            uiState.filterNotNull()
+                .mapNotNull { state ->
+                    val title = state.title ?: return@mapNotNull null
+                    Triple(title.analyticsName, state.hasSafAccessPermission, state.appInstalled)
+                }
+                .distinctUntilChanged()
+                .collect { (title, hasSafPermission, isAppInstalled) ->
+                    appAnalytics.updateSuperProperties(title, hasSafPermission, isAppInstalled)
+                }
+        }
+    }
 
 }
