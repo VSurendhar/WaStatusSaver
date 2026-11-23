@@ -28,6 +28,8 @@ protobufPlugin = "0.9.5"
 protobufJavalite = "4.33.2"
 composeAnimation = "1.6.8"
 mixpanel = "8.2.0"
+ktlintGradle = "14.2.0"
+ktlint = "1.8.0"
 
 ksp = "2.2.20-2.0.4"
 
@@ -80,3 +82,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 dagger = { id = "com.google.dagger.hilt.android", version = "2.57.1" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle" }

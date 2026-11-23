@@ -10,6 +10,7 @@ plugins {
     id("kotlin-parcelize")
     alias(libs.plugins.protobuf)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.ktlint)
 }
 
 val secretsProperties = Properties()
@@ -80,6 +81,14 @@ android {
         compose = true
     }
     kotlinOptions {
+    }
+}
+
+ktlint {
+    version.set(libs.versions.ktlint.get())
+    android.set(true)
+    filter {
+        exclude { it.file.startsWith(layout.buildDirectory.get().asFile) }
     }
 }
 
