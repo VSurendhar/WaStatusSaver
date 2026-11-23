@@ -123,9 +123,7 @@ dependencies {
     // Dagger
     implementation(libs.dagger.hilt)
     implementation(libs.hilt.compose.navigation)
-    implementation(libs.androidx.hilt.work)
     kapt(libs.dagger.kapt)
-    kapt(libs.androidx.hilt.compiler)
     //  Data Store
     implementation(libs.androidx.datastore.preferences)
 
@@ -134,10 +132,6 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer.dash)
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.ui.compose)
-
-    // Work Manager
-    implementation(libs.androidx.work.runtime.ktx)
-
 
     implementation(libs.coil.compose)
     implementation(libs.coil.video)
